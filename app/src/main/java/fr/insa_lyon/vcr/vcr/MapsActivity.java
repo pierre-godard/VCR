@@ -5,10 +5,14 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.GoogleMapOptions;
+import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.LatLng;
 
 public class MapsActivity extends FragmentActivity
-        implements FragmentManager.OnBackStackChangedListener {
+        implements FragmentManager.OnBackStackChangedListener, OnMapReadyCallback {
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
 
@@ -18,7 +22,7 @@ public class MapsActivity extends FragmentActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_maps);
+        setContentView(R.layout.activity_maps) ;
 
         // ADDED CODE
         if (savedInstanceState == null) {
@@ -26,11 +30,21 @@ public class MapsActivity extends FragmentActivity
             // front of the card to this activity. If there is saved instance state,
             // this fragment will have already been added to the activity.
             if (mMap == null) {
-                mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
-                        .getMap();
-            }
-            if (mMap != null) {
-                setUpMap();
+
+                GoogleMapOptions googleMapOptions = new GoogleMapOptions();
+                googleMapOptions.mapType(GoogleMap.MAP_TYPE_NORMAL)
+                        .compassEnabled(true)
+                        .rotateGesturesEnabled(true)
+                        .tiltGesturesEnabled(true)
+                        .zoomControlsEnabled(true)
+                        .camera(new CameraPosition(new LatLng(45.759948,4.836593),13,0,0));
+
+                SupportMapFragment.newInstance(GoogleMapOptions googleMapOptions).getMapAsync(OnMapReadyCallbackCallback);
+
+                ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
+                        .getMapAsync(OnMapReadyCallbackCallback);
+                //mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
+                 //       .getMap();
             }
         } else {
             mShowingBack = (getFragmentManager().getBackStackEntryCount() > 0);
@@ -65,24 +79,22 @@ public class MapsActivity extends FragmentActivity
     private void setUpMapIfNeeded() {
         // Do a null check to confirm that we have not already instantiated the map.
         if (mMap == null) {
-            // Try to obtain the map from the SupportMapFragment.
-            // and
-            mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
-                    .getMap();
-            // Check if we were successful in obtaining the map.
-            if (mMap != null) {
-                setUpMap();
-            }
+            ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
+                    .getMapAsync(OnMapReadyCallbackCallback);
         }
     }
 
-    /**
-     * This is where we can add markers or lines, add listeners or move the camera. In this case, we
-     * just add a marker near Africa.
-     * <p/>
-     * This should only be called once and when we are sure that {@link #mMap} is not null.
-     */
+
     private void setUpMap() {
+
+//        From Xml to map properties
+//        map:cameraTargetLat="45.759948"
+//        map:cameraTargetLng="4.836593"
+//        map:uiCompass="true"
+//        map:uiZoomControls="true"
+//        map:cameraZoom="13"
+
+
         // Only test code, not needed here
 //        MarkerOptions markerOpt = new MarkerOptions();
 //        markerOpt.position(new LatLng(45.759948, 4.836593));
@@ -105,5 +117,10 @@ public class MapsActivity extends FragmentActivity
     @Override
     public void onBackStackChanged() {
 
+    }
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        mMap = googleMap;
     }
 }
