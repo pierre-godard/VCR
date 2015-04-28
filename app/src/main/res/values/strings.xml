@@ -1,4 +1,13 @@
 <resources>
     <string name="app_name">VCR</string>
     <string name="title_activity_maps">Map</string>
+
+<!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="CardFlipBack_buttonname">Back to front</string>
+    <string name="CardFlipFront_buttonName">Input Field</string>
+    <string name="NearBy">NearBy</string>
+    <string name="Category">Category</string>
+    <string name="AZ">AZ</string>
+    <string name="Popular">Popular</string>
 </resources>
