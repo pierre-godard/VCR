@@ -5,40 +5,50 @@
  * @docs        :: http://sailsjs.org/#!documentation/models
  */
 
-module.exports = {
+module.exports = 
+{
 
-    attributes: {
-        number: {
+    attributes: 
+	{
+        number: 
+		{
             type: 'integer',
             required: true,
             primaryKey: true
         },
-        name: {
+        name: 
+		{
             type: 'string',
             required: true
         },
-        address: {
+        address: 
+		{
             type: 'string',
             required: true
         },
-        latitude: {
+        latitude: 
+		{
             type: 'float',
             required: true
         },
-        longitude: {
+        longitude: 
+		{
             type: 'float',
             required: true
         },
-        bonus: {
+        bonus: 
+		{
             type: 'boolean',
             defaultTo: 'false'
         },
-        state: {
+        state: 
+		{
             type: 'string',
             enum: ['OPEN', 'CLOSE'],
             defaultsTo: 'CLOSE'
         },
-        measures: {
+        measures: 
+		{
             collection: 'Measure',
             via: 'station'
         }
