@@ -1,10 +1,13 @@
 package fr.insa_lyon.vcr.vcr;
 
-import android.support.v4.app.FragmentActivity;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
@@ -60,6 +63,23 @@ public class MapsActivity extends FragmentActivity {
      * This should only be called once and when we are sure that {@link #mMap} is not null.
      */
     private void setUpMap() {
-        mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
+
+        //
+        MarkerOptions markerOpt = new MarkerOptions();
+        markerOpt.position(new LatLng(45.759948, 4.836593));
+        markerOpt.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+        markerOpt.title("Lyon-test");
+
+        mMap.addMarker(markerOpt);
+        CircleOptions circle1 = new CircleOptions();
+        circle1.center(new LatLng(45.759948, 4.836593));
+        circle1.radius(500);
+        int lightgreen_trans = Color.argb(100, 153, 255, 153);
+        int white_trans = Color.argb(255, 255, 255, 255);
+        circle1.fillColor(lightgreen_trans);
+        circle1.strokeColor(white_trans);
+        circle1.strokeWidth(5);
+        circle1.visible(true);
+        mMap.addCircle(circle1);
     }
 }
