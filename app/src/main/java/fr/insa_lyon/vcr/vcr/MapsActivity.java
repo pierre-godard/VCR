@@ -1,25 +1,44 @@
 package fr.insa_lyon.vcr.vcr;
 
-import android.graphics.Color;
+import android.app.FragmentManager;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.CircleOptions;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
 
-public class MapsActivity extends FragmentActivity {
+public class MapsActivity extends FragmentActivity
+        implements FragmentManager.OnBackStackChangedListener {
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
+
+    // Est-ce qu'on affiche le user input field ou non (sinon on affiche la map).
+    private boolean mShowingBack = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
-        setUpMapIfNeeded();
+
+        // ADDED CODE
+        if (savedInstanceState == null) {
+            // If there is no saved instance state, add a fragment representing the
+            // front of the card to this activity. If there is saved instance state,
+            // this fragment will have already been added to the activity.
+            if (mMap == null) {
+                mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
+                        .getMap();
+            }
+            if (mMap != null) {
+                setUpMap();
+            }
+        } else {
+            mShowingBack = (getFragmentManager().getBackStackEntryCount() > 0);
+        }
+        // Monitor back stack changes to ensure the action bar shows the appropriate
+        // button (either "photo" or "info").
+        getFragmentManager().addOnBackStackChangedListener(this);
+        // ADDED CODE _ END
     }
 
     @Override
@@ -47,6 +66,7 @@ public class MapsActivity extends FragmentActivity {
         // Do a null check to confirm that we have not already instantiated the map.
         if (mMap == null) {
             // Try to obtain the map from the SupportMapFragment.
+            // and
             mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
                     .getMap();
             // Check if we were successful in obtaining the map.
@@ -63,23 +83,27 @@ public class MapsActivity extends FragmentActivity {
      * This should only be called once and when we are sure that {@link #mMap} is not null.
      */
     private void setUpMap() {
+        // Only test code, not needed here
+//        MarkerOptions markerOpt = new MarkerOptions();
+//        markerOpt.position(new LatLng(45.759948, 4.836593));
+//        markerOpt.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+//        markerOpt.title("Lyon-test");
+//        mMap.addMarker(markerOpt);
+//        CircleOptions circle1 = new CircleOptions();
+//        circle1.center(new LatLng(45.759948, 4.836593));
+//        circle1.radius(500);
+//        int lightgreen_trans = Color.argb(100, 153, 255, 153);
+//        int white_trans = Color.argb(255, 255, 255, 255);
+//        circle1.fillColor(lightgreen_trans);
+//        circle1.strokeColor(white_trans);
+//        circle1.strokeWidth(5);
+//        circle1.visible(true);
+//        mMap.addCircle(circle1);
+        // test code - end
+    }
 
-        //
-        MarkerOptions markerOpt = new MarkerOptions();
-        markerOpt.position(new LatLng(45.759948, 4.836593));
-        markerOpt.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-        markerOpt.title("Lyon-test");
+    @Override
+    public void onBackStackChanged() {
 
-        mMap.addMarker(markerOpt);
-        CircleOptions circle1 = new CircleOptions();
-        circle1.center(new LatLng(45.759948, 4.836593));
-        circle1.radius(500);
-        int lightgreen_trans = Color.argb(100, 153, 255, 153);
-        int white_trans = Color.argb(255, 255, 255, 255);
-        circle1.fillColor(lightgreen_trans);
-        circle1.strokeColor(white_trans);
-        circle1.strokeWidth(5);
-        circle1.visible(true);
-        mMap.addCircle(circle1);
     }
 }
