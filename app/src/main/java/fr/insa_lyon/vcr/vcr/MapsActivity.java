@@ -9,6 +9,7 @@ import com.google.android.gms.maps.GoogleMapOptions;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 
 public class MapsActivity extends FragmentActivity
@@ -24,13 +25,9 @@ public class MapsActivity extends FragmentActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps) ;
 
-        // ADDED CODE
         if (savedInstanceState == null) {
-            // If there is no saved instance state, add a fragment representing the
-            // front of the card to this activity. If there is saved instance state,
-            // this fragment will have already been added to the activity.
             if (mMap == null) {
-
+                // Options for the map
                 GoogleMapOptions googleMapOptions = new GoogleMapOptions();
                 googleMapOptions.mapType(GoogleMap.MAP_TYPE_NORMAL)
                         .compassEnabled(true)
@@ -38,13 +35,13 @@ public class MapsActivity extends FragmentActivity
                         .tiltGesturesEnabled(true)
                         .zoomControlsEnabled(true)
                         .camera(new CameraPosition(new LatLng(45.759948,4.836593),13,0,0));
+                SupportMapFragment smf = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map));
+                smf.newInstance(googleMapOptions).getMapAsync(this);
 
-                SupportMapFragment.newInstance(GoogleMapOptions googleMapOptions).getMapAsync(OnMapReadyCallbackCallback);
-
-                ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
+                /*((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
                         .getMapAsync(OnMapReadyCallbackCallback);
-                //mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
-                 //       .getMap();
+                mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
+                       .getMap();*/
             }
         } else {
             mShowingBack = (getFragmentManager().getBackStackEntryCount() > 0);
@@ -80,7 +77,7 @@ public class MapsActivity extends FragmentActivity
         // Do a null check to confirm that we have not already instantiated the map.
         if (mMap == null) {
             ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
-                    .getMapAsync(OnMapReadyCallbackCallback);
+                    .getMapAsync(this);
         }
     }
 
@@ -122,5 +119,6 @@ public class MapsActivity extends FragmentActivity
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        mMap.addCircle(new CircleOptions().center(new LatLng(45.759948, 4.836593)).radius(300));
     }
 }
