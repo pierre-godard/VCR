@@ -35,8 +35,15 @@ public class MapsActivity extends FragmentActivity
                         .tiltGesturesEnabled(true)
                         .zoomControlsEnabled(true)
                         .camera(new CameraPosition(new LatLng(45.759948,4.836593),13,0,0));
-                SupportMapFragment smf = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map));
-                smf.newInstance(googleMapOptions).getMapAsync(this);
+
+                SupportMapFragment.newInstance(
+                        new GoogleMapOptions().mapType(GoogleMap.MAP_TYPE_SATELLITE)
+                                            .compassEnabled(true)
+                                            .rotateGesturesEnabled(true)
+                                            .tiltGesturesEnabled(true)
+                                            .zoomControlsEnabled(true)
+                                            .camera(new CameraPosition(new LatLng(45.759948,4.836593),13,0,0)))
+                        .getMapAsync(this);
 
                 /*((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
                         .getMapAsync(OnMapReadyCallbackCallback);
