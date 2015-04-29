@@ -12,8 +12,8 @@ module.exports = {
         {
         	var station_id		= 8001;
 			var date 			= Date.now();
-			var analysisMode 	= analysis_mode.MEAN;
-        	PredictionService.predict(station_iddate,analysisMode,
+			var analysisMode 	= PredictionService.analysis_mode.MEAN;
+        	PredictionService.predict(station_id,date,analysisMode,
         		function (state)
                 {
         			res.write("Prediction using "+analysisMode+" (date: "+new Date(date)+" - station: "+station_id+"): "

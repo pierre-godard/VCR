@@ -51,10 +51,10 @@ function analysis (datas,mode)
 	console.log("Analysis: using "+mode);
 	switch(mode) 
 	{
-    case analysis_mode.MEAN:
+    case PredictionService.analysis_mode.MEAN:
     	return mean(datas);
         break;	// no use but used to keep the code clear
-    case analysis_mode.FDM:
+    case PredictionService.analysis_mode.FDM:
     	return decreasingFactor_mean(datas);
         break;
     default:
@@ -138,22 +138,22 @@ module.exports = {
 		console.log("diff_overTime: "+diff_overTime);
 
 		// ----- State selection
-		if (diff_overTime < station_values.FULL_LIMIT)
+		if (diff_overTime < PredictionService.station_values.FULL_LIMIT)
 		{
-			callback(station_state.FULL);
+			callback(PredictionService.station_state.FULL);
 		} 
-		else if (diff_overTime <= station_values.NEAR_FULL_LIMIT)
+		else if (diff_overTime <= PredictionService.station_values.NEAR_FULL_LIMIT)
 		{
-			callback(station_state.NEAR_FULL);
+			callback(PredictionService.station_state.NEAR_FULL);
 		}
-		else if (curr_overTime < station_values.EMPTY_LIMIT)
+		else if (curr_overTime < PredictionService.station_values.EMPTY_LIMIT)
 		{
-			callback(station_state.EMPTY);
+			callback(PredictionService.station_state.EMPTY);
 		}
-		else if (curr_overTime <= station_values.NEAR_EMPTY_LIMIT)
+		else if (curr_overTime <= PredictionService.station_values.NEAR_EMPTY_LIMIT)
 		{
-			callback(station_state.NEAR_EMPTY);
+			callback(PredictionService.station_state.NEAR_EMPTY);
 		}
-		callback(station_state.INTERM);
+		callback(PredictionService.station_state.INTERM);
 	}
 };
