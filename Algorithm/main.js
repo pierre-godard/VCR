@@ -33,6 +33,7 @@ function decreasingFactor_mean (factor,step,array) {
     	final_denominator += current_factor;
     	if(i%step == 0) {
     		current_factor *= factor;
+    		console.log(current_factor+"\n");
     	}    	
 	}
 	return sum_val/final_denominator;
@@ -44,10 +45,14 @@ function predict (id,time) {
 }
  
 var server = http.createServer(function(request, response){
-	var arr = [10,20,30];
+	var mean_arr = [10,20,32];
+	var mean_fac = 0.8;
+	var mean_step = 1;
     response.writeHead(200, {'Content-Type': 'text/plain'});
-    response.write("Mean of: "+arr+" = "+mean(arr)+"\n");
-    response.end('Hello World\n');
+    response.write("Mean of: "+mean_arr+" = "+mean(mean_arr)+"\n");
+    response.write("Decreasing factor mean of: "+mean_arr+" (fac: "+mean_fac+", step: "+mean_step+") = "
+    	+decreasingFactor_mean(mean_fac,mean_step,mean_arr)+"\n");
+    response.end('--- END ---\n');
 });
  
 server.listen(3000);
