@@ -1,6 +1,7 @@
 package fr.insa_lyon.vcr.vcr;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
@@ -11,6 +12,8 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.UiSettings;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -25,12 +28,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import fr.insa_lyon.vcr.modele.Station;
+import fr.insa_lyon.vcr.utilitaires.MathsUti;
 
 public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
     private UiSettings mUiSettings;
     private ServerConnection serverConnect;
+    private int rayonCercle = 500;
     String serverUrl;
     List<NameValuePair> requestParams;
     List<Station> stations;
@@ -55,6 +60,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         if (!(serverInitOk = serverInit())) {
             finish();
         }
+
     }
 
     private boolean serverInit() {
@@ -93,6 +99,24 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         mUiSettings.setTiltGesturesEnabled(true);
         mUiSettings.setRotateGesturesEnabled(true);
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(45.763478, 4.835442), 13));
+
+        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+
+            @Override
+            public void onMapClick(LatLng position) {
+                mMap.addCircle(new CircleOptions()
+                        .center(position)
+                        .radius(rayonCercle)
+                        .strokeColor(Color.GREEN)
+                        .fillColor(Color.BLUE));
+                for(Marker m : marqueurs){
+                    if(MathsUti.getDistance(m.getPosition(),position)<=rayonCercle){
+                        m.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
+                        m.setTitle("DETECTE");
+                    }
+                }
+            }
+        });
 
         creerMarqueurs();
         // Ajouter les marqueurs des stations vélovs, avec info bulles, etc.. : récupérer ça du serveur.
