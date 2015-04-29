@@ -27,6 +27,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import fr.insa_lyon.vcr.modele.MarqueurPerso;
 import fr.insa_lyon.vcr.modele.Station;
 import fr.insa_lyon.vcr.utilitaires.MathsUti;
 
@@ -39,7 +40,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
     String serverUrl;
     List<NameValuePair> requestParams;
     List<Station> stations;
-    List<Marker> marqueurs;
+    List<MarqueurPerso> marqueurs;
     JSONObject infoStationsJSON;
     boolean serverInitOk = false;
 
@@ -109,10 +110,10 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                         .radius(rayonCercle)
                         .strokeColor(Color.GREEN)
                         .fillColor(Color.BLUE));
-                for(Marker m : marqueurs){
-                    if(MathsUti.getDistance(m.getPosition(),position)<=rayonCercle){
-                        m.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
-                        m.setTitle("DETECTE");
+                for(MarqueurPerso m : marqueurs){
+                    if(MathsUti.getDistance(m.getMarqueur().getPosition(),position)<=rayonCercle){
+                        m.getMarqueur().setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
+                        m.getMarqueur().setTitle("DETECTE");
                     }
                 }
             }
@@ -148,7 +149,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         for(Station s: stations){
             optionsCourantes = new MarkerOptions().position(s.getPosition()).title(s.getNom()).snippet(s.getSnippet());
             marqueurCourant = mMap.addMarker(optionsCourantes);
-            marqueurs.add(marqueurCourant);
+            marqueurs.add(new MarqueurPerso(s,marqueurCourant));
         }
             /* MarkerOptions marOpt1 = ;
         Marker m = mMap.addMarker(marOpt1);
