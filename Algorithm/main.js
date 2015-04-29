@@ -132,11 +132,11 @@ var server = http.createServer(function(request, response)
 	var mean_step 	= 1;
 	var station_id	= 8001;
 	var date 		= Date.now();
-    response.writeHead(200, {'Content-Type': 'text/plain'});
+    response.writeHead(200, {'Content-Type': 'text/plain; charset=utf-8'});
     response.write("Mean of: "+mean_arr+" = "+mean(mean_arr)+"\n");
-    response.write("Decreasing factor mean of: "+mean_arr+" (fac: "+mean_fac+", step: "+mean_step+") = "
+    response.write("Decreasing factor mean of: "+mean_arr+" (factor: "+mean_fac+", step: "+mean_step+") = "
     	+decreasingFactor_mean(mean_fac,mean_step,mean_arr)+"\n");
-    response.write("Prediction (station "+station_id+", on "+new Date(date)+"): "+predict(8001,date)+"\n");
+    response.write("Prediction (date: "+new Date(date)+" - station: "+station_id+"): "+predict(8001,date)+"\n");
     response.end('--- END ---\n');
 });
  
