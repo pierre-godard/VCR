@@ -16,6 +16,7 @@ module.exports = {
         	PredictionService.predict(station_id,date,analysisMode,
         		function (state)
                 {
+                    res.writeHead(200, {'Content-Type': 'text/plain; charset=utf-8'});
         			res.write("Prediction using "+analysisMode+" (date: "+new Date(date)+" - station: "+station_id+"): "
         				+state+"\n");
     				res.end('\n');
