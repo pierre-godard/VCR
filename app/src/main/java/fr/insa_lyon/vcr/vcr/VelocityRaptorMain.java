@@ -13,6 +13,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
@@ -37,12 +38,13 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
     private UiSettings mUiSettings;
     private ServerConnection serverConnect;
     private int rayonCercle = 500;
-    String serverUrl;
-    List<NameValuePair> requestParams;
-    List<Station> stations;
-    List<MarqueurPerso> marqueurs;
-    JSONObject infoStationsJSON;
-    boolean serverInitOk = false;
+    private String serverUrl;
+    private List<NameValuePair> requestParams;
+    private List<Station> stations;
+    private List<MarqueurPerso> marqueurs;
+    private JSONObject infoStationsJSON;
+    private boolean serverInitOk = false;
+    private Circle cercleCourant;
 
 
     @Override
@@ -105,7 +107,10 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
 
             @Override
             public void onMapClick(LatLng position) {
-                mMap.addCircle(new CircleOptions()
+                if(cercleCourant != null){
+                   cercleCourant.remove();
+                }
+                cercleCourant = mMap.addCircle(new CircleOptions()
                         .center(position)
                         .radius(rayonCercle)
                         .strokeColor(Color.BLUE)
