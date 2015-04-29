@@ -1,5 +1,6 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingLeft="@dimen/activity_horizontal_margin"
@@ -8,4 +9,14 @@
     android:paddingBottom="@dimen/activity_vertical_margin"
     tools:context="fr.insa_lyon.vcr.vcr.UserInput">
 
-</RelativeLayout>
+    <AutoCompleteTextView android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:id="@+id/autoCompleteDepart"
+        android:text="Adresse départ"/>
+
+    <AutoCompleteTextView android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:id="@+id/autoCompleteArrivee"
+        android:text="Adresse arrivée"/>
+
+</LinearLayout>
