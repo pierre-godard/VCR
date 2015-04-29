@@ -18,13 +18,11 @@ module.exports =
         },
         name: 
 		{
-            type: 'string',
-            required: true
+            type: 'string'
         },
         address: 
 		{
-            type: 'string',
-            required: true
+            type: 'string'
         },
         latitude: 
 		{
@@ -39,7 +37,7 @@ module.exports =
         bonus: 
 		{
             type: 'boolean',
-            defaultTo: 'false'
+            defaultsTo: 'false'
         },
         state: 
 		{
