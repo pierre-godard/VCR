@@ -41,6 +41,12 @@ module.exports.routes = {
     {
         controller: 'station',
         action: 'pull'
+    },
+
+    '/measure/pull':
+    {
+        controller: 'measure',
+        action: 'pull'
     }
 
     /***************************************************************************
