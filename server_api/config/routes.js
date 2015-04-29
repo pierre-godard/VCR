@@ -47,7 +47,7 @@ module.exports.routes = {
     {
         controller: 'measure',
         action: 'pull'
-    }
+    },
 
     '/prediction/analysis':
     {
