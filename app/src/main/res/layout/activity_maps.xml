@@ -24,6 +24,27 @@
         android:background="#CC3CB371"
         android:onClick="onButtonClickedMain" />
 
+    <Switch
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/switchDeposerRetirer"
+        android:layout_gravity="center_horizontal|bottom"
+        android:checked="false" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/editText"
+        android:layout_gravity="left|bottom"
+        android:text="Retirer un vélo" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/editText2"
+        android:layout_gravity="right|bottom"
+        android:text="Déposer un vélo" />
+
 </FrameLayout>
 
 
