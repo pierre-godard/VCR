@@ -1,10 +1,9 @@
-package fr.insa_lyon.vcr.vcr;
+package fr.insa_lyon.vcr.reseau;
 
 import android.util.Log;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URLEncodedUtils;
@@ -19,6 +18,8 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 
+import fr.insa_lyon.vcr.utilitaires.NVP;
+
 /**
  * Created by julien on 29/04/15.
  */
@@ -28,18 +29,30 @@ public class ServerConnection {
     static InputStream httpResponseStream = null;
     // JSON Response String to create JSON Object
     static String jsonString = "";
+    private String mUrl;
+    private List<NVP> mParams;
+
+
+    public ServerConnection() {
+    }
+
+    public ServerConnection(String url, List<NVP> params) {
+        mUrl = url;
+        mParams = params;
+    }
+
 
     // Method to issue HTTP request, parse JSON result and return JSON Object
-    public JSONObject makeHttpGet(String url, List<NameValuePair> params) {
+    public JSONObject makeHttpGet() {
         try {
             // client http default
             DefaultHttpClient httpClient = new DefaultHttpClient();
             // Format the parameters correctly for HTTP transmission
-            String paramString = URLEncodedUtils.format(params, "utf-8");
+            String paramString = URLEncodedUtils.format(mParams, "utf-8");
             // Add parameters to url in GET format
-            url += "?" + paramString;
+            mUrl += "?" + paramString;
             // Execute the request
-            HttpGet httpGet = new HttpGet(url);
+            HttpGet httpGet = new HttpGet(mUrl);
             // Execute the request and fetch Http response
             HttpResponse httpResponse = httpClient.execute(httpGet);
             // Extract the result from the response

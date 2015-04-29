@@ -1,11 +1,15 @@
 package fr.insa_lyon.vcr.vcr;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -18,8 +22,6 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -29,54 +31,96 @@ import java.util.List;
 
 import fr.insa_lyon.vcr.modele.MarqueurPerso;
 import fr.insa_lyon.vcr.modele.Station;
+import fr.insa_lyon.vcr.reseau.UpdateStation;
 import fr.insa_lyon.vcr.utilitaires.MathsUti;
+import fr.insa_lyon.vcr.utilitaires.NVP;
+
 
 public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCallback {
 
+    // ----------------------------------------------------------------------------------- VARIABLES
     private GoogleMap mMap;
     private UiSettings mUiSettings;
-    private ServerConnection serverConnect;
     private int rayonCercle = 500;
-    String serverUrl;
-    List<NameValuePair> requestParams;
     List<Station> stations;
     List<MarqueurPerso> marqueurs;
-    JSONObject infoStationsJSON;
-    boolean serverInitOk = false;
+
+    // adresse du serveur
+    private String server_url = "vps165245.ovh.net/station";
+    private List<NVP> url_params;
+    private UpdateStation updStation;
 
 
+    /**
+     * Receiver chargé de récupérer les données dans le message broadcasté par
+     * le UpdateStation et de les retransformer en JSON avant de les passer à une méthode
+     * qui va mettre à jour la carte
+     */
+    private BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Bundle bundle = intent.getExtras();
+            if (bundle != null) {
+                String json_string = bundle.getString(UpdateStation.JSON_OBJ);
+                int resultCode = bundle.getInt(UpdateStation.RESULT);
+                if (resultCode == RESULT_OK) {
+                    Toast.makeText(VelocityRaptorMain.this,
+                            "Update complete",
+                            Toast.LENGTH_LONG).show();
+                    parserStations(json_string);
+
+                } else {
+                    Toast.makeText(VelocityRaptorMain.this, "Update failed",
+                            Toast.LENGTH_LONG).show();
+
+                }
+            }
+        }
+    };
+
+
+    //-------------------------------------------------------------------- Activity LifeCyle Methods
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
-        requestParams = new ArrayList<>();
         stations = new ArrayList<>();
         marqueurs = new ArrayList<>();
+
 
         if (savedInstanceState == null) {
             SupportMapFragment mapFragment =
                     (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
             mapFragment.getMapAsync(this);
         }
-        /*if (!(serverInitOk = serverInit())) {
-            finish();
-        }*/
 
+        // Preparation de l'intent à destination du service UpdateStation
+        url_params = new ArrayList<NVP>();
+        url_params.add(new NVP("limit", "1"));
+
+        Log.d("VelocityRaptor - Debug", "url_params" + url_params.get(0).getName());
+
+        Intent intent = new Intent(this, UpdateStation.class);
+        intent.putExtra(UpdateStation.SERVER_URL, server_url);
+        Bundle extra = new Bundle();
+        extra.putSerializable("extra", url_params.toArray());
+        intent.putExtra(UpdateStation.URL_PARAM, extra);
+        startService(intent);
     }
 
-    private boolean serverInit() {
-        if (!serverInitOk) {
-            serverUrl = "";
-            requestParams.add(new BasicNameValuePair("toto", "titi"));
-            serverConnect = new ServerConnection();
-            infoStationsJSON = serverConnect.makeHttpGet(serverUrl, requestParams);
-            if (infoStationsJSON != null) {
-                return true;
-            }
-        }
-        return false;
+
+    /**
+     * Permet de "s'enregistrer" pour être contacté dans le cas d'un envoi de broadcast par
+     * UpdateStaion (l'intent contenant le JSON)
+     */
+    @Override
+    protected void onResume() {
+        super.onResume();
+        registerReceiver(receiver, new IntentFilter(UpdateStation.NOTIFICATION));
     }
 
+
+    //----------------------------------------------------------------------- Listenners - CallBacks
 
     public void onButtonClickedMain(View v) {
         if (v == findViewById(R.id.but_recherche)) {
@@ -127,9 +171,10 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
     }
 
 
-    private void parserStations(){
+    //------------------------------------------------------------------------------ General Methods
+
+    private void parserStations(String jsonString) {
         stations.clear();
-        String jsonString = "stations:"+infoStationsJSON.toString();
         try {
             JSONObject jsonStations = new JSONObject(jsonString);
             JSONArray jArrayStations = jsonStations.getJSONArray("stations");
@@ -138,7 +183,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
             }
         }
         catch(JSONException j){
-            Log.e("ACTIVITY_MAP", "Y'a eut une couille en parsant le json :(");
+            Log.e("ACTIVITY_MAP", "Problème en parsant le JSON");
         }
     }
 
@@ -151,9 +196,6 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
             marqueurCourant = mMap.addMarker(optionsCourantes);
             marqueurs.add(new MarqueurPerso(s,marqueurCourant));
         }
-            /* MarkerOptions marOpt1 = ;
-        Marker m = mMap.addMarker(marOpt1);
-        m.setTitle("Title changed");*/
     }
 
 }
