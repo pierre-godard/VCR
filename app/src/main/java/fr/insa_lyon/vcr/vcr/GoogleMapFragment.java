@@ -1,8 +1,8 @@
 package fr.insa_lyon.vcr.vcr;
 
 
-import android.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +11,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -22,7 +23,10 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback {
 
     private GoogleMap mMap; // sera null si le service google play n'est pas disponible
     private UiSettings mUiSettings;
+    private MapFragment fragment;
+
     public GoogleMapFragment() {}
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -30,16 +34,17 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback {
             return null;
         }
         if (mMap == null) {  // map pas instanciée
-            ((MapFragment)  fragmentManager.findFragmentById(R.id.map)).getMapAsync(this);
+            ((SupportMapFragment)  getFragmentManager().findFragmentById(R.id.map_frame)).getMapAsync(this);
         }
         return inflater.inflate(R.layout.fragment_map, container, false);
     }
+
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         if (mMap == null) {
             // Try to obtain the map from the SupportMapFragment.
-            ((MapFragment) fragmentManager.findFragmentById(R.id.map)).getMapAsync(this);
+            ((SupportMapFragment) getFragmentManager().findFragmentById(R.id.map_frame)).getMapAsync(this);
         }
     }
 
@@ -47,7 +52,7 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback {
     public void onDestroyView() {
         super.onDestroyView();
         if (mMap != null) {
-            fragmentManager.beginTransaction().remove(fragmentManager.findFragmentById(R.id.map)).commit();
+            fragmentManager.beginTransaction().remove(fragmentManager.findFragmentById(R.id.front_map)).commit();
             mMap = null;
         }
     }

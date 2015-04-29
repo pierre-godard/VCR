@@ -1,17 +1,14 @@
 package fr.insa_lyon.vcr.vcr;
 
-//import android.app.FragmentManager;
 
-import android.app.Activity;
-import android.app.FragmentManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
 import android.view.View;
 
 
-
-
-public class VelocityRaptorMain extends Activity implements android.app.FragmentManager.OnBackStackChangedListener {
+public class VelocityRaptorMain extends FragmentActivity implements android.app.FragmentManager.OnBackStackChangedListener {
 
     // Est-ce qu'on affiche le user input field ou non (sinon on affiche la map).
     private boolean mShowingBack = false;
@@ -22,7 +19,7 @@ public class VelocityRaptorMain extends Activity implements android.app.Fragment
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
-        fragmentManager = getFragmentManager();
+        fragmentManager =  getSupportFragmentManager();
 
         if (savedInstanceState == null) {       // pas d'instance sauvegardée
             getFragmentManager()
