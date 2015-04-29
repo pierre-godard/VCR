@@ -3,12 +3,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="fr.insa_lyon.vcr.vcr.GoogleMapFragment"
-    android:id="@+id/map_frame">
+    tools:context="fr.insa_lyon.vcr.vcr.GoogleMapFragment">
 
     <fragment
         class="com.google.android.gms.maps.SupportMapFragment"
-        android:id="@+id/front_map"
+        android:id="@+id/map"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
