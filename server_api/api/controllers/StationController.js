@@ -5,8 +5,6 @@
  * @help        :: See http://links.sailsjs.org/docs/controllers
  */
 
-var https = require('https');
-
 module.exports = {
 
     pull:
@@ -16,12 +14,18 @@ module.exports = {
             JCDecauxService.requestStations(
                 function (stations)
                 {
-                    
-                    Station.create(
+                    _.forEach(
                         stations,
-                        function(err)
+                        function (station)
                         {
-                            if (err) return next(err);
+                            Station.update(
+                                {number: station.number},
+                                station,
+                                function(err)
+                                {
+                                    if (err) return next(err);
+                                }
+                            );
                         }
                     );
                     

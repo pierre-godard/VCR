@@ -8,7 +8,7 @@
 module.exports = {
 
   attributes: {
-      
+      // Ne pas oublier la confidence
   }
 };
 

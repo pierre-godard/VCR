@@ -9,7 +9,7 @@ module.exports = {
 
     attributes: {
         last_update: {
-            type: 'date',
+            type: 'integer',
             required: true,
             primaryKey: true
         },
@@ -25,5 +25,26 @@ module.exports = {
             type: 'integer',
             required: true
         }
+    },
+    
+    beforeValidate: function(value, cb)
+    {
+        if (value.position && value.position.lng && value.position.lat)
+        {
+            value.longitude = value.position.lng;
+            value.latitude = value.position.lat;
+        }
+        value.station = value.number;
+        delete value['number'];
+        delete value['name'];
+        delete value['address'];
+        delete value['position'];
+        delete value['banking'];
+        delete value['bike_stands'];
+        delete value['contract_name'];
+        delete value['longitude'];
+        delete value['latitude'];
+        cb();
     }
+    
 };
