@@ -1,5 +1,6 @@
 var http = require('http');
 
+// Velov station potential state
 var station_state = Object.freeze({
 	EMPTY: "empty", 
 	NEAR_EMPTY: "near empty", 
@@ -33,15 +34,24 @@ function decreasingFactor_mean (factor,step,array) {
     	final_denominator += current_factor;
     	if(i%step == 0) {
     		current_factor *= factor;
-    		console.log(current_factor+"\n");
     	}    	
 	}
 	return sum_val/final_denominator;
 }
 
+// Gives a prediction of the state
+// of a Velov station (id)
+// at a certain point in time (time)
 function predict (id,time) {
-	var week_day = time.getDay();
-
+	//var week_day = time.getDay();
+	var WEEK_SIZE = 7;
+	var selected_days = [];
+	var limit_date = new Date(2012, 0, 1);
+	for (var d = new Date(time); d > limit_date; d.setDate(d.getDate() - WEEK_SIZE)) {
+		selected_days.push(new Date(d));
+		console.log(d);
+	}
+	return selected_days;
 }
  
 var server = http.createServer(function(request, response){
@@ -52,6 +62,7 @@ var server = http.createServer(function(request, response){
     response.write("Mean of: "+mean_arr+" = "+mean(mean_arr)+"\n");
     response.write("Decreasing factor mean of: "+mean_arr+" (fac: "+mean_fac+", step: "+mean_step+") = "
     	+decreasingFactor_mean(mean_fac,mean_step,mean_arr)+"\n");
+    response.write("Prediction: "+predict(1,Date.now())+"\n");
     response.end('--- END ---\n');
 });
  
