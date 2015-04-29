@@ -1,3 +1,12 @@
+// ==============================================================
+//	main.js
+//	Prediction
+//	Description:
+//		This module predicts 
+//	Created: 	28/04/2015
+//	By: 		Samuel MAGNAN
+// ==============================================================
+
 var http = require('http');
 
 // Velov station potential state
@@ -8,6 +17,17 @@ var station_state = Object.freeze(
 	INTERM: 	"places available",
 	NEAR_FULL: 	"near full",
 	FULL: 		"full"
+});
+
+// Values associated to the states to determine ranges.
+// Ranges are used to find the state depending on the elem position in the ranges
+var station_values = Object.freeze(
+{
+	EMPTY_LIMIT: 		1, 
+	NEAR_EMPTY_LIMIT: 	2, 
+	INTERM_LIMIT: 		0,
+	NEAR_FULL_LIMIT: 	2,
+	FULL_LIMIT: 		1
 });
 
 // Mean of the array passed as parameter
@@ -50,7 +70,7 @@ function decreasingFactor_mean (factor,step,array)
 // at a certain point in time (time)
 function predict (id,time) 
 {
-	//var week_day = time.getDay();
+	// ----- Data fetching
 	var WEEK_SIZE 		= 7;
 	var selected_days 	= [];
 	var station_max		= [];
@@ -63,8 +83,32 @@ function predict (id,time)
 		selected_days.push(curr_date);
 		station_max.push(getMaxVelov(id,curr_date));
 		station_curr.push(getCurrVelov(id,curr_date));
-	}	
-	return selected_days;
+	}
+
+	// ----- Data analysis
+	var max_overTime 	= mean(station_max);
+	var curr_overTime 	= mean(station_curr);
+	var diff_overTime 	= max_overTime - curr_overTime;
+
+	// ----- State selection
+	if (diff_overTime < station_values.FULL_LIMIT)
+	{
+		return station_state.FULL;
+	} 
+	else if (diff_overTime <= station_values.NEAR_FULL_LIMIT)
+	{
+		return station_state.NEAR_FULL;
+	}
+	else if (curr_overTime < station_values.EMPTY_LIMIT)
+	{
+		return station_state.EMPTY;
+	}
+	else if (curr_overTime <= station_values.NEAR_EMPTY_LIMIT)
+	{
+		return station_state.NEAR_EMPTY;
+	}
+
+	return station_state.INTERM;
 }
 
 // get the max number of spots in a station (id) at a time
@@ -92,7 +136,7 @@ var server = http.createServer(function(request, response)
     response.write("Mean of: "+mean_arr+" = "+mean(mean_arr)+"\n");
     response.write("Decreasing factor mean of: "+mean_arr+" (fac: "+mean_fac+", step: "+mean_step+") = "
     	+decreasingFactor_mean(mean_fac,mean_step,mean_arr)+"\n");
-    response.write("Prediction: (station "+station_id+" dates:\n"+predict(8001,date)+"\n");
+    response.write("Prediction (station "+station_id+", on "+new Date(date)+"): "+predict(8001,date)+"\n");
     response.end('--- END ---\n');
 });
  
