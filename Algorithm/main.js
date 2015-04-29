@@ -30,6 +30,14 @@ var station_values = Object.freeze(
 	FULL_LIMIT: 		1
 });
 
+// The various analysis methods that can be picked
+var analysis_mode = Object.freeze(
+{
+	MEAN: 	"mean",
+	FDM: 	"decreasing factor mean",
+	NONE: 	"none" 
+});
+
 // Mean of the array passed as parameter
 function mean (array) 
 {
@@ -67,8 +75,9 @@ function decreasingFactor_mean (factor,step,array)
 
 // Gives a prediction of the state
 // of a Velov station (id)
-// at a certain point in time (time)
-function predict (id,time) 
+// at a certain point in time (time) 
+// using the selected analysis algorithm (analysisMode) 
+function predict (id,time,analysisMode) 
 {
 	// ----- Data fetching
 	var WEEK_SIZE 		= 7;
@@ -86,9 +95,13 @@ function predict (id,time)
 	}
 
 	// ----- Data analysis
-	var max_overTime 	= mean(station_max);
-	var curr_overTime 	= mean(station_curr);
+	var max_overTime 	= analysis(station_max,analysisMode);
+	var curr_overTime 	= analysis(station_curr,analysisMode);
 	var diff_overTime 	= max_overTime - curr_overTime;
+
+	console.log("max_overTime:  "+max_overTime);
+	console.log("curr_overTime: "+curr_overTime);
+	console.log("diff_overTime: "+diff_overTime);
 
 	// ----- State selection
 	if (diff_overTime < station_values.FULL_LIMIT)
@@ -107,8 +120,25 @@ function predict (id,time)
 	{
 		return station_state.NEAR_EMPTY;
 	}
-
 	return station_state.INTERM;
+}
+
+// Analyse a set of datas using the selected mode
+// Returns the caracteristic value associated with the analysis
+function analysis (datas,mode) 
+{
+	console.log("Analysis: using "+mode);
+	switch(mode) 
+	{
+    case analysis_mode.MEAN:
+    	return mean(datas);
+        break;	// no use but used to keep the code clear
+    case analysis_mode.FDM:
+    	return decreasingFactor_mean(datas);
+        break;
+    default:
+	}
+	return 0;	// 0 as default return value, TODO throw ERROR ?
 }
 
 // get the max number of spots in a station (id) at a time
@@ -127,16 +157,17 @@ function getCurrVelov(id,time)
  
 var server = http.createServer(function(request, response)
 {
-	var mean_arr 	= [10,20,32];
-	var mean_fac 	= 0.8;
-	var mean_step 	= 1;
-	var station_id	= 8001;
-	var date 		= Date.now();
+	var mean_arr 		= [10,20,32];
+	var mean_fac 		= 0.8;
+	var mean_step 		= 1;
+	var station_id		= 8001;
+	var date 			= Date.now();
+	var analysisMode 	= analysis_mode.MEAN;
     response.writeHead(200, {'Content-Type': 'text/plain; charset=utf-8'});
     response.write("Mean of: "+mean_arr+" = "+mean(mean_arr)+"\n");
     response.write("Decreasing factor mean of: "+mean_arr+" (factor: "+mean_fac+", step: "+mean_step+") = "
     	+decreasingFactor_mean(mean_fac,mean_step,mean_arr)+"\n");
-    response.write("Prediction (date: "+new Date(date)+" - station: "+station_id+"): "+predict(8001,date)+"\n");
+    response.write("Prediction using "+analysisMode+" (date: "+new Date(date)+" - station: "+station_id+"): "+predict(8001,date,analysisMode)+"\n");
     response.end('--- END ---\n');
 });
  
