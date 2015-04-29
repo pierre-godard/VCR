@@ -3,6 +3,7 @@ package fr.insa_lyon.vcr.vcr;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.util.Log;
 import android.view.View;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -16,9 +17,14 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import fr.insa_lyon.vcr.modele.Station;
 
 public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCallback {
 
@@ -27,13 +33,19 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
     private ServerConnection serverConnect;
     String serverUrl;
     List<NameValuePair> requestParams;
+    List<Station> stations;
+    List<Marker> marqueurs;
     JSONObject infoStationsJSON;
     boolean serverInitOk = false;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+        requestParams = new ArrayList<>();
+        stations = new ArrayList<>();
+        marqueurs = new ArrayList<>();
 
         if (savedInstanceState == null) {
             SupportMapFragment mapFragment =
@@ -72,7 +84,6 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         // position, marker, etc -> setUpMap est ici
         mMap.setMyLocationEnabled(true);
         mUiSettings = mMap.getUiSettings();
-
         // Keep the UI Settings state in sync with the checkboxes.
         mUiSettings.setZoomControlsEnabled(true);
         mUiSettings.setCompassEnabled(true);
@@ -83,12 +94,41 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         mUiSettings.setRotateGesturesEnabled(true);
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(45.763478, 4.835442), 13));
 
-
+        creerMarqueurs();
         // Ajouter les marqueurs des stations vélovs, avec info bulles, etc.. : récupérer ça du serveur.
-        MarkerOptions marOpt1 = new MarkerOptions().position(new LatLng(45.759948, 4.836593)).title("Lyon").snippet("Snippet Lyon");
+       /* MarkerOptions marOpt1 = new MarkerOptions().position(new LatLng(45.759948, 4.836593)).title("Lyon").snippet("Snippet Lyon");
         Marker m = mMap.addMarker(marOpt1);
-        m.setTitle("Title changed");
+        m.setTitle("Title changed");*/
     }
 
+
+    private void parserStations(){
+        stations.clear();
+        String jsonString = "stations:"+infoStationsJSON.toString();
+        try {
+            JSONObject jsonStations = new JSONObject(jsonString);
+            JSONArray jArrayStations = jsonStations.getJSONArray("stations");
+            for(int i=0; i<jArrayStations.length();i++){
+                stations.add(new Station(jArrayStations.getJSONObject(i)));
+            }
+        }
+        catch(JSONException j){
+            Log.e("ACTIVITY_MAP", "Y'a eut une couille en parsant le json :(");
+        }
+    }
+
+    private void creerMarqueurs(){
+        marqueurs.clear();
+        MarkerOptions optionsCourantes;
+        Marker marqueurCourant;
+        for(Station s: stations){
+            optionsCourantes = new MarkerOptions().position(s.getPosition()).title(s.getNom()).snippet(s.getSnippet());
+            marqueurCourant = mMap.addMarker(optionsCourantes);
+            marqueurs.add(marqueurCourant);
+        }
+            /* MarkerOptions marOpt1 = ;
+        Marker m = mMap.addMarker(marOpt1);
+        m.setTitle("Title changed");*/
+    }
 
 }
