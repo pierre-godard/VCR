@@ -6,8 +6,6 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.View;
-import android.widget.CompoundButton;
-import android.widget.Switch;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -47,7 +45,6 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
     private JSONObject infoStationsJSON;
     private boolean serverInitOk = false;
     private Circle cercleCourant;
-    private boolean isModeDeposer = false;
 
 
     @Override
@@ -63,14 +60,6 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                     (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
             mapFragment.getMapAsync(this);
         }
-
-        Switch switchDeposerRetirer = (Switch) findViewById(R.id.switchDeposerRetirer);
-        switchDeposerRetirer.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                isModeDeposer = !isModeDeposer;
-                mettreAJourMarqueurs();
-            }
-        });
         /*if (!(serverInitOk = serverInit())) {
             finish();
         }*/
@@ -158,27 +147,15 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         }
     }
 
-    private void mettreAJourMarqueurs(){
-        for(MarqueurPerso m : marqueurs){
-            if(isModeDeposer) {
-                m.getMarqueur().setSnippet(m.getStation().getSnippetDeposerVelo());
-            }
-            else{
-                m.getMarqueur().setSnippet(m.getStation().getSnippetRetirerVelo());
-            }
-        }
-    }
-
     private void creerMarqueurs(){
         marqueurs.clear();
         MarkerOptions optionsCourantes;
         Marker marqueurCourant;
         for(Station s: stations){
-            optionsCourantes = new MarkerOptions().position(s.getPosition()).title(s.getNom()).snippet("");
+            optionsCourantes = new MarkerOptions().position(s.getPosition()).title(s.getNom()).snippet(s.getSnippet());
             marqueurCourant = mMap.addMarker(optionsCourantes);
             marqueurs.add(new MarqueurPerso(s,marqueurCourant));
         }
-        mettreAJourMarqueurs();
             /* MarkerOptions marOpt1 = ;
         Marker m = mMap.addMarker(marOpt1);
         m.setTitle("Title changed");*/

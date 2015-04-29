@@ -35,13 +35,8 @@ public class Station {
         return position;
     }
 
-    public String getSnippetDeposerVelo(){
-        return "Snippet du mode déposer";
-        //TODO: Generer un snippet pour le mode déposer indiquant entre autres le nombre de places libres restantes
-    }
-
-    public String getSnippetRetirerVelo(){
-        return "Snippet du mode retirer";
-        //TODO: Generer un snippet pour le mode retirer indiquant entre autres le nombre de vélos restants
+    public String getSnippet(){
+        return "";
+        //TODO: Generer un snippet sympa par station
     }
 }
