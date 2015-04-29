@@ -9,35 +9,6 @@
 
 var http = require('http');
 
-// Velov station potential state
-var station_state = Object.freeze(
-{
-	EMPTY: 		"empty", 
-	NEAR_EMPTY: "near empty", 
-	INTERM: 	"places available",
-	NEAR_FULL: 	"near full",
-	FULL: 		"full"
-});
-
-// Values associated to the states to determine ranges.
-// Ranges are used to find the state depending on the elem position in the ranges
-var station_values = Object.freeze(
-{
-	EMPTY_LIMIT: 		1, 
-	NEAR_EMPTY_LIMIT: 	2, 
-	INTERM_LIMIT: 		0,
-	NEAR_FULL_LIMIT: 	2,
-	FULL_LIMIT: 		1
-});
-
-// The various analysis methods that can be picked
-var analysis_mode = Object.freeze(
-{
-	MEAN: 	"mean",
-	FDM: 	"decreasing factor mean",
-	NONE: 	"none" 
-});
-
 // Mean of the array passed as parameter
 function mean (array) 
 {
@@ -106,6 +77,36 @@ function getCurrVelov(id,time)
 }
 
 module.exports = {
+
+	// Velov station potential state
+	var station_state = Object.freeze(
+	{
+		EMPTY: 		"empty", 
+		NEAR_EMPTY: "near empty", 
+		INTERM: 	"places available",
+		NEAR_FULL: 	"near full",
+		FULL: 		"full"
+	});
+
+	// Values associated to the states to determine ranges.
+	// Ranges are used to find the state depending on the elem position in the ranges
+	var station_values = Object.freeze(
+	{
+		EMPTY_LIMIT: 		1, 
+		NEAR_EMPTY_LIMIT: 	2, 
+		INTERM_LIMIT: 		0,
+		NEAR_FULL_LIMIT: 	2,
+		FULL_LIMIT: 		1
+	});
+
+	// The various analysis methods that can be picked
+	var analysis_mode = Object.freeze(
+	{
+		MEAN: 	"mean",
+		FDM: 	"decreasing factor mean",
+		NONE: 	"none" 
+	});
+	
 	// Gives a prediction of the state
 	// of a Velov station (id)
 	// at a certain point in time (time) 

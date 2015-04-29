@@ -49,6 +49,12 @@ module.exports.routes = {
         action: 'pull'
     }
 
+    '/prediction/analysis':
+    {
+        controller: 'prediction',
+        action: 'analysis'
+    }
+
     /***************************************************************************
      *                                                                          *
      * Custom routes here...                                                    *
