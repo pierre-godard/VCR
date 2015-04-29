@@ -58,9 +58,9 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                     (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
             mapFragment.getMapAsync(this);
         }
-        if (!(serverInitOk = serverInit())) {
+        /*if (!(serverInitOk = serverInit())) {
             finish();
-        }
+        }*/
 
     }
 
@@ -108,8 +108,8 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                 mMap.addCircle(new CircleOptions()
                         .center(position)
                         .radius(rayonCercle)
-                        .strokeColor(Color.GREEN)
-                        .fillColor(Color.BLUE));
+                        .strokeColor(Color.BLUE)
+                        .fillColor(0x7333CCFF));
                 for(MarqueurPerso m : marqueurs){
                     if(MathsUti.getDistance(m.getMarqueur().getPosition(),position)<=rayonCercle){
                         m.getMarqueur().setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
