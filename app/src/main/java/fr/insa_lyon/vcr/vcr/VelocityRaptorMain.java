@@ -10,6 +10,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.UiSettings;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
@@ -17,6 +18,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
 
     private GoogleMap mMap;
     private UiSettings mUiSettings;
+    private CameraPosition saveCamera;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,7 +36,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
     public void onButtonClickedMain(View v) {
         if (v == findViewById(R.id.but_recherche)) {
             Intent intent = new Intent(this, UserInput.class);
-            startActivity(intent);
+            startActivityForResult(intent, 1);
         }
     }
 
