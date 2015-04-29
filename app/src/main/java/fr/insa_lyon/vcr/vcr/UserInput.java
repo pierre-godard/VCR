@@ -12,6 +12,8 @@ import android.widget.AutoCompleteTextView;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.Result;
+import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.location.places.AutocompletePrediction;
 import com.google.android.gms.location.places.AutocompletePredictionBuffer;
 import com.google.android.gms.location.places.Places;
@@ -28,21 +30,25 @@ import fr.insa_lyon.vcr.modele.ResultatPartiel;
 
 public class UserInput extends Activity {
 
-    private void majAdapter(String recherche, ArrayAdapter adapter){
+    private void majAdapter(String recherche, final ArrayAdapter adapter){
         LatLng sudOuestLyon = new LatLng(45.708931, 4.745801);
         LatLng nordEstLyon = new LatLng(45.805918, 4.924447);
         LatLngBounds rectangleLyon = new LatLngBounds(sudOuestLyon,nordEstLyon);
 
         adapter.clear();
         GoogleApiClient client = new GoogleApiClient.Builder(getApplicationContext()).addApi(Places.GEO_DATA_API).build();
-        client.blockingConnect();
-        PendingResult result =
+        client.connect();
+        PendingResult pResult =
                 Places.GeoDataApi.getAutocompletePredictions(client, recherche,
                         rectangleLyon, null);
-        for(AutocompletePrediction prediction : ((AutocompletePredictionBuffer)result.await()))
-        {
-            adapter.add(new ResultatPartiel(prediction.getMatchedSubstrings().get(0).toString(),prediction.getPlaceId()));
-        }
+        pResult.setResultCallback(new ResultCallback<AutocompletePredictionBuffer>() {
+            @Override
+            public void onResult(AutocompletePredictionBuffer result) {
+                for(AutocompletePrediction prediction : result){
+                    adapter.add(new ResultatPartiel(prediction.getMatchedSubstrings().get(0).toString(),prediction.getPlaceId()));
+                }
+            }
+        });
     }
 
     @Override
