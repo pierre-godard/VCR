@@ -129,8 +129,8 @@ module.exports = {
 		// ----- Data fetching
 		var WEEK_SIZE 		= 7;
 		//var selected_days 	= [];
-		var station_max		= [];
-		var station_curr	= [];
+		var station_free	= [];
+		var station_occup	= [];
 		var query_result	= [];
 		var limit_date 		= new Date(2012, 0, 1);
 		var curr_date		= new Date();
@@ -140,8 +140,8 @@ module.exports = {
 			query_result = queryMeasures(id,curr_date);
 			while (query_result.length) 
 			{ 
-				//station_max.push(query_result.	
-				//station_curr.push(query_result.
+				//station_free.push(query_result.	
+				//station_occup.push(query_result.
 			}
 			//selected_days.push(curr_date);
 			//station_max.push(getMaxVelov(id,curr_date));
@@ -149,28 +149,28 @@ module.exports = {
 		}
 
 		// ----- Data analysis
-		var max_overTime 	= analysis(station_max,analysisMode);
-		var curr_overTime 	= analysis(station_curr,analysisMode);
-		var diff_overTime 	= max_overTime - curr_overTime;
+		var free_overTime 	= analysis(station_free,analysisMode);
+		var occup_overTime 	= analysis(station_occup,analysisMode);
+		//var diff_overTime 	= max_overTime - curr_overTime;
 
-		console.log("max_overTime:  "+max_overTime);
-		console.log("curr_overTime: "+curr_overTime);
-		console.log("diff_overTime: "+diff_overTime);
+		console.log("free_overTime:  "+free_overTime);
+		console.log("occup_overTime: "+curr_overTime);
+		//console.log("diff_overTime: "+diff_overTime);
 
 		// ----- State selection
-		if (diff_overTime < PredictionService.station_values.FULL_LIMIT)
+		if (free_overTime < PredictionService.station_values.FULL_LIMIT)
 		{
 			callback(PredictionService.station_state.FULL);
 		} 
-		else if (diff_overTime <= PredictionService.station_values.NEAR_FULL_LIMIT)
+		else if (free_overTime <= PredictionService.station_values.NEAR_FULL_LIMIT)
 		{
 			callback(PredictionService.station_state.NEAR_FULL);
 		}
-		else if (curr_overTime < PredictionService.station_values.EMPTY_LIMIT)
+		else if (occup_overTime < PredictionService.station_values.EMPTY_LIMIT)
 		{
 			callback(PredictionService.station_state.EMPTY);
 		}
-		else if (curr_overTime <= PredictionService.station_values.NEAR_EMPTY_LIMIT)
+		else if (occup_overTime <= PredictionService.station_values.NEAR_EMPTY_LIMIT)
 		{
 			callback(PredictionService.station_state.NEAR_EMPTY);
 		}
