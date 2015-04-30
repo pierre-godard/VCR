@@ -11,6 +11,7 @@ import android.view.Menu;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -19,6 +20,7 @@ import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListe
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.Result;
 import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.places.AutocompletePrediction;
 import com.google.android.gms.location.places.AutocompletePredictionBuffer;
 
@@ -62,6 +64,8 @@ public class UserInput extends Activity implements ConnectionCallbacks, OnConnec
 // début test
 
     private GoogleApiClient mGoogleApiClient;
+    private ArrayAdapter<String> adp;
+    private AutoCompleteTextView t1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,21 +80,30 @@ public class UserInput extends Activity implements ConnectionCallbacks, OnConnec
                 .build();
 
         mGoogleApiClient.connect();
+        List<String> resultList = new ArrayList<>();
+        adp = new ArrayAdapter<String>(this,
+        android.R.layout.simple_dropdown_item_1line, resultList);
+        adp.setNotifyOnChange(true);
+        t1 = (AutoCompleteTextView) findViewById(R.id.autoCompleteDepart);
+        t1.setThreshold(1);
     }
 
     @Override
     public void onConnected(Bundle connectionHint) {
 
         new GetPredictions().execute("b");
+        adp.add("work");
+        t1.setAdapter(adp);
     }
 
 
-    private class GetPredictions extends AsyncTask<String,void,AutocompletePredictionBuffer> {
+    private class GetPredictions extends AsyncTask<String,Void,AutocompletePredictionBuffer> {
         /** The system calls this to perform work in a worker thread and
          * delivers it the parameters given to AsyncTask.execute() */
 
         // Try to understand how AsyncTask works !!!!!!!
-         protected AutocompletePredictionBuffer doInBackground(String test) {
+        @Override
+         protected AutocompletePredictionBuffer doInBackground(String... test) {
 
             AutoCompleteTextView t1 = (AutoCompleteTextView)
                     findViewById(R.id.autoCompleteDepart);
@@ -100,42 +113,41 @@ public class UserInput extends Activity implements ConnectionCallbacks, OnConnec
             LatLngBounds rectangleLyon = new LatLngBounds(sudOuestLyon, nordEstLyon);
 
             PendingResult<AutocompletePredictionBuffer> results  =
-                    Places.GeoDataApi.getAutocompletePredictions(mGoogleApiClient, "",
+                    Places.GeoDataApi.getAutocompletePredictions(mGoogleApiClient, test[0],
                             rectangleLyon, null);
             AutocompletePredictionBuffer autocompletePredictions = results
-                    .await(60, TimeUnit.SECONDS);
+                    .await();
+
+            final com.google.android.gms.common.api.Status status = autocompletePredictions.getStatus();
+            if(!status.isSuccess()){
+                Log.e("API_connexion_failed", status.toString());
+
+            }
+            else{
+                Log.e("Not_API_Problem", "on sait pas ce que c'est");
+            }
+
 
             return autocompletePredictions;
         }
 
         /** The system calls this to perform work in the UI thread and delivers
          * the result from doInBackground() */
-        protected void onPostExecute(AutocompletePredictionBuffer autocompletePredictions) {
+        @Override
+         protected void onPostExecute(AutocompletePredictionBuffer autocompletePredictions) {
+
             Iterator<AutocompletePrediction> iterator = autocompletePredictions.iterator();
-            List<String> resultList = new ArrayList<>(autocompletePredictions.getCount());
             while (iterator.hasNext()) {
                 AutocompletePrediction prediction = iterator.next();
-                resultList.add(prediction.toString());
+                adp.add(prediction.toString());
 
                 // Try somehow to return our Prediction's List
-
-                final ArrayAdapter<String> adp = new ArrayAdapter<String>(this,
-                        android.R.layout.simple_dropdown_item_1line, resultList);
-
-                adp.add("work");
-                t1.setThreshold(1);
-                t1.setAdapter(adp);
             }
         }
     }
-}
 
     @Override
     public void onConnectionSuspended(int cause) {
-
-        AutoCompleteTextView t1 = (AutoCompleteTextView)
-                findViewById(R.id.autoCompleteDepart);
-
 
         List<String> listeDepart = new ArrayList<>();
 
@@ -144,8 +156,8 @@ public class UserInput extends Activity implements ConnectionCallbacks, OnConnec
 
         adp.add("fuck");
 
-        t1.setThreshold(1);
-        t1.setAdapter(adp);
+    //    t1.setThreshold(1);
+    //    t1.setAdapter(adp);
 
     }
 
@@ -163,8 +175,8 @@ public class UserInput extends Activity implements ConnectionCallbacks, OnConnec
 
         adp.add("fuck");
 
-        t1.setThreshold(1);
-        t1.setAdapter(adp);
+      //  t1.setThreshold(1);
+      //  t1.setAdapter(adp);
 
     }
 
