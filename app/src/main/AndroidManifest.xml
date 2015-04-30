@@ -28,8 +28,8 @@
         <activity
             android:name=".VelocityRaptorMain"
             android:label="@string/title_activity_maps">
-        <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+            <intent-filter>
+            <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
@@ -38,6 +38,9 @@
             android:name=".UserInput"
             android:label="@string/title_activity_user_input" />
 
+        <service
+            android:name="fr.insa_lyon.vcr.reseau.FetchStation"
+            android:exported="false" />
         <service
             android:name="fr.insa_lyon.vcr.reseau.UpdateStation"
             android:exported="false"></service>

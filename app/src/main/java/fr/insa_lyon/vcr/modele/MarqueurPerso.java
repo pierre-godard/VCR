@@ -1,5 +1,6 @@
 package fr.insa_lyon.vcr.modele;
 
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.Marker;
 
 /**
@@ -12,6 +13,10 @@ public class MarqueurPerso {
     public MarqueurPerso(Station station, Marker marqueur){
        this.station = station;
        this.marqueur = marqueur;
+        //marquer vert par défaut
+        this.marqueur.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+        //this.marqueur.setIcon(R.drawable.marqueurPerso);
+        this.marqueur.setAlpha(0.6f);
     }
 
     public Station getStation(){

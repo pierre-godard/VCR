@@ -21,7 +21,7 @@
         android:padding="10dp"
         android:layout_marginTop="4dp"
         android:layout_marginLeft="4dp"
-        android:background="#CC3CB371"
+        android:background="#CCe8f5e9"
         android:onClick="onButtonClickedMain"
         android:nestedScrollingEnabled="true" />
 

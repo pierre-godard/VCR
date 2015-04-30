@@ -13,7 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class UpdateStation extends IntentService {
+public class FetchStation extends IntentService {
+
 
     private int result = Activity.RESULT_CANCELED;
 
@@ -22,20 +23,20 @@ public class UpdateStation extends IntentService {
     public static final String URL_PARAM_V1 = "Url_Param_Value1";
     public static final String JSON_ARR = "JSON";
     public static final String RESULT = "result";
-    public static final String NOTIFICATION = "fr.insa_lyon.vcr.reseau.update";
+    public static final String NOTIFICATION = "fr.insa_lyon.vcr.reseau.fetch";
 
     ServerConnection serverConnection = null;
     JSONArray fetchedResult;
     List<NameValuePair> url_Param;
 
 
-    public UpdateStation() {
-        super("UpdateStation");
+    public FetchStation() {
+        super("FetchStation");
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Toast.makeText(this, "UpdateStation starting", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "FetchStation starting", Toast.LENGTH_SHORT).show();
 
         url_Param = new ArrayList<NameValuePair>();
         String name = intent.getStringExtra(URL_PARAM_N1);
