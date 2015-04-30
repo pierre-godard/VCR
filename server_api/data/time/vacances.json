@@ -1,87 +1,88 @@
 [
     {
-        "2013": HERE
+        "2013":
         {
             "Hiver":
             {
                 "begin":"Sat Fev 23 2013 00:00:00 GMT+0100",
                 "end":"Mon Mar 11 2013 00:00:00 GMT+0100"
-            }
+            },
             "Printemps":
             {
                 "begin":"Sat Apr 20 2013 00:00:00 GMT+0200",
                 "end":"Mon May 6 2013 00:00:00 GMT+0200"
-            }
-            "Ete": HERE ^-
+            },
+            "Ete":
             {
                 "begin":"Sat Jul 6 2013 00:00:00 GMT+0200",
                 "end":"Mon Sep 2 2013 00:00:00 GMT+0200"
-            }
+            },
             "Toussaint":
             {
                 "begin":"Sat Oct 19 2013 00:00:00 GMT+0200",
                 "end":"Mon Nov 4 2013 00:00:00 GMT+0100"
-            }
+            },
             "Noel":
             {
                 "begin":"Sat Dec 21 2013 00:00:00 GMT+0100",
                 "end":"Mon Jan 6 2014 00:00:00 GMT+0100"
             }
-        }
+        },
         "2014":
         {
             "Hiver":
             {
                 "begin":"Sat Mar 1 2014 00:00:00 GMT+0100",
                 "end":"Mon Mar 17 2014 00:00:00 GMT+0100"
-            }
+            },
             "Printemps":
             {
                 "begin":"Sat Apr 26 2014 00:00:00 GMT+0200",
                 "end":"Mon May 12 2014 00:00:00 GMT+0200"
-            }
+            },
             "Ete":
             {
                 "begin":"Sat Jul 5 2014 00:00:00 GMT+0200",
                 "end":"Mon Sep 1 2014 00:00:00 GMT+0200"
-            }
+            },
             "Toussaint":
             {
                 "begin":"Sat Oct 18 2014 00:00:00 GMT+0200",
                 "end":"Mon Nov 3 2014 00:00:00 GMT+0100"
-            }
+            },
             "Noel":
             {
                 "begin":"Sat Dec 20 2014 00:00:00 GMT+0100",
                 "end":"Mon Jan 5 2015 00:00:00 GMT+0100"
             }
-        }
+        },
         "2015":
         {
             "Hiver":
             {
                 "begin":"Sat Fev 7 2015 00:00:00 GMT+0100",
                 "end":"Mon Fev 23 2015 00:00:00 GMT+0100"
-            }
+            },
             "Printemps":
             {
                 "begin":"Sat Apr 11 2015 00:00:00 GMT+0200",
                 "end":"Mon Apr 27 2015 00:00:00 GMT+0200"
-            }
+            },
             "Ete":
             {
                 "begin":"Sat Jul 4 2015 00:00:00 GMT+0200",
                 "end":"Tue Sep 1 2015 00:00:00 GMT+0200"
-            }
+            },
             "Toussaint":
             {
                 "begin":"Sat Oct 17 2015 00:00:00 GMT+0200",
                 "end":"Mon Nov 2 2015 00:00:00 GMT+0100"
-            }
+            },
             "Noel":
             {
                 "begin":"Sat Dec 19 2015 00:00:00 GMT+0100",
                 "end":"Mon Jan 4 2016 00:00:00 GMT+0100"
             }
         }
+    }
 ]
