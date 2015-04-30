@@ -33,6 +33,7 @@ import java.util.List;
 import fr.insa_lyon.vcr.modele.MarqueurPerso;
 import fr.insa_lyon.vcr.modele.Station;
 import fr.insa_lyon.vcr.reseau.FetchStation;
+import fr.insa_lyon.vcr.reseau.UpdateStation;
 import fr.insa_lyon.vcr.utilitaires.MathsUti;
 
 
@@ -48,14 +49,14 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
     List<MarqueurPerso> marqueurs;
 
     // adresse du serveur
-    private String server_url = "http://vps165245.ovh.net/station";
+    private String server_url = "http://vps165245.ovh.net";
 
     /**
      * Receiver chargé de récupérer les données dans le message broadcasté par
      * le UpdateStation et de les retransformer en JSON avant de les passer à une méthode
      * qui va mettre à jour la carte
      */
-    private BroadcastReceiver receiver = new BroadcastReceiver() {
+    private BroadcastReceiver receiverStat = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             Bundle bundle = intent.getExtras();
@@ -64,9 +65,31 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                 int resultCode = bundle.getInt(FetchStation.RESULT);
                 if (resultCode == RESULT_OK) {
                     Toast.makeText(VelocityRaptorMain.this,
-                            "Update complete",
+                            "Fetch complete",
                             Toast.LENGTH_LONG).show();
                     parserStations(json_string);
+
+                } else {
+                    Toast.makeText(VelocityRaptorMain.this, "Fetch failed",
+                            Toast.LENGTH_LONG).show();
+
+                }
+            }
+        }
+    };
+
+    private BroadcastReceiver receiverDyna = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Bundle bundle = intent.getExtras();
+            if (bundle != null) {
+                String json_string = bundle.getString(UpdateStation.JSON_ARR);
+                int resultCode = bundle.getInt(UpdateStation.RESULT);
+                if (resultCode == RESULT_OK) {
+                    Toast.makeText(VelocityRaptorMain.this,
+                            "Update complete",
+                            Toast.LENGTH_LONG).show();
+                    //parserStations(json_string);
 
                 } else {
                     Toast.makeText(VelocityRaptorMain.this, "Update failed",
@@ -76,7 +99,6 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
             }
         }
     };
-
     //-------------------------------------------------------------------- Activity LifeCyle Methods
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,11 +115,21 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         }
 
 
-        Intent intent = new Intent(this, FetchStation.class);
-        intent.putExtra(FetchStation.SERVER_URL, server_url);
-        intent.putExtra(FetchStation.URL_PARAM_N1, "limit");
-        intent.putExtra(FetchStation.URL_PARAM_V1, "0");
-        startService(intent);
+        // fetch static data for all stations
+        Intent intentStat = new Intent(this, FetchStation.class);
+        intentStat.putExtra(FetchStation.SERVER_URL, server_url + "/station");
+        intentStat.putExtra(FetchStation.URL_PARAM_N1, "limit");
+        intentStat.putExtra(FetchStation.URL_PARAM_V1, "0");
+        startService(intentStat);
+
+        // fetch dynamic data
+        Intent intentDyna = new Intent(this, UpdateStation.class);
+        intentDyna.putExtra(UpdateStation.SERVER_URL, server_url + "/lastmeasure");
+        intentDyna.putExtra(UpdateStation.URL_PARAM_N1, "limit");
+        intentDyna.putExtra(UpdateStation.URL_PARAM_V1, "0");
+        //startService(intentDyna);
+
+        // Ajout du listener sur le switch
         Switch switchDeposerRetirer = (Switch) findViewById(R.id.switchDeposerRetirer);
         switchDeposerRetirer.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -115,7 +147,8 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
     @Override
     protected void onResume() {
         super.onResume();
-        registerReceiver(receiver, new IntentFilter(FetchStation.NOTIFICATION));
+        registerReceiver(receiverStat, new IntentFilter(FetchStation.NOTIFICATION));
+        registerReceiver(receiverDyna, new IntentFilter(FetchStation.NOTIFICATION));
     }
 
 
@@ -142,7 +175,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         mUiSettings.setZoomGesturesEnabled(true);
         mUiSettings.setTiltGesturesEnabled(true);
         mUiSettings.setRotateGesturesEnabled(true);
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(45.763478, 4.835442), 13));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(45.763478, 4.835442), 12));
 
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
 
@@ -150,6 +183,11 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
             public void onMapClick(LatLng position) {
                 if(cercleCourant != null){
                     cercleCourant.remove();
+                    for (MarqueurPerso m : marqueurs) {
+                        if (MathsUti.getDistance(m.getMarqueur().getPosition(), cercleCourant.getCenter()) <= rayonCercle) {
+                            m.getMarqueur().setIcon(BitmapDescriptorFactory.fromResource(R.drawable.marqueurperso));
+                        }
+                    }
                 }
                 cercleCourant = mMap.addCircle(new CircleOptions()
                         .center(position)
@@ -159,6 +197,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                 for(MarqueurPerso m : marqueurs){
                     if(MathsUti.getDistance(m.getMarqueur().getPosition(),position)<=rayonCercle){
                         m.getMarqueur().setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+                        m.getMarqueur().setIcon(BitmapDescriptorFactory.fromResource(R.drawable.marqueurpersorouge));
                         m.getMarqueur().setTitle("DETECTE");
                         m.getMarqueur().setAlpha(1f);
                     }
@@ -193,6 +232,10 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         Log.d("STATION 1", stations.get(0).getNom() + " // " + stations.get(0).getSnippetDeposer());
         Log.d("Marqueurs", "Création des marqueurs dans parserStations");
         creerMarqueurs();
+    }
+
+    private void updateStations(String jsonString) {
+
     }
 
     private void creerMarqueurs(){
