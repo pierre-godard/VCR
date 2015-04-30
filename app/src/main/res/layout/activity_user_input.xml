@@ -12,11 +12,11 @@
     <AutoCompleteTextView android:layout_height="wrap_content"
         android:layout_width="match_parent"
         android:id="@+id/autoCompleteDepart"
-        android:text="Adresse départ"/>
+        android:hint="Adresse départ" />
 
     <AutoCompleteTextView android:layout_height="wrap_content"
         android:layout_width="match_parent"
         android:id="@+id/autoCompleteArrivee"
-        android:text="Adresse arrivée"/>
+        android:hint="Adresse arrivée"/>
 
 </LinearLayout>

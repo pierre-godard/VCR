@@ -32,6 +32,8 @@ import fr.insa_lyon.vcr.modele.MarqueurPerso;
 import fr.insa_lyon.vcr.modele.Station;
 import fr.insa_lyon.vcr.utilitaires.MathsUti;
 
+import android.widget.AutoCompleteTextView;
+
 public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
