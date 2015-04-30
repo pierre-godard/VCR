@@ -85,8 +85,15 @@ function getCurrVelov(id,time)
 // returns the measures matching the specified id and withing time stamp of [time]
 function queryMeasures(id,time)
 {
-	return Measure.find({station: id, day: time.getDay(), hour: time.getHours(), 
-		time_slice: Math.floor(time.getMinutes()/Measure.NB_TIME_SLICES) });
+	Measure.find({station: id, day: time.getDay(), hour: time.getHours(), 
+		time_slice: Math.floor(time.getMinutes()/Measure.NB_TIME_SLICES) },
+		function(err, found) 
+		{
+      		//console.log("found: "+found);
+      		//console.log("error: "+err);
+      		return found;
+      	}
+    );
 }
 
 module.exports = {
@@ -138,10 +145,16 @@ module.exports = {
 		{
 			curr_date = new Date(d);
 			query_result = queryMeasures(id,curr_date);
-			while (query_result.length) 
+			if(query_result == undefined) // no data has been found corresponding to id (unlikely, or call para error) or time (possible)
+			{
+				console.log("skippind query result ("+id+" - "+curr_date);
+				continue;	
+			}			
+			console.log(query_result+'\n');
+			for (i = 0; i < query_result.length; i++) 
 			{ 
-				//station_free.push(query_result.	
-				//station_occup.push(query_result.
+				station_free.push(query_result[i].available_bike_stands);
+				station_occup.push(query_result[i].available_bike);
 			}
 			//selected_days.push(curr_date);
 			//station_max.push(getMaxVelov(id,curr_date));
@@ -154,7 +167,7 @@ module.exports = {
 		//var diff_overTime 	= max_overTime - curr_overTime;
 
 		console.log("free_overTime:  "+free_overTime);
-		console.log("occup_overTime: "+curr_overTime);
+		console.log("occup_overTime: "+occup_overTime);
 		//console.log("diff_overTime: "+diff_overTime);
 
 		// ----- State selection
