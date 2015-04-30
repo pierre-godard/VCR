@@ -15,4 +15,7 @@
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
     <string name="Recherche">Recherche</string>
+    <string name="dialog_message">L\'application va s\'arrêter</string>
+    <string name="dialog_title">Serveur Indisponible</string>
+    <string name="ok">Ok</string>
 </resources>

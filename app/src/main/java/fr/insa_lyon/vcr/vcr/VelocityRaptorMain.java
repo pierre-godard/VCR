@@ -1,5 +1,6 @@
 package fr.insa_lyon.vcr.vcr;
 
+import android.app.DialogFragment;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -34,10 +35,12 @@ import fr.insa_lyon.vcr.modele.MarqueurPerso;
 import fr.insa_lyon.vcr.modele.Station;
 import fr.insa_lyon.vcr.reseau.FetchStation;
 import fr.insa_lyon.vcr.reseau.UpdateStation;
+import fr.insa_lyon.vcr.utilitaires.FinishWithDialog;
 import fr.insa_lyon.vcr.utilitaires.MathsUti;
+import fr.insa_lyon.vcr.utilitaires.ServerFailureDialog;
 
 
-public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCallback {
+public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCallback, FinishWithDialog {
 
     // ----------------------------------------------------------------------------------- VARIABLES
     private GoogleMap mMap;
@@ -48,8 +51,14 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
     List<Station> stations;
     List<MarqueurPerso> marqueurs;
 
+    DialogFragment exitDialogFragment;
+    boolean serverFailureDetected = false;
+
     // adresse du serveur
     private String server_url = "http://vps165245.ovh.net";
+    Intent intentDyna;
+    Intent intentStat;
+
 
     /**
      * Receiver chargé de récupérer les données dans le message broadcasté par
@@ -61,18 +70,22 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         public void onReceive(Context context, Intent intent) {
             Bundle bundle = intent.getExtras();
             if (bundle != null) {
-                String json_string = bundle.getString(FetchStation.JSON_ARR);
                 int resultCode = bundle.getInt(FetchStation.RESULT);
                 if (resultCode == RESULT_OK) {
+                    String json_string = bundle.getString(FetchStation.JSON_ARR);
                     Toast.makeText(VelocityRaptorMain.this,
                             "Fetch complete",
                             Toast.LENGTH_LONG).show();
-                    parserStations(json_string);
-
+                    if (json_string.length() >= 2) {
+                        parserStations(json_string);
+                    }
                 } else {
-                    Toast.makeText(VelocityRaptorMain.this, "Fetch failed",
-                            Toast.LENGTH_LONG).show();
-
+                    if (!serverFailureDetected) {
+                        serverFailureDetected = true;
+                        stopService(intentDyna);
+                        stopService(intentStat);
+                        exitDialogFragment.show(getFragmentManager(), "exitdialogDyna");
+                    }
                 }
             }
         }
@@ -83,18 +96,22 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         public void onReceive(Context context, Intent intent) {
             Bundle bundle = intent.getExtras();
             if (bundle != null) {
-                String json_string = bundle.getString(UpdateStation.JSON_ARR);
                 int resultCode = bundle.getInt(UpdateStation.RESULT);
                 if (resultCode == RESULT_OK) {
+                    String json_string = bundle.getString(UpdateStation.JSON_ARR);
                     Toast.makeText(VelocityRaptorMain.this,
                             "Update complete",
                             Toast.LENGTH_LONG).show();
-                    //parserStations(json_string);
-
+                    if (json_string.length() >= 2) {
+                        //parserStations(json_string);
+                    }
                 } else {
-                    Toast.makeText(VelocityRaptorMain.this, "Update failed",
-                            Toast.LENGTH_LONG).show();
-
+                    if (!serverFailureDetected) {
+                        serverFailureDetected = true;
+                        stopService(intentStat);
+                        stopService(intentDyna);
+                        exitDialogFragment.show(getFragmentManager(), "exitdialogDyna");
+                    }
                 }
             }
         }
@@ -107,6 +124,9 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         stations = new ArrayList<>();
         marqueurs = new ArrayList<>();
 
+        // alert dialog in case of server failure
+        exitDialogFragment = new ServerFailureDialog();
+
 
         if (savedInstanceState == null) {
             SupportMapFragment mapFragment =
@@ -116,18 +136,19 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
 
 
         // fetch static data for all stations
-        Intent intentStat = new Intent(this, FetchStation.class);
+        intentStat = new Intent(this, FetchStation.class);
         intentStat.putExtra(FetchStation.SERVER_URL, server_url + "/station");
         intentStat.putExtra(FetchStation.URL_PARAM_N1, "limit");
         intentStat.putExtra(FetchStation.URL_PARAM_V1, "0");
         startService(intentStat);
 
         // fetch dynamic data
-        Intent intentDyna = new Intent(this, UpdateStation.class);
+        intentDyna = new Intent(this, UpdateStation.class);
         intentDyna.putExtra(UpdateStation.SERVER_URL, server_url + "/lastmeasure");
         intentDyna.putExtra(UpdateStation.URL_PARAM_N1, "limit");
         intentDyna.putExtra(UpdateStation.URL_PARAM_V1, "0");
         startService(intentDyna);
+
 
         // Ajout du listener sur le switch
         Switch switchDeposerRetirer = (Switch) findViewById(R.id.switchDeposerRetirer);
@@ -262,4 +283,13 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         }
     }
 
+    /**
+     * Method from interface FinishWithDialog used in order to kill application in case server is
+     * not reachable
+     */
+    @Override
+    public void onChoose() {
+        // Quite a lot of things to add here on order to finsh the activity in a "cleaner"  way
+        finish();
+    }
 }

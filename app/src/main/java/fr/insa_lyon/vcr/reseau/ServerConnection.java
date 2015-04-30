@@ -91,7 +91,6 @@ public class ServerConnection {
             return new JSONArray(jsonString);
         } catch (JSONException e) {
             Log.e("JSON Parser", "Error parsing data " + e.toString());
-            // Return null if in error
             return null;
         }
     }

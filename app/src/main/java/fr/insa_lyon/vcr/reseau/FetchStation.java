@@ -12,7 +12,9 @@ import org.json.JSONArray;
 import java.util.ArrayList;
 import java.util.List;
 
-
+/**
+ * Created by julien on 29/04/15.
+ */
 public class FetchStation extends IntentService {
 
 
@@ -55,15 +57,14 @@ public class FetchStation extends IntentService {
             if (fetchedResult != null)
                 result = Activity.RESULT_OK;
             publishResults(fetchedResult, result);
-        } else {
-            // do nothing
         }
     }
 
     private void publishResults(JSONArray jsonArr, int result) {
         Intent intent = new Intent(NOTIFICATION);
         intent.putExtra(RESULT, result);
-        intent.putExtra(JSON_ARR, jsonArr.toString());
+        if (result == Activity.RESULT_OK)
+            intent.putExtra(JSON_ARR, jsonArr.toString());
         sendBroadcast(intent);
     }
 }
