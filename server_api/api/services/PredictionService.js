@@ -51,29 +51,49 @@ function analysis (datas,mode)
 	console.log("Analysis: using "+mode);
 	switch(mode) 
 	{
-    case analysis_mode.MEAN:
-    	return mean(datas);
-        break;	// no use but used to keep the code clear
-    case analysis_mode.FDM:
-    	return decreasingFactor_mean(datas);
-        break;
-    default:
+	    case PredictionService.analysis_mode.MEAN:
+	    	return mean(datas);
+	        break;	// no use but used to keep the code clear
+	    case PredictionService.analysis_mode.FDM:
+	    	return decreasingFactor_mean(datas);
+	        break;
+	    default:
 	}
 	return 0;	// 0 as default return value, TODO throw ERROR ?
 }
 
 // get the max number of spots in a station (id) at a time
+// [DEPRECIATED], to rm later
 function getMaxVelov(id,time)
+{
+	var nb = 0;
+	/*Measure.find({}).exec(function findCB(err,found){
+  		while (found.length)
+    		console.log('-----------------> '+found.pop().name)
+  	});*/
+	return nb;
+}
+
+// get the current number of spots in a station (id) at a time
+// [DEPRECIATED], to rm later
+function getCurrVelov(id,time)
 {
 	var nb = 0;
 	return nb;
 }
 
-// get the current number of spots in a station (id) at a time
-function getCurrVelov(id,time)
+// returns the measures matching the specified id and withing time stamp of [time]
+function queryMeasures(id,time)
 {
-	var nb = 0;
-	return nb;
+	Measure.find({station: id, day: time.getDay(), hour: time.getHours(), 
+		time_slice: Math.floor(time.getMinutes()/Measure.NB_TIME_SLICES) },
+		function(err, found) 
+		{
+      		//console.log("found: "+found);
+      		//console.log("error: "+err);
+      		return found;
+      	}
+    );
 }
 
 module.exports = {
@@ -85,7 +105,8 @@ module.exports = {
 		NEAR_EMPTY: "near empty", 
 		INTERM: 	"places available",
 		NEAR_FULL: 	"near full",
-		FULL: 		"full"
+		FULL: 		"full",
+		UNKNOWN: 	"unknown" 
 	}),
 
 	// Values associated to the states to determine ranges.
@@ -96,7 +117,8 @@ module.exports = {
 		NEAR_EMPTY_LIMIT: 	2, 
 		INTERM_LIMIT: 		0,
 		NEAR_FULL_LIMIT: 	2,
-		FULL_LIMIT: 		1
+		FULL_LIMIT: 		1,
+		UNKNOWN: 			NaN 
 	}),
 
 	// The various analysis methods that can be picked
@@ -115,45 +137,62 @@ module.exports = {
 	{
 		// ----- Data fetching
 		var WEEK_SIZE 		= 7;
-		var selected_days 	= [];
-		var station_max		= [];
-		var station_curr	= [];
+		//var selected_days 	= [];
+		var station_free	= [];
+		var station_occup	= [];
+		var query_result	= [];
 		var limit_date 		= new Date(2012, 0, 1);
 		var curr_date		= new Date();
 		for (var d = new Date(time); d > limit_date; d.setDate(d.getDate() - WEEK_SIZE)) 
 		{
 			curr_date = new Date(d);
-			selected_days.push(curr_date);
-			station_max.push(getMaxVelov(id,curr_date));
-			station_curr.push(getCurrVelov(id,curr_date));
+			query_result = queryMeasures(id,curr_date);
+			if(query_result == undefined) // no data has been found corresponding to id (unlikely, or call para error) or time (possible)
+			{
+				console.log("skippind query result ("+id+" - "+curr_date);
+				continue;	
+			}			
+			console.log(query_result+'\n');
+			for (i = 0; i < query_result.length; i++) 
+			{ 
+				station_free.push(query_result[i].available_bike_stands);
+				station_occup.push(query_result[i].available_bike);
+			}
+			//selected_days.push(curr_date);
+			//station_max.push(getMaxVelov(id,curr_date));
+			//station_curr.push(getCurrVelov(id,curr_date));
 		}
 
 		// ----- Data analysis
-		var max_overTime 	= analysis(station_max,analysisMode);
-		var curr_overTime 	= analysis(station_curr,analysisMode);
-		var diff_overTime 	= max_overTime - curr_overTime;
+		var free_overTime 	= analysis(station_free,analysisMode);
+		var occup_overTime 	= analysis(station_occup,analysisMode);
+		//var diff_overTime 	= max_overTime - curr_overTime;
 
-		console.log("max_overTime:  "+max_overTime);
-		console.log("curr_overTime: "+curr_overTime);
-		console.log("diff_overTime: "+diff_overTime);
+		console.log("free_overTime:  "+free_overTime);
+		console.log("occup_overTime: "+occup_overTime);
+		//console.log("diff_overTime: "+diff_overTime);
 
 		// ----- State selection
-		if (diff_overTime < station_values.FULL_LIMIT)
+		if (isNaN(occup_overTime) || isNaN(free_overTime))
 		{
-			callback(station_state.FULL);
+			callback(PredictionService.station_state.UNKNOWN);
+		}
+		else if (free_overTime < PredictionService.station_values.FULL_LIMIT)
+		{
+			callback(PredictionService.station_state.FULL);
 		} 
-		else if (diff_overTime <= station_values.NEAR_FULL_LIMIT)
+		else if (free_overTime <= PredictionService.station_values.NEAR_FULL_LIMIT)
 		{
-			callback(station_state.NEAR_FULL);
+			callback(PredictionService.station_state.NEAR_FULL);
 		}
-		else if (curr_overTime < station_values.EMPTY_LIMIT)
+		else if (occup_overTime < PredictionService.station_values.EMPTY_LIMIT)
 		{
-			callback(station_state.EMPTY);
+			callback(PredictionService.station_state.EMPTY);
 		}
-		else if (curr_overTime <= station_values.NEAR_EMPTY_LIMIT)
+		else if (occup_overTime <= PredictionService.station_values.NEAR_EMPTY_LIMIT)
 		{
-			callback(station_state.NEAR_EMPTY);
+			callback(PredictionService.station_state.NEAR_EMPTY);
 		}
-		callback(station_state.INTERM);
+		callback(PredictionService.station_state.INTERM);
 	}
 };

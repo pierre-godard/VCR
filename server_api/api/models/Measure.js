@@ -17,10 +17,14 @@ var formatter = function (value)
         value.station = value.number;
     }
     value.identifier = value.station + value.last_update * 1000;
+    value.station = value.number;
+    var d = new Date(0);    // The 0 there is the key, which sets the date to the epoch
+    d.setUTCSeconds(value.last_update);
+    value.day = d.getDay();
+    value.hour = d.getHours(); 
+    value.time_slice = Math.floor(d.getMinutes()/Measure.NB_TIME_SLICES);
     delete value['number'];
     delete value['name'];
-    delete value['bonus'];
-    delete value['status'];
     delete value['address'];
     delete value['position'];
     delete value['banking'];
@@ -32,6 +36,8 @@ var formatter = function (value)
 
 module.exports = {
 
+    NB_TIME_SLICES: 12,
+
     attributes: {
         identifier: {
             type: 'integer',
@@ -40,6 +46,18 @@ module.exports = {
             unique: true
         },
         last_update: {
+            type: 'integer',
+            required: true
+        },
+        day: {
+            type: 'integer',
+            required: true
+        },
+        hour: {
+            type: 'integer',
+            required: true
+        },
+        time_slice: {
             type: 'integer',
             required: true
         },
