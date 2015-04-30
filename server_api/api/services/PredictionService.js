@@ -105,7 +105,8 @@ module.exports = {
 		NEAR_EMPTY: "near empty", 
 		INTERM: 	"places available",
 		NEAR_FULL: 	"near full",
-		FULL: 		"full"
+		FULL: 		"full",
+		UNKNOWN: 	"unknown" 
 	}),
 
 	// Values associated to the states to determine ranges.
@@ -116,7 +117,8 @@ module.exports = {
 		NEAR_EMPTY_LIMIT: 	2, 
 		INTERM_LIMIT: 		0,
 		NEAR_FULL_LIMIT: 	2,
-		FULL_LIMIT: 		1
+		FULL_LIMIT: 		1,
+		UNKNOWN: 			NaN 
 	}),
 
 	// The various analysis methods that can be picked
@@ -171,7 +173,11 @@ module.exports = {
 		//console.log("diff_overTime: "+diff_overTime);
 
 		// ----- State selection
-		if (free_overTime < PredictionService.station_values.FULL_LIMIT)
+		if (isNaN(occup_overTime) || isNaN(free_overTime))
+		{
+			callback(PredictionService.station_state.UNKNOWN);
+		}
+		else if (free_overTime < PredictionService.station_values.FULL_LIMIT)
 		{
 			callback(PredictionService.station_state.FULL);
 		} 
