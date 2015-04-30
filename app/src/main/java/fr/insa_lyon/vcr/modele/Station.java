@@ -20,6 +20,7 @@ public class Station {
         try {
             nom = json.getString("name");
             position= new LatLng(json.getDouble("latitude"),json.getDouble("longitude"));
+            //capacite= json.getString()
         }
         catch (JSONException e) {
             Log.e("STATION", "le parsage de Json marche pas :(");

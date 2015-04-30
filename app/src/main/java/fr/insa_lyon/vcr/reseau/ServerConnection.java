@@ -1,4 +1,4 @@
-package fr.insa_lyon.vcr.vcr;
+package fr.insa_lyon.vcr.reseau;
 
 import android.util.Log;
 
@@ -9,8 +9,8 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -28,18 +28,30 @@ public class ServerConnection {
     static InputStream httpResponseStream = null;
     // JSON Response String to create JSON Object
     static String jsonString = "";
+    private String mUrl;
+    private List<NameValuePair> mParams;
+
+
+    public ServerConnection() {
+    }
+
+    public ServerConnection(String url, List<NameValuePair> params) {
+        mUrl = url;
+        mParams = params;
+    }
+
 
     // Method to issue HTTP request, parse JSON result and return JSON Object
-    public JSONObject makeHttpGet(String url, List<NameValuePair> params) {
+    public JSONArray makeHttpGet() {
         try {
             // client http default
             DefaultHttpClient httpClient = new DefaultHttpClient();
             // Format the parameters correctly for HTTP transmission
-            String paramString = URLEncodedUtils.format(params, "utf-8");
+            String paramString = URLEncodedUtils.format(mParams, "utf-8");
             // Add parameters to url in GET format
-            url += "?" + paramString;
+            mUrl += "?" + paramString;
             // Execute the request
-            HttpGet httpGet = new HttpGet(url);
+            HttpGet httpGet = new HttpGet(mUrl);
             // Execute the request and fetch Http response
             HttpResponse httpResponse = httpClient.execute(httpGet);
             // Extract the result from the response
@@ -76,7 +88,7 @@ public class ServerConnection {
 
         try {
             // Create jsonObject from the jsonString and return it
-            return new JSONObject(jsonString);
+            return new JSONArray(jsonString);
         } catch (JSONException e) {
             Log.e("JSON Parser", "Error parsing data " + e.toString());
             // Return null if in error
