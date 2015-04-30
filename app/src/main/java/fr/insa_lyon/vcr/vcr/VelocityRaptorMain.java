@@ -215,6 +215,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
             else{
                 m.getMarqueur().setSnippet(m.getStation().getSnippetRetirer());
             }
+            m.getMarqueur().hideInfoWindow();
         }
     }
 

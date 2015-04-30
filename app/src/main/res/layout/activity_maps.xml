@@ -32,19 +32,19 @@
         android:layout_gravity="center_horizontal|bottom"
         android:checked="false" />
 
-    <EditText
-        android:layout_width="wrap_content"
+    <TextView
+        android:layout_width="101dp"
         android:layout_height="wrap_content"
-        android:id="@+id/editText"
-        android:layout_gravity="left|bottom"
-        android:text="Retirer un vélo" />
+        android:text="Retirer un vélo"
+        android:id="@+id/textView"
+        android:layout_gravity="left|bottom" />
 
-    <EditText
+    <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/editText2"
-        android:layout_gravity="right|bottom"
-        android:text="Déposer un vélo" />
+        android:text="Déposer un vélo"
+        android:id="@+id/textView2"
+        android:layout_gravity="right|bottom" />
 
 </FrameLayout>
 
