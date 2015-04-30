@@ -4,7 +4,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
@@ -33,7 +32,7 @@ import java.util.List;
 
 import fr.insa_lyon.vcr.modele.MarqueurPerso;
 import fr.insa_lyon.vcr.modele.Station;
-import fr.insa_lyon.vcr.reseau.UpdateStation;
+import fr.insa_lyon.vcr.reseau.FetchStation;
 import fr.insa_lyon.vcr.utilitaires.MathsUti;
 
 
@@ -61,8 +60,8 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         public void onReceive(Context context, Intent intent) {
             Bundle bundle = intent.getExtras();
             if (bundle != null) {
-                String json_string = bundle.getString(UpdateStation.JSON_ARR);
-                int resultCode = bundle.getInt(UpdateStation.RESULT);
+                String json_string = bundle.getString(FetchStation.JSON_ARR);
+                int resultCode = bundle.getInt(FetchStation.RESULT);
                 if (resultCode == RESULT_OK) {
                     Toast.makeText(VelocityRaptorMain.this,
                             "Update complete",
@@ -77,7 +76,6 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
             }
         }
     };
-
 
     //-------------------------------------------------------------------- Activity LifeCyle Methods
     @Override
@@ -95,10 +93,10 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         }
 
 
-        Intent intent = new Intent(this, UpdateStation.class);
-        intent.putExtra(UpdateStation.SERVER_URL, server_url);
-        intent.putExtra(UpdateStation.URL_PARAM_N1, "limit");
-        intent.putExtra(UpdateStation.URL_PARAM_V1, "0");
+        Intent intent = new Intent(this, FetchStation.class);
+        intent.putExtra(FetchStation.SERVER_URL, server_url);
+        intent.putExtra(FetchStation.URL_PARAM_N1, "limit");
+        intent.putExtra(FetchStation.URL_PARAM_V1, "0");
         startService(intent);
         Switch switchDeposerRetirer = (Switch) findViewById(R.id.switchDeposerRetirer);
         switchDeposerRetirer.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -117,7 +115,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
     @Override
     protected void onResume() {
         super.onResume();
-        registerReceiver(receiver, new IntentFilter(UpdateStation.NOTIFICATION));
+        registerReceiver(receiver, new IntentFilter(FetchStation.NOTIFICATION));
     }
 
 
@@ -156,12 +154,13 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                 cercleCourant = mMap.addCircle(new CircleOptions()
                         .center(position)
                         .radius(rayonCercle)
-                        .strokeColor(Color.BLUE)
-                        .fillColor(0x7333CCFF));
+                        .strokeColor(0xFF00e676)
+                        .fillColor(0x734caf50));
                 for(MarqueurPerso m : marqueurs){
                     if(MathsUti.getDistance(m.getMarqueur().getPosition(),position)<=rayonCercle){
-                        m.getMarqueur().setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
+                        m.getMarqueur().setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
                         m.getMarqueur().setTitle("DETECTE");
+                        m.getMarqueur().setAlpha(1f);
                     }
                 }
             }
@@ -204,7 +203,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
             optionsCourantes = new MarkerOptions().position(s.getPosition()).title(s.getNom()).snippet("");
             majMarqueurs();
             marqueurCourant = mMap.addMarker(optionsCourantes);
-            marqueurs.add(new MarqueurPerso(s,marqueurCourant));
+            marqueurs.add(new MarqueurPerso(s, marqueurCourant));
         }
     }
 
