@@ -103,7 +103,8 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         Switch switchDeposerRetirer = (Switch) findViewById(R.id.switchDeposerRetirer);
         switchDeposerRetirer.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                isModeDeposer = true;
+                isModeDeposer = !isModeDeposer;
+                majMarqueurs();
             }
         });
     }
