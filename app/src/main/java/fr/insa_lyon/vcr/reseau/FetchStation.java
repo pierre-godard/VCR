@@ -56,7 +56,7 @@ public class FetchStation extends IntentService {
                 result = Activity.RESULT_OK;
             publishResults(fetchedResult, result);
         } else {
-            publishResults(new JSONArray(), result);
+            // do nothing
         }
     }
 

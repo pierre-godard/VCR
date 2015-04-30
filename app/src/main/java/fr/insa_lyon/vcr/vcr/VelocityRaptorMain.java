@@ -127,7 +127,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         intentDyna.putExtra(UpdateStation.SERVER_URL, server_url + "/lastmeasure");
         intentDyna.putExtra(UpdateStation.URL_PARAM_N1, "limit");
         intentDyna.putExtra(UpdateStation.URL_PARAM_V1, "0");
-        //startService(intentDyna);
+        startService(intentDyna);
 
         // Ajout du listener sur le switch
         Switch switchDeposerRetirer = (Switch) findViewById(R.id.switchDeposerRetirer);
