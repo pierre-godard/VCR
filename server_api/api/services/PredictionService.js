@@ -20,8 +20,6 @@ function mean (array)
 	return sum_val/i;
 }
 
-var json = require('../../data/time/vacances.json');
-
 // Mean of the array passed as parameter
 // Each element weight is decreased using the factor after each step
 // ex 0.5 , 1 , [10,20,30]
@@ -64,25 +62,6 @@ function analysis (datas,mode)
 	return 0;	// 0 as default return value, TODO throw ERROR ?
 }
 
-// get the max number of spots in a station (id) at a time
-// [DEPRECIATED], to rm later
-function getMaxVelov(id,time)
-{
-	var nb = 0;
-	/*Measure.find({}).exec(function findCB(err,found){
-  		while (found.length)
-    		console.log('-----------------> '+found.pop().name)
-  	});*/
-	return nb;
-}
-
-// get the current number of spots in a station (id) at a time
-// [DEPRECIATED], to rm later
-function getCurrVelov(id,time)
-{
-	var nb = 0;
-	return nb;
-}
 
 // returns the measures matching the specified id and withing time stamp of [time]
 function queryMeasures(id,time)
@@ -138,13 +117,15 @@ module.exports = {
 	predict: function (id,time,analysisMode,callback) 
 	{
 		// ----- Data fetching
-		var WEEK_SIZE 		= 7;
-		//var selected_days 	= [];
-		var station_free	= [];
-		var station_occup	= [];
-		var query_result	= [];
-		var limit_date 		= new Date(2012, 0, 1);
-		var curr_date		= new Date();
+		var WEEK_SIZE 			= 7;
+		var station_free		= [];
+		var station_occup		= [];
+		var query_result		= [];
+		var limit_date 			= new Date(2012, 0, 1);
+		var curr_date			= new Date();
+		var util 				= require('util');
+		var json_timePeriods 	= require('../../data/time/vacances.json');
+		console.log(util.inspect(json_timePeriods, {showHidden: false, depth: null}));
 		for (var d = new Date(time); d > limit_date; d.setDate(d.getDate() - WEEK_SIZE)) 
 		{
 			curr_date = new Date(d);
@@ -160,9 +141,6 @@ module.exports = {
 				station_free.push(query_result[i].available_bike_stands);
 				station_occup.push(query_result[i].available_bike);
 			}
-			//selected_days.push(curr_date);
-			//station_max.push(getMaxVelov(id,curr_date));
-			//station_curr.push(getCurrVelov(id,curr_date));
 		}
 
 		// ----- Data analysis
