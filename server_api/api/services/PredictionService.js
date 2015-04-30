@@ -51,29 +51,42 @@ function analysis (datas,mode)
 	console.log("Analysis: using "+mode);
 	switch(mode) 
 	{
-    case PredictionService.analysis_mode.MEAN:
-    	return mean(datas);
-        break;	// no use but used to keep the code clear
-    case PredictionService.analysis_mode.FDM:
-    	return decreasingFactor_mean(datas);
-        break;
-    default:
+	    case PredictionService.analysis_mode.MEAN:
+	    	return mean(datas);
+	        break;	// no use but used to keep the code clear
+	    case PredictionService.analysis_mode.FDM:
+	    	return decreasingFactor_mean(datas);
+	        break;
+	    default:
 	}
 	return 0;	// 0 as default return value, TODO throw ERROR ?
 }
 
 // get the max number of spots in a station (id) at a time
+// [DEPRECIATED], to rm later
 function getMaxVelov(id,time)
+{
+	var nb = 0;
+	/*Measure.find({}).exec(function findCB(err,found){
+  		while (found.length)
+    		console.log('-----------------> '+found.pop().name)
+  	});*/
+	return nb;
+}
+
+// get the current number of spots in a station (id) at a time
+// [DEPRECIATED], to rm later
+function getCurrVelov(id,time)
 {
 	var nb = 0;
 	return nb;
 }
 
-// get the current number of spots in a station (id) at a time
-function getCurrVelov(id,time)
+// returns the measures matching the specified id and withing time stamp of [time]
+function queryMeasures(id,time)
 {
-	var nb = 0;
-	return nb;
+	return Measure.find({station: id, day: time.getDay(), hour: time.getHours(), 
+		time_slice: Math.floor(time.getMinutes()/Measure.NB_TIME_SLICES) });
 }
 
 module.exports = {
@@ -115,17 +128,24 @@ module.exports = {
 	{
 		// ----- Data fetching
 		var WEEK_SIZE 		= 7;
-		var selected_days 	= [];
+		//var selected_days 	= [];
 		var station_max		= [];
 		var station_curr	= [];
+		var query_result	= [];
 		var limit_date 		= new Date(2012, 0, 1);
 		var curr_date		= new Date();
 		for (var d = new Date(time); d > limit_date; d.setDate(d.getDate() - WEEK_SIZE)) 
 		{
 			curr_date = new Date(d);
-			selected_days.push(curr_date);
-			station_max.push(getMaxVelov(id,curr_date));
-			station_curr.push(getCurrVelov(id,curr_date));
+			query_result = queryMeasures(id,curr_date);
+			while (query_result.length) 
+			{ 
+				//station_max.push(query_result.	
+				//station_curr.push(query_result.
+			}
+			//selected_days.push(curr_date);
+			//station_max.push(getMaxVelov(id,curr_date));
+			//station_curr.push(getCurrVelov(id,curr_date));
 		}
 
 		// ----- Data analysis
