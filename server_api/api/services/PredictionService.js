@@ -20,6 +20,8 @@ function mean (array)
 	return sum_val/i;
 }
 
+//var json = require('../../data/time/vacances.json');
+
 // Mean of the array passed as parameter
 // Each element weight is decreased using the factor after each step
 // ex 0.5 , 1 , [10,20,30]
