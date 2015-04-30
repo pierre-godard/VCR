@@ -14,7 +14,8 @@ module.exports =
 		{
             type: 'integer',
             required: true,
-            primaryKey: true
+            primaryKey: true,
+            unique: true
         },
         name: 
 		{
@@ -38,17 +39,33 @@ module.exports =
 		{
             type: 'boolean',
             defaultsTo: 'false'
-        },
-        state: 
-		{
-            type: 'string',
-            enum: ['OPEN', 'CLOSE'],
-            defaultsTo: 'CLOSE'
-        },
+        }/*,
         measures: 
 		{
             collection: 'Measure',
             via: 'station'
+        }*/
+    },
+    
+    createOrUpdate: function(stations, next)
+    {
+        if (!(stations instanceof Array))
+        {
+            stations = [stations];
         }
+        _.forEach(
+            stations,
+            function (station)
+            {
+                Station.create(station)
+                .exec(
+                    function (err, added)
+                    {
+                        // if (err) next(err);
+                    }
+                );
+            }
+        );
     }
+    
 };

@@ -1,9 +1,9 @@
 /**
- * Measure.js
- *
- * @description :: TODO: You might write a short summary of how this model works and what it represents here.
- * @docs        :: http://sailsjs.org/#!documentation/models
- */
+* LastMeasure.js
+*
+* @description :: TODO: You might write a short summary of how this model works and what it represents here.
+* @docs        :: http://sailsjs.org/#!documentation/models
+*/
 
 var formatter = function (value)
 {
@@ -35,9 +35,7 @@ module.exports = {
     attributes: {
         identifier: {
             type: 'integer',
-            required: true,
-            primaryKey: true,
-            unique: true
+            required: true
         },
         last_update: {
             type: 'integer',
@@ -45,7 +43,9 @@ module.exports = {
         },
         station: {
             model: 'Station',
-            required: true
+            required: true,
+            primaryKey: true,
+            unique: true
         },
         available_bike_stands: {
             type: 'integer',
@@ -73,7 +73,7 @@ module.exports = {
             measures,
             function (measure)
             {
-                Measure.create(measure)
+                LastMeasure.create(measure)
                 .exec(
                     function (err, added)
                     {

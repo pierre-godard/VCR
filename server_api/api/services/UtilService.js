@@ -1,0 +1,52 @@
+// UtilService.js - in api/services
+
+var fs = require('fs');
+var parse = require('csv-parse');
+
+module.exports = {
+
+    load_measures: function (path, next)
+    {
+        var parser = parse({delimiter: ';'});
+        var input = fs.createReadStream('./assets/extrait.csv');
+        parser.on(
+            'readable',
+            function()
+            {
+                while(record = parser.read())
+                {
+                    var object = {
+                        last_update: record[1],
+                        available_bike_stands: record[4],
+                        available_bikes: record[5],
+                        station: record[0]
+                    };
+                    Measure.createOrUpdate(
+                        object,
+                        function (err)
+                        {
+                            if (err) return next(err);
+                        }
+                    );
+                }
+            }
+        );
+        parser.on(
+            'end',
+            function()
+            {
+                next();
+            }
+        );
+        parser.on(
+            'error',
+            function(err)
+            {
+                return next(err);
+            }
+        );
+        input.pipe(parser);
+    }
+    
+    
+};

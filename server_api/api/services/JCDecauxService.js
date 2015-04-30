@@ -35,11 +35,9 @@ module.exports = {
                 );
             }
         ).on('error',
-            function (e)
+            function (err)
             {
-                console.error("An error occured while loading stations");
-                console.error(e);
-                callback();
+                callback(null, err);
             }
         );
 
@@ -49,8 +47,9 @@ module.exports = {
     {
         JCDecauxService.request(
             addressRest,
-            function(data)
+            function(data, err)
             {
+                if (err) return callback(null, err);
                 var objects = JSON.parse(data);
                 callback(objects);
             }
@@ -61,8 +60,9 @@ module.exports = {
     {
         JCDecauxService.request(
             address + "stations",
-            function(data)
+            function(data, err)
             {
+                if (err) return callback(null, err);
                 var objects = JSON.parse(data);
                 callback(objects);
             }

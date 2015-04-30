@@ -7,25 +7,21 @@
 
 module.exports = {
 
+    // Populate the database with JCDecaux data
     pull:
         function (req, res, next)
         {
-            
             JCDecauxService.requestStations(
-                function (stations)
+                function (stations, err)
                 {
-                    _.forEach(
+                    
+                    if (err) return next(err);
+                    
+                    Station.createOrUpdate(
                         stations,
-                        function (station)
+                        function (err2)
                         {
-                            Station.update(
-                                {number: station.number},
-                                station,
-                                function(err)
-                                {
-                                    if (err) return next(err);
-                                }
-                            );
+                            if (err2) return next(err2);
                         }
                     );
                     

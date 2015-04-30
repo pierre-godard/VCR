@@ -7,30 +7,54 @@
 
 module.exports = {
 
+    // Populate the database with JCDecaux data
     pull:
         function (req, res, next)
         {
-            
             JCDecauxService.requestMeasures(
-                function (measures)
+                function (measures, err)
                 {
-                    _.forEach(
+                    
+                    if (err) return next(err);
+                    
+                    Measure.createOrUpdate(
                         measures,
-                        function (measure)
+                        function (err2)
                         {
-                            Measure.update(
-                                {last_update: measure.last_update},
-                                measure,
-                                function(err)
-                                {
-                                    if (err) return next(err);
-                                }
-                            );
+                            if (err2) return next(err2);
+                        }
+                    );
+                    
+                    LastMeasure.createOrUpdate(
+                        measures,
+                        function (err2)
+                        {
+                            if (err2) return next(err2);
                         }
                     );
                     
                     res.status(201);
                     res.end();
+                    
+                }
+            );
+            
+        },
+    
+    // Populate the database from the csv velov.csv
+    load:
+        function (req, res, next)
+        {
+            UtilService.load_measures(
+                "velov.csv",
+                function (err)
+                {
+                    
+                    if (err) return next(err);
+                    
+                    res.status(201);
+                    res.end();
+                    
                 }
             );
             
