@@ -15,7 +15,7 @@ public class MarqueurPerso {
        this.marqueur = marqueur;
         //marquer vert par défaut
         this.marqueur.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-        //this.marqueur.setIcon(R.drawable.marqueurPerso);
+        //this.marqueur.setIcon(R.drawable.marqueurperso);
         this.marqueur.setAlpha(0.6f);
     }
 
