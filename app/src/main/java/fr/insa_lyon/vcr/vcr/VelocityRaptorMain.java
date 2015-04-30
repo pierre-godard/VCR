@@ -24,7 +24,6 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +32,6 @@ import fr.insa_lyon.vcr.modele.MarqueurPerso;
 import fr.insa_lyon.vcr.modele.Station;
 import fr.insa_lyon.vcr.reseau.UpdateStation;
 import fr.insa_lyon.vcr.utilitaires.MathsUti;
-import fr.insa_lyon.vcr.utilitaires.NVP;
 
 
 public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCallback {
@@ -46,10 +44,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
     List<MarqueurPerso> marqueurs;
 
     // adresse du serveur
-    private String server_url = "vps165245.ovh.net/station";
-    private List<NVP> url_params;
-    private UpdateStation updStation;
-
+    private String server_url = "http://vps165245.ovh.net/station";
 
     /**
      * Receiver chargé de récupérer les données dans le message broadcasté par
@@ -61,7 +56,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         public void onReceive(Context context, Intent intent) {
             Bundle bundle = intent.getExtras();
             if (bundle != null) {
-                String json_string = bundle.getString(UpdateStation.JSON_OBJ);
+                String json_string = bundle.getString(UpdateStation.JSON_ARR);
                 int resultCode = bundle.getInt(UpdateStation.RESULT);
                 if (resultCode == RESULT_OK) {
                     Toast.makeText(VelocityRaptorMain.this,
@@ -94,17 +89,11 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
             mapFragment.getMapAsync(this);
         }
 
-        // Preparation de l'intent à destination du service UpdateStation
-        url_params = new ArrayList<NVP>();
-        url_params.add(new NVP("limit", "1"));
-
-        Log.d("VelocityRaptor - Debug", "url_params" + url_params.get(0).getName());
 
         Intent intent = new Intent(this, UpdateStation.class);
         intent.putExtra(UpdateStation.SERVER_URL, server_url);
-        Bundle extra = new Bundle();
-        extra.putSerializable("extra", url_params.toArray());
-        intent.putExtra(UpdateStation.URL_PARAM, extra);
+        intent.putExtra(UpdateStation.URL_PARAM_N1, "limit");
+        intent.putExtra(UpdateStation.URL_PARAM_V1, "0");
         startService(intent);
     }
 
@@ -175,9 +164,11 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
 
     private void parserStations(String jsonString) {
         stations.clear();
+        String strD = "Taille " + jsonString.length();
+        Log.d("JSONString", strD);
         try {
-            JSONObject jsonStations = new JSONObject(jsonString);
-            JSONArray jArrayStations = jsonStations.getJSONArray("stations");
+            JSONArray jArrayStations = new JSONArray(jsonString);
+            Log.d("##JSONArray##", jArrayStations.get(0).toString());
             for(int i=0; i<jArrayStations.length();i++){
                 stations.add(new Station(jArrayStations.getJSONObject(i)));
             }
@@ -185,6 +176,9 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         catch(JSONException j){
             Log.e("ACTIVITY_MAP", "Problème en parsant le JSON");
         }
+        Log.d("STATION 1", stations.get(0).getNom() + " // " + stations.get(0).getSnippet());
+        Log.d("Marqueurs", "Création des marqueurs dans parserStations");
+        creerMarqueurs();
     }
 
     private void creerMarqueurs(){

@@ -4,12 +4,13 @@ import android.util.Log;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -17,8 +18,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
-
-import fr.insa_lyon.vcr.utilitaires.NVP;
 
 /**
  * Created by julien on 29/04/15.
@@ -30,20 +29,20 @@ public class ServerConnection {
     // JSON Response String to create JSON Object
     static String jsonString = "";
     private String mUrl;
-    private List<NVP> mParams;
+    private List<NameValuePair> mParams;
 
 
     public ServerConnection() {
     }
 
-    public ServerConnection(String url, List<NVP> params) {
+    public ServerConnection(String url, List<NameValuePair> params) {
         mUrl = url;
         mParams = params;
     }
 
 
     // Method to issue HTTP request, parse JSON result and return JSON Object
-    public JSONObject makeHttpGet() {
+    public JSONArray makeHttpGet() {
         try {
             // client http default
             DefaultHttpClient httpClient = new DefaultHttpClient();
@@ -89,7 +88,7 @@ public class ServerConnection {
 
         try {
             // Create jsonObject from the jsonString and return it
-            return new JSONObject(jsonString);
+            return new JSONArray(jsonString);
         } catch (JSONException e) {
             Log.e("JSON Parser", "Error parsing data " + e.toString());
             // Return null if in error
