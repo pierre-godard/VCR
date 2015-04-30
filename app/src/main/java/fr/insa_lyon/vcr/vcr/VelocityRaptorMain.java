@@ -8,6 +8,8 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.CompoundButton;
+import android.widget.Switch;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -16,6 +18,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
@@ -39,6 +42,8 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
     private GoogleMap mMap;
     private UiSettings mUiSettings;
     private int rayonCercle = 500;
+    private Circle cercleCourant;
+    private boolean isModeDeposer = false;
     List<Station> stations;
     List<MarqueurPerso> marqueurs;
 
@@ -93,6 +98,12 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         intent.putExtra(FetchStation.URL_PARAM_N1, "limit");
         intent.putExtra(FetchStation.URL_PARAM_V1, "0");
         startService(intent);
+        Switch switchDeposerRetirer = (Switch) findViewById(R.id.switchDeposerRetirer);
+        switchDeposerRetirer.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                isModeDeposer = true;
+            }
+        });
     }
 
 
@@ -136,7 +147,10 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
 
             @Override
             public void onMapClick(LatLng position) {
-                mMap.addCircle(new CircleOptions()
+                if(cercleCourant != null){
+                    cercleCourant.remove();
+                }
+                cercleCourant = mMap.addCircle(new CircleOptions()
                         .center(position)
                         .radius(rayonCercle)
                         .strokeColor(0xFF00e676)
@@ -175,7 +189,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         catch(JSONException j){
             Log.e("ACTIVITY_MAP", "Problème en parsant le JSON");
         }
-        Log.d("STATION 1", stations.get(0).getNom() + " // " + stations.get(0).getSnippet());
+        Log.d("STATION 1", stations.get(0).getNom() + " // " + stations.get(0).getSnippetDeposer());
         Log.d("Marqueurs", "Création des marqueurs dans parserStations");
         creerMarqueurs();
     }
@@ -185,9 +199,21 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         MarkerOptions optionsCourantes;
         Marker marqueurCourant;
         for(Station s: stations){
-            optionsCourantes = new MarkerOptions().position(s.getPosition()).title(s.getNom()).snippet(s.getSnippet());
+            optionsCourantes = new MarkerOptions().position(s.getPosition()).title(s.getNom()).snippet("");
+            majMarqueurs();
             marqueurCourant = mMap.addMarker(optionsCourantes);
             marqueurs.add(new MarqueurPerso(s, marqueurCourant));
+        }
+    }
+
+    private void majMarqueurs(){
+        for(MarqueurPerso m : marqueurs){
+            if(isModeDeposer){
+                m.getMarqueur().setSnippet(m.getStation().getSnippetDeposer());
+            }
+            else{
+                m.getMarqueur().setSnippet(m.getStation().getSnippetRetirer());
+            }
         }
     }
 
