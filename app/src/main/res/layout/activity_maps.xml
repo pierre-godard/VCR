@@ -30,21 +30,10 @@
         android:layout_height="wrap_content"
         android:id="@+id/switchDeposerRetirer"
         android:layout_gravity="center_horizontal|bottom"
-        android:checked="false" />
-
-    <TextView
-        android:layout_width="101dp"
-        android:layout_height="wrap_content"
-        android:text="Retirer un vélo"
-        android:id="@+id/textView"
-        android:layout_gravity="left|bottom" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Déposer un vélo"
-        android:id="@+id/textView2"
-        android:layout_gravity="right|bottom" />
+        android:checked="false"
+        android:textOn="Déposer un vélo"
+        android:textOff="Retirer un vélo"
+        />
 
 </FrameLayout>
 
