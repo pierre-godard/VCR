@@ -103,18 +103,18 @@ Array.prototype.diff = function(a) {
 
 // Generate the "period" which excludes every specific period (classic time) (array of dates)
 // All dates - specific periods
-function generate_defaultPeriod(json_periods,limit_day,year_begin,year_end)
+function generate_defaultPeriod(json_periods,limit_time,year_begin,year_end)
 {
 	var WEEK_SIZE 			= 7;
 	var all_dates 			= [];
 	var specific_dates 		= [];
-	for (var i = 0; i < json_periods[year].length; i++) 
+	for (var i = 0; i < json_periods[String(year_end)].length; i++) 
 	{
-		specific_dates = specific_dates.concat(generate_specificPeriod(json_periods,limit_day,year_begin,year_end,i)); 
+		specific_dates = specific_dates.concat(generate_specificPeriod(json_periods,limit_time,year_begin,year_end,i)); 
 	}
-	for (var d = new Date(limit_day); d.getYear() >= year_begin; d.setDate(d.getDate() - WEEK_SIZE)) 
+	for (var d = new Date(limit_time); d.getYear() >= year_begin; d.setDate(d.getDate() - WEEK_SIZE)) 
 	{
-		if(limit_day.getDay()==d.getDay()) // Only if same day of the week, algo choice XXX
+		if(limit_time.getDay()==d.getDay()) // Only if same day of the week, algo choice XXX
 		{
 			all_dates.push(d);				
 		}
@@ -124,14 +124,14 @@ function generate_defaultPeriod(json_periods,limit_day,year_begin,year_end)
 }
 
 // generate the selected period (arrays of dates)
-function generate_specificPeriod(json_periods,limit_day,year_begin,year_end,period)
+function generate_specificPeriod(json_periods,limit_time,year_begin,year_end,period)
 {
 	var dates = [];
 	for (var y = year_begin; y <= year_end;y++)
 	{
-		for (var d = Date(json_periods[y][period].end); d > Date(json_periods[y][period].end); d.setDate(d.getDate() - 1)) 
+		for (var d = Date(json_periods[String(y)][period].end); d > Date(json_periods[String(y)][period].end); d.setDate(d.getDate() - 1)) 
 		{
-			if(limit_day.getDay()==d.getDay()) // Only if same day of the week, algo choice XXX
+			if(limit_time.getDay()==d.getDay()) // Only if same day of the week, algo choice XXX
 			{
 				dates.push(d);				
 			}
@@ -190,20 +190,21 @@ module.exports = {
 		var json_timePeriods 	= require('../../data/time/vacances.json');
 		//console.log(util.inspect(json_timePeriods, {showHidden: false, depth: null}));
 		//console.log(json_timePeriods["2014"].Hiver.begin);
-		var date = new Date(time);
-		var year = String(date.getFullYear());
-		var period = find_period(json_timePeriods,time);
+		var date 				= new Date(time);
+		var year 				= date.getFullYear();
+		var period 				= find_period(json_timePeriods,time);
+		var dates 				= [];
 		if(period == DEFAULT_PERIOD)
 		{
-
+			dates = generate_defaultPeriod(json_timePeriods,date,2013,year);
 		}
 		else
 		{
-			
+			dates = generate_specificPeriod(json_timePeriods,date,2013,year,period);
 		}
-		for (var d = new Date(time); d > limit_date; d.setDate(d.getDate() - WEEK_SIZE)) 
+		for (var j = 0; j < dates.length; j++) 
 		{
-			curr_date = new Date(d);
+			curr_date = new Date(dates[j]);
 			query_result = queryMeasures(id,curr_date);
 			if(query_result == undefined) // no data has been found corresponding to id (unlikely, or call para error) or time (possible)
 			{
