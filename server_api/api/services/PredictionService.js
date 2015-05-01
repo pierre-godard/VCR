@@ -112,13 +112,21 @@ function generate_defaultPeriod(json_periods,limit_time,year_begin,year_end)
 	{
 		specific_dates = specific_dates.concat(generate_specificPeriod(json_periods,limit_time,year_begin,year_end,i)); 
 	}
-	for (var d = new Date(limit_time); d.getYear() >= year_begin; d.setDate(d.getDate() - WEEK_SIZE)) 
+/*	console.log(new Date(limit_time));
+	console.log(new Date(limit_time).getFullYear());
+	console.log(year_begin);*/
+	for (var d = new Date(limit_time); d.getFullYear() >= year_begin; d.setDate(d.getDate() - WEEK_SIZE)) 
 	{
+		console.log("date: "+d);
 		if(limit_time.getDay()==d.getDay()) // Only if same day of the week, algo choice XXX
 		{
 			all_dates.push(d);				
 		}
 	}
+/*	console.log("All dates:");
+	console.log(all_dates);
+	console.log("Specific dates:");
+	console.log(specific_dates);*/
 	return all_dates.diff(specific_dates);
 
 }
@@ -197,18 +205,21 @@ module.exports = {
 		if(period == DEFAULT_PERIOD)
 		{
 			dates = generate_defaultPeriod(json_timePeriods,date,2013,year);
+			//console.log("Default period");
 		}
 		else
 		{
 			dates = generate_specificPeriod(json_timePeriods,date,2013,year,period);
+			//console.log("Specific period: " + period);
 		}
+		console.log(dates);
 		for (var j = 0; j < dates.length; j++) 
 		{
 			curr_date = new Date(dates[j]);
 			query_result = queryMeasures(id,curr_date);
 			if(query_result == undefined) // no data has been found corresponding to id (unlikely, or call para error) or time (possible)
 			{
-				console.log("skippind query result ("+id+" - "+curr_date);
+				console.log("skipping query result ("+id+" - "+curr_date);
 				continue;	
 			}			
 			console.log(query_result+'\n');
