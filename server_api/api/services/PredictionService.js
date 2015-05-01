@@ -77,6 +77,25 @@ function queryMeasures(id,time)
     );
 }
 
+// If no period is found, used to define the default period
+var DEFAULT_PERIOD = -1;
+
+// Find the number of the period associated to the date (time)
+function find_period(time,json_periods)
+{
+	var date = new Date(time);
+	var year = String(date.getFullYear());
+	for (var i = 0; i < json_periods[year].length; i++) 
+	{ 
+	    if(Date(json_periods[year][i].begin) <= time 
+	    	&& Date(json_periods[year][i].end) >= time)	// If the date (time) is within the period
+	    {
+	    	return i;
+	    }
+	}
+	return DEFAULT_PERIOD;
+}
+
 module.exports = {
 
 	// Velov station potential state
@@ -127,6 +146,7 @@ module.exports = {
 		var json_timePeriods 	= require('../../data/time/vacances.json');
 		console.log(util.inspect(json_timePeriods, {showHidden: false, depth: null}));
 		console.log(json_timePeriods["2014"].Hiver.begin);
+		console.log(find_period(time,json_timePeriods));
 		for (var d = new Date(time); d > limit_date; d.setDate(d.getDate() - WEEK_SIZE)) 
 		{
 			curr_date = new Date(d);
