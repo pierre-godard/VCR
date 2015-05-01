@@ -81,19 +81,44 @@ function queryMeasures(id,time)
 var DEFAULT_PERIOD = -1;
 
 // Find the number of the period associated to the date (time)
-function find_period(time,json_periods)
+function find_period(json_periods,time)
 {
 	var date = new Date(time);
 	var year = String(date.getFullYear());
 	for (var i = 0; i < json_periods[year].length; i++) 
 	{ 
-	    if(Date(json_periods[year][i].begin) <= time 
-	    	&& Date(json_periods[year][i].end) >= time)	// If the date (time) is within the period
+	    if(Date(json_periods[year][i].begin) <= date 
+	    	&& Date(json_periods[year][i].end) >= date)	// If the date is within the period
 	    {
 	    	return i;
 	    }
 	}
 	return DEFAULT_PERIOD;
+}
+
+// thx to http://stackoverflow.com/questions/1187518/javascript-array-difference
+Array.prototype.diff = function(a) {
+    return this.filter(function(i) {return a.indexOf(i) < 0;});
+};
+
+// Generate the "period" which excludes every specific period (classic time) (array of dates)
+function generate_defaultPeriod(json_periods,step,year_begin,year_end)
+{
+
+}
+
+// generate the selected period (arrays of dates)
+function generate_specificPeriod(json_periods,year_begin,year_end,period)
+{
+	var dates = [];
+	for (var y = year_begin; y <= year_end;y++)
+	{
+		for (var d = Date(json_periods[y][period].end); d > Date(json_periods[y][period].end); d.setDate(d.getDate() - 1)) 
+		{
+			dates.push(d);
+		}
+	}
+	return dates;
 }
 
 module.exports = {
@@ -146,7 +171,9 @@ module.exports = {
 		var json_timePeriods 	= require('../../data/time/vacances.json');
 		console.log(util.inspect(json_timePeriods, {showHidden: false, depth: null}));
 		console.log(json_timePeriods["2014"].Hiver.begin);
-		console.log(find_period(time,json_timePeriods));
+		console.log(find_period(json_timePeriods,time));
+		var date = new Date(time);
+		var year = String(date.getFullYear());
 		for (var d = new Date(time); d > limit_date; d.setDate(d.getDate() - WEEK_SIZE)) 
 		{
 			curr_date = new Date(d);
