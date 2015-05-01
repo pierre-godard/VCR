@@ -172,6 +172,12 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         registerReceiver(receiverDyna, new IntentFilter(FetchStation.NOTIFICATION));
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        stopService(intentDyna);
+        stopService(intentStat);
+    }
 
     //----------------------------------------------------------------------- Listenners - CallBacks
 
