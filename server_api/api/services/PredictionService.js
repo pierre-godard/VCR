@@ -79,13 +79,15 @@ function queryMeasures(id,time)
 
 // If no period is found, used to define the default period
 var DEFAULT_PERIOD = -1;
+// used to loop through periods
+var NB_SPECIFIC_PERIODS = 5; // TODO add in JSON
 
 // Find the number of the period associated to the date (time)
 function find_period(json_periods,time)
 {
 	var date = new Date(time);
 	var year = String(date.getFullYear());
-	for (var i = 0; i < json_periods[year].length; i++) 
+	for (var i = 0; i < NB_SPECIFIC_PERIODS; i++) 
 	{ 
 	    if(Date(json_periods[year][i].begin) <= date 
 	    	&& Date(json_periods[year][i].end) >= date)	// If the date is within the period
@@ -108,7 +110,7 @@ function generate_defaultPeriod(json_periods,limit_time,year_begin,year_end)
 	var WEEK_SIZE 			= 7;
 	var all_dates 			= [];
 	var specific_dates 		= [];
-	for (var i = 0; i < json_periods[String(year_end)].length; i++) 
+	for (var i = 0; i < NB_SPECIFIC_PERIODS; i++) 
 	{
 		specific_dates = specific_dates.concat(generate_specificPeriod(json_periods,limit_time,year_begin,year_end,i)); 
 	}
@@ -117,16 +119,16 @@ function generate_defaultPeriod(json_periods,limit_time,year_begin,year_end)
 	console.log(year_begin);*/
 	for (var d = new Date(limit_time); d.getFullYear() >= year_begin; d.setDate(d.getDate() - WEEK_SIZE)) 
 	{
-		console.log("date: "+d);
+		//console.log("date: "+d);
 		if(limit_time.getDay()==d.getDay()) // Only if same day of the week, algo choice XXX
 		{
 			all_dates.push(new Date(d));				
 		}
 	}
-/*	console.log("All dates:");
+	console.log("All dates:");
 	console.log(all_dates);
 	console.log("Specific dates:");
-	console.log(specific_dates);*/
+	console.log(specific_dates);
 	return all_dates.diff(specific_dates);
 
 }
@@ -135,9 +137,13 @@ function generate_defaultPeriod(json_periods,limit_time,year_begin,year_end)
 function generate_specificPeriod(json_periods,limit_time,year_begin,year_end,period)
 {
 	var dates = [];
+	console.log(year_begin);
+	console.log(year_end);
 	for (var y = year_begin; y <= year_end;y++)
 	{
-		for (var d = Date(json_periods[String(y)][period].end); d > Date(json_periods[String(y)][period].end); d.setDate(d.getDate() - 1)) 
+		console.log(json_periods[String(y)][period].end);
+		console.log(json_periods[String(y)][period].begin);
+		for (var d = Date(json_periods[String(y)][period].end); d > Date(json_periods[String(y)][period].begin); d.setDate(d.getDate() - 1)) 
 		{
 			if(limit_time.getDay()==d.getDay()) // Only if same day of the week, algo choice XXX
 			{
@@ -192,7 +198,6 @@ module.exports = {
 		var station_free		= [];
 		var station_occup		= [];
 		var query_result		= [];
-		var limit_date 			= new Date(2012, 0, 1);
 		var curr_date			= new Date();
 		var util 				= require('util');
 		var json_timePeriods 	= require('../../data/time/vacances.json');
@@ -212,14 +217,14 @@ module.exports = {
 			dates = generate_specificPeriod(json_timePeriods,date,2013,year,period);
 			//console.log("Specific period: " + period);
 		}
-		console.log(dates);
+		//console.log(dates);
 		for (var j = 0; j < dates.length; j++) 
 		{
 			curr_date = new Date(dates[j]);
 			query_result = queryMeasures(id,curr_date);
 			if(query_result == undefined) // no data has been found corresponding to id (unlikely, or call para error) or time (possible)
 			{
-				console.log("skipping query result ("+id+" - "+curr_date);
+				//console.log("skipping query result ("+id+" - "+curr_date);
 				continue;	
 			}			
 			console.log(query_result+'\n');
