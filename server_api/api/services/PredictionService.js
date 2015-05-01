@@ -120,7 +120,7 @@ function generate_defaultPeriod(json_periods,limit_time,year_begin,year_end)
 		console.log("date: "+d);
 		if(limit_time.getDay()==d.getDay()) // Only if same day of the week, algo choice XXX
 		{
-			all_dates.push(d);				
+			all_dates.push(new Date(d));				
 		}
 	}
 /*	console.log("All dates:");
@@ -141,7 +141,7 @@ function generate_specificPeriod(json_periods,limit_time,year_begin,year_end,per
 		{
 			if(limit_time.getDay()==d.getDay()) // Only if same day of the week, algo choice XXX
 			{
-				dates.push(d);				
+				dates.push(new Date(d));				
 			}
 		}
 	}
