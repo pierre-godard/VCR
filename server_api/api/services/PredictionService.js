@@ -128,10 +128,10 @@ function generate_defaultPeriod(json_periods,limit_time,year_begin,year_end)
 			all_dates.push(new Date(d));				
 		}
 	}
-	console.log("All dates:");
+/*	console.log("All dates:");
 	console.log(all_dates);
 	console.log("Specific dates:");
-	console.log(specific_dates);
+	console.log(specific_dates);*/
 	return all_dates.diff(specific_dates);
 
 }
@@ -220,7 +220,7 @@ module.exports = {
 			dates = generate_specificPeriod(json_timePeriods,date,2013,year,period);
 			console.log("Specific period: " + period);
 		}
-		//console.log(dates);
+		console.log(dates);
 		for (var j = 0; j < dates.length; j++) 
 		{
 			curr_date = new Date(dates[j]);
