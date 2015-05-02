@@ -89,8 +89,11 @@ function find_period(json_periods,time)
 	var year = String(date.getFullYear());
 	for (var i = 0; i < NB_SPECIFIC_PERIODS; i++) 
 	{ 
-	    if(Date(json_periods[year][i].begin) <= date 
-	    	&& Date(json_periods[year][i].end) >= date)	// If the date is within the period
+/*		console.log(Date(json_periods[year][i].begin));
+		console.log(date);
+		console.log(Date(json_periods[year][i].end));*/
+	    if(new Date(json_periods[year][i].begin) <= date 
+	    	&& new Date(json_periods[year][i].end) >= date)	// If the date is within the period
 	    {
 	    	return i;
 	    }
@@ -137,13 +140,13 @@ function generate_defaultPeriod(json_periods,limit_time,year_begin,year_end)
 function generate_specificPeriod(json_periods,limit_time,year_begin,year_end,period)
 {
 	var dates = [];
-	console.log(year_begin);
-	console.log(year_end);
+/*	console.log(year_begin);
+	console.log(year_end);*/
 	for (var y = year_begin; y <= year_end;y++)
 	{
-		console.log(json_periods[String(y)][period].end);
-		console.log(json_periods[String(y)][period].begin);
-		for (var d = Date(json_periods[String(y)][period].end); d > Date(json_periods[String(y)][period].begin); d.setDate(d.getDate() - 1)) 
+/*		console.log(json_periods[String(y)][period].end);
+		console.log(json_periods[String(y)][period].begin);*/
+		for (var d = new Date(json_periods[String(y)][period].end); d > new Date(json_periods[String(y)][period].begin); d.setDate(d.getDate() - 1)) 
 		{
 			if(limit_time.getDay()==d.getDay()) // Only if same day of the week, algo choice XXX
 			{
@@ -210,12 +213,12 @@ module.exports = {
 		if(period == DEFAULT_PERIOD)
 		{
 			dates = generate_defaultPeriod(json_timePeriods,date,2013,year);
-			//console.log("Default period");
+			console.log("Default period");
 		}
 		else
 		{
 			dates = generate_specificPeriod(json_timePeriods,date,2013,year,period);
-			//console.log("Specific period: " + period);
+			console.log("Specific period: " + period);
 		}
 		//console.log(dates);
 		for (var j = 0; j < dates.length; j++) 
