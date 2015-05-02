@@ -8,7 +8,9 @@ module.exports = {
     load_measures: function (path, next)
     {
         var parser = parse({delimiter: ';'});
-        var input = fs.createReadStream('./assets/extrait.csv');
+        //var input = fs.createReadStream('./assets/extrait.csv');
+        var input = fs.createReadStream('./data/velov.csv');
+        var iter = 0;
         parser.on(
             'readable',
             function()
@@ -28,6 +30,9 @@ module.exports = {
                             if (err) return next(err);
                         }
                     );
+                    if(iter%1000==0)
+                        console.log(iter+" items loaded");
+                    iter++;
                 }
             }
         );

@@ -262,14 +262,14 @@ module.exports = {
 			dates = generate_specificPeriod(json_timePeriods,date,2013,year,period);
 			console.log("Specific period: " + period);
 		}
-		console.log(dates);
+		//console.log(dates);
 		for (var j = 0; j < dates.length; j++) 
 		{
 			curr_date = new Date(dates[j]);
 			query_result = queryMeasures(id,curr_date);
 			if(query_result == undefined) // no data has been found corresponding to id (unlikely, or call para error) or time (possible)
 			{
-				//console.log("skipping query result ("+id+" - "+curr_date);
+				console.log("Skipping query result ("+id+" - "+curr_date+")");
 				continue;	
 			}			
 			console.log(query_result+'\n');
@@ -278,6 +278,7 @@ module.exports = {
 				station_free.push(query_result[i].available_bike_stands);
 				station_occup.push(query_result[i].available_bike);
 			}
+			console.log("Query result used ("+id+" - "+curr_date+")");
 		}
 
 		// ----- Data analysis
