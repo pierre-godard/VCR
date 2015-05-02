@@ -113,15 +113,28 @@ Array.prototype.diff = function(a) {
 // WORKING WITH DATES!
 function arr_diff(a1, a2)
 {
-  var a=[], diff=[];
-  for(var i=0;i<a1.length;i++)
-    a[a1[i]]=true;
-  for(var i=0;i<a2.length;i++)
-    if(a[a2[i]]) delete a[a2[i]];
-    else a[a2[i]]=true;
-  for(var k in a)
-    diff.push(k);
-  return diff;
+	var a 		=[];
+	var diff 	=[];
+	for(var i=0;i<a1.length;i++)
+	{
+		a[a1[i]]=true;	
+	}
+	for(var i=0;i<a2.length;i++)
+	{
+		if(a[a2[i]])
+		{
+			delete a[a2[i]];
+		}	
+		else 
+		{
+			a[a2[i]]=true;
+		}	
+	}
+	for(var k in a)
+	{
+		diff.push(k);
+	}
+	return diff;
 }
 
 // Generate the "period" which excludes every specific period (classic time) (array of dates)
@@ -156,7 +169,9 @@ function generate_defaultPeriod(json_periods,limit_time,year_begin,year_end)
 	console.log(_.difference(all_dates,specific_dates)); // not working
 	console.log("diff 3");
 	console.log(arr_diff(all_dates,specific_dates)); // working!*/
-	return arr_diff(all_dates,specific_dates);
+	var defPeriod_dates = arr_diff(all_dates,specific_dates);
+	defPeriod_dates.pop(); // We remove last element which is strangly not a date but 'diff'
+	return defPeriod_dates;
 }
 
 // generate the selected period (arrays of dates)
