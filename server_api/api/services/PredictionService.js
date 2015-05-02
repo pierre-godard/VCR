@@ -101,10 +101,28 @@ function find_period(json_periods,time)
 	return DEFAULT_PERIOD;
 }
 
+// Diff between arrays
 // thx to http://stackoverflow.com/questions/1187518/javascript-array-difference
+// NOT WORKING WITH DATES (and objects?)
 Array.prototype.diff = function(a) {
     return this.filter(function(i) {return a.indexOf(i) < 0;});
 };
+
+// Diff between arrays
+// thx to http://stackoverflow.com/questions/1187518/javascript-array-difference
+// WORKING WITH DATES!
+function arr_diff(a1, a2)
+{
+  var a=[], diff=[];
+  for(var i=0;i<a1.length;i++)
+    a[a1[i]]=true;
+  for(var i=0;i<a2.length;i++)
+    if(a[a2[i]]) delete a[a2[i]];
+    else a[a2[i]]=true;
+  for(var k in a)
+    diff.push(k);
+  return diff;
+}
 
 // Generate the "period" which excludes every specific period (classic time) (array of dates)
 // All dates - specific periods
@@ -131,15 +149,21 @@ function generate_defaultPeriod(json_periods,limit_time,year_begin,year_end)
 /*	console.log("All dates:");
 	console.log(all_dates);
 	console.log("Specific dates:");
-	console.log(specific_dates);*/
-	return all_dates.diff(specific_dates);
-
+	console.log(specific_dates);
+	console.log("diff 1");
+	console.log(all_dates.diff(specific_dates)); // not working
+	console.log("diff 2");
+	console.log(_.difference(all_dates,specific_dates)); // not working
+	console.log("diff 3");
+	console.log(arr_diff(all_dates,specific_dates)); // working!*/
+	return arr_diff(all_dates,specific_dates);
 }
 
 // generate the selected period (arrays of dates)
 function generate_specificPeriod(json_periods,limit_time,year_begin,year_end,period)
 {
 	var dates = [];
+	var limit_date = new Date(limit_time);
 /*	console.log(year_begin);
 	console.log(year_end);*/
 	for (var y = year_begin; y <= year_end;y++)
@@ -150,6 +174,9 @@ function generate_specificPeriod(json_periods,limit_time,year_begin,year_end,per
 		{
 			if(limit_time.getDay()==d.getDay()) // Only if same day of the week, algo choice XXX
 			{
+				d.setHours(limit_date.getHours());
+				d.setMinutes(limit_date.getMinutes());
+				d.setSeconds(limit_date.getSeconds());
 				dates.push(new Date(d));				
 			}
 		}
