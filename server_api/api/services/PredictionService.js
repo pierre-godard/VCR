@@ -70,8 +70,8 @@ function queryMeasures(id,time)
 		time_slice: Math.floor(time.getMinutes()/Measure.NB_TIME_SLICES) },
 		function(err, found) 
 		{
-      		//console.log("found: "+found);
-      		//console.log("error: "+err);
+      		console.log("found: "+found);
+      		console.log("error: "+err);
       		return found;
       	}
     );

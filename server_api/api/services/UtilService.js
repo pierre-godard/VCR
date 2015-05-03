@@ -34,6 +34,7 @@ module.exports = {
                         console.log(iter+" items loaded");
                     iter++;
                 }
+                console.log(iter+" items loaded - All items loaded");
             }
         );
         parser.on(
