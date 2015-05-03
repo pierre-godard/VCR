@@ -7,9 +7,12 @@ module.exports = {
 
     load_measures: function (path, next)
     {
+        var i = 0;
         var parser = parse({delimiter: ';'});
+        
         //var input = fs.createReadStream('./assets/extrait.csv');
         var input = fs.createReadStream('./data/velov.csv');
+        
         var iter = 0;
         parser.on(
             'readable',
@@ -23,11 +26,12 @@ module.exports = {
                         available_bikes: record[5],
                         station: record[0]
                     };
-                    Measure.createOrUpdate(
+                    Measure.create(
                         object,
-                        function (err)
+                        function (err, added)
                         {
-                            if (err) return next(err);
+                            if (err) console.log(err);
+                            //if (err) return next(err);
                         }
                     );
                     if(iter%1000==0)

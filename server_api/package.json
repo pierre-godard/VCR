@@ -23,7 +23,8 @@
     "sails": "~0.11.0",
     "sails-disk": "~0.10.0",
     "sails-mongo": "^0.10.6",
-    "csv-parse": "~0.1.1"
+    "csv-parse": "~0.1.1",
+    "cron": "~1.0.9"
   },
   "scripts": {
     "start": "node app.js",

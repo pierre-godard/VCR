@@ -9,9 +9,71 @@
  * http://sailsjs.org/#/documentation/reference/sails.config/sails.config.bootstrap.html
  */
 
-module.exports.bootstrap = function(cb) {
+module.exports.bootstrap = function (cb)
+{
 
-  // It's very important to trigger this callback method when you are finished
-  // with the bootstrap!  (otherwise your server will never lift, since it's waiting on the bootstrap)
-  cb();
+    JCDecauxService.requestStations(
+        function (stations, err)
+        {
+
+            if (err) return next(err);
+
+            Station.createOrUpdate(
+                stations,
+                function (err2)
+                {
+                    if (err2) return next(err2);
+                }
+            );
+
+            console.log("       Setting up the stations");
+
+        }
+    );
+    
+    var onTickFunction = function ()
+    {
+        JCDecauxService.requestMeasures(
+            function (measures, err)
+            {
+
+                if (err) return next(err);
+
+                Measure.createOrUpdate(
+                    measures,
+                    function (err2)
+                    {
+                        if (err2) return next(err2);
+                    }
+                );
+
+                LastMeasure.createOrUpdate(
+                    measures,
+                    function (err2)
+                    {
+                        if (err2) return next(err2);
+                    }
+                );
+                console.log("       Fetching new measures");
+
+            }
+        );
+    }
+    
+    onTickFunction();
+    
+    var CronJob = require('cron').CronJob;
+    var job = new CronJob(
+        {
+            cronTime: '00 * * * * *',
+            onTick: onTickFunction,
+            start: false,
+            timeZone: "America/Los_Angeles"
+        }
+    );
+    job.start();
+    
+    // It's very important to trigger this callback method when you are finished
+    // with the bootstrap!  (otherwise your server will never lift, since it's waiting on the bootstrap)
+    cb();
 };
