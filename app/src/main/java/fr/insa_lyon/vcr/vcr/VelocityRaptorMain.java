@@ -35,6 +35,7 @@ import java.util.Map;
 import fr.insa_lyon.vcr.modele.StationVelov;
 import fr.insa_lyon.vcr.reseau.FetchStation;
 import fr.insa_lyon.vcr.reseau.UpdateStation;
+import fr.insa_lyon.vcr.utilitaires.CustomInfoWindow;
 import fr.insa_lyon.vcr.utilitaires.FinishWithDialog;
 import fr.insa_lyon.vcr.utilitaires.MathsUti;
 import fr.insa_lyon.vcr.utilitaires.ServerFailureDialog;
@@ -70,6 +71,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
     private BroadcastReceiver receiverStat = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+
             Bundle bundle = intent.getExtras();
             if (bundle != null) {
                 int resultCode = bundle.getInt(FetchStation.RESULT);
@@ -102,6 +104,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                     String json_string = bundle.getString(UpdateStation.JSON_ARR);
                     Toast.makeText(VelocityRaptorMain.this, "Update complete", Toast.LENGTH_LONG).show();
                     if (json_string.length() >= 3) {  // Json is not empty or "[]"
+                        Log.d("RECEIVER_DYNA", "Before call to updateStationValues");
                         updateStationValues(json_string);
                     }
                 } else {
@@ -147,8 +150,6 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         intentDyna.putExtra(UpdateStation.SERVER_URL, SERVER_URL + "/lastmeasure");
         intentDyna.putExtra(UpdateStation.URL_PARAM_N1, "limit");
         intentDyna.putExtra(UpdateStation.URL_PARAM_V1, "30");
-        //startService(intentDyna);
-
 
         // Ajout du listener sur le switch
         Switch switchWithdrawDeposit = (Switch) findViewById(R.id.switchDeposerRetirer);
@@ -190,6 +191,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
     public void onMapReady(GoogleMap googleMap) {
         // on récupère la map via ce callback
         mMap = googleMap;
+        mMap.setInfoWindowAdapter(new CustomInfoWindow(this.getLayoutInflater()));
         // réglages génraux
         mMap.setMyLocationEnabled(true);
         UiSettings mUiSettings = mMap.getUiSettings();
@@ -308,6 +310,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
      * @param jsonString Json String that can be parsed to a json array
      */
     protected void updateStationValues(String jsonString) {
+        Log.d("UPDATE_STATION_VALUES", "In method");
         try {
             JSONArray jArrayMeasures = new JSONArray(jsonString);
             JSONObject currentStation;
@@ -320,13 +323,14 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                 currentStation = currentMeasure.getJSONObject("station");
                 stationId = currentStation.getString("id");
                 updatedStation = mapStations.get(stationId);            // will need to catch exception in case id is not found in hashmap
-                updatedStation.setNumberOfBikes(currentMeasure.getInt("available_bikes"));
-                updatedStation.setNumberOfFreeBikeStands(currentMeasure.getInt("available_bikes_stands"));
+                updatedStation.setBikesAndStands(currentMeasure.getInt("available_bikes"), currentMeasure.getInt("available_bike_stands"));
                 mapStations.put(stationId, updatedStation);
+                Log.d("UPDATE_STATION_VALUES", "Station " + updatedStation.getName() + " has been updated");
             }
         } catch (JSONException j) {
-            Log.e("updateStationValues", "Problem when parsing JSON");
+            Log.e("updateStationValues", "Problem when parsing JSON : " + j);
         }
+        Log.d("UPDATE_STATION_VALUES", "-----------DONE-----------");
     }
 
 

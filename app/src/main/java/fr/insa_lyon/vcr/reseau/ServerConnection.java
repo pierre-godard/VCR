@@ -69,7 +69,7 @@ public class ServerConnection {
 
         try {
             // buffered reader httpResponseStream
-            BufferedReader httpResponseReader = new BufferedReader(new InputStreamReader(httpResponseStream, "iso-8859-1"), 8);
+            BufferedReader httpResponseReader = new BufferedReader(new InputStreamReader(httpResponseStream, "UTF-8"), 8); //former was iso-8859-1 / no accent :/
             // String to hold current line from httpResponseReader
             String line = null;
             // Clear jsonString

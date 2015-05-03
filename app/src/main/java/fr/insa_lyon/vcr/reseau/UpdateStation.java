@@ -38,7 +38,6 @@ public class UpdateStation extends IntentService {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Toast.makeText(this, "UpdateStation starting", Toast.LENGTH_SHORT).show();
-
         url_Param = new ArrayList<NameValuePair>();
         String name = intent.getStringExtra(URL_PARAM_N1);
         String value = intent.getStringExtra(URL_PARAM_V1);
@@ -51,7 +50,7 @@ public class UpdateStation extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-
+        work();
     }
 
     private void publishResults(JSONArray jsonArr, int result) {
@@ -59,6 +58,7 @@ public class UpdateStation extends IntentService {
         intent.putExtra(RESULT, result);
         if (result == Activity.RESULT_OK)
             intent.putExtra(JSON_ARR, jsonArr.toString());
+
         sendBroadcast(intent);
     }
 
