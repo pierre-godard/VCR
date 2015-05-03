@@ -31,7 +31,9 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import fr.insa_lyon.vcr.modele.MarqueurPerso;
 import fr.insa_lyon.vcr.modele.Station;
@@ -50,7 +52,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
     private UiSettings mUiSettings;
     private int rayonCercle = 500;
     private Circle cercleCourant;
-    private boolean isModeDeposer = false;
+    private boolean isWithdrawMode = false;
     HashMap<String, Station> stations;
     List<MarqueurPerso> marqueurs;
 
@@ -154,10 +156,10 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
 
 
         // Ajout du listener sur le switch
-        Switch switchDeposerRetirer = (Switch) findViewById(R.id.switchDeposerRetirer);
-        switchDeposerRetirer.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        Switch switchWithdrawDeposit = (Switch) findViewById(R.id.switchDeposerRetirer);
+        switchWithdrawDeposit.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                isModeDeposer = !isModeDeposer;
+                isWithdrawMode = !isWithdrawMode;
                 majMarqueurs();
             }
         });
@@ -214,30 +216,40 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
             public void onMapClick(LatLng position) {
                 if(cercleCourant != null){
                     cercleCourant.remove();
-                    for (MarqueurPerso m : marqueurs) {
+
+                    for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
+                        if (MathsUti.getDistance(entry.getValue().getPosition(), cercleCourant.getCenter()) <= rayonCercle) {
+                            entry.getValue().getMarqueur().setIcon(BitmapDescriptorFactory.fromResource(R.drawable.marqueurperso));
+                        }
+                    }
+
+                    /*for (MarqueurPerso m : marqueurs) {
                         if (MathsUti.getDistance(m.getMarqueur().getPosition(), cercleCourant.getCenter()) <= rayonCercle) {
                             m.getMarqueur().setIcon(BitmapDescriptorFactory.fromResource(R.drawable.marqueurperso));
                         }
-                    }
+                    }*/
                 }
                 cercleCourant = mMap.addCircle(new CircleOptions()
                         .center(position)
                         .radius(rayonCercle)
                         .strokeColor(0xFF00e676)
                         .fillColor(0x734caf50));
-                for(MarqueurPerso m : marqueurs){
+
+                for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
+                    if (MathsUti.getDistance(entry.getValue().getMarqueur().getPosition(), position) <= rayonCercle) {
+                        entry.getValue().getMarqueur().setIcon(BitmapDescriptorFactory.fromResource(R.drawable.marqueurpersorouge));
+                        entry.getValue().getMarqueur().setTitle("DETECTE");
+                    }
+                }
+                
+      /*          for(MarqueurPerso m : marqueurs){
                     if(MathsUti.getDistance(m.getMarqueur().getPosition(),position)<=rayonCercle){
                         m.getMarqueur().setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
                         m.getMarqueur().setIcon(BitmapDescriptorFactory.fromResource(R.drawable.marqueurpersorouge));
                         m.getMarqueur().setTitle("DETECTE");
                         m.getMarqueur().setAlpha(1f);
                     }
-                }
-
-                // NEW CODE :
-
-
-
+                }*/
             }
         });
 
@@ -337,7 +349,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
 
     private void majMarqueurs(){
         for(MarqueurPerso m : marqueurs){
-            if(isModeDeposer){
+            if (isWithdrawMode) {
                 m.getMarqueur().setSnippet(m.getStation().getSnippetDeposer());
             }
             else{
@@ -346,6 +358,15 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
             m.getMarqueur().hideInfoWindow();
         }
     }
+
+
+    public void updateMarkerMode() {
+        Iterator it = mapStations.keySet().iterator();
+        for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
+            entry.getValue().setMode(isWithdrawMode);
+        }
+    }
+
 
     /**
      * Method from interface FinishWithDialog used in order to kill application in case server is
