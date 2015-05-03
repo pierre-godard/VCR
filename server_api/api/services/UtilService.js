@@ -7,8 +7,9 @@ module.exports = {
 
     load_measures: function (path, next)
     {
+        var i = 0;
         var parser = parse({delimiter: ';'});
-        var input = fs.createReadStream('./assets/extrait.csv');
+        var input = fs.createReadStream('./data/sta10004.csv');
         parser.on(
             'readable',
             function()
@@ -21,13 +22,21 @@ module.exports = {
                         available_bikes: record[5],
                         station: record[0]
                     };
-                    Measure.createOrUpdate(
+                    Measure.create(
                         object,
-                        function (err)
+                        function (err, added)
                         {
-                            if (err) return next(err);
+                            if (err) console.log(err);
+                            //if (err) return next(err);
                         }
                     );
+                    i++;
+                    
+                    // 34726203
+                    if (i % 100 == 0)
+                    {
+                        console.log(i / 727 + "%");
+                    }
                 }
             }
         );

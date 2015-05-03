@@ -16,8 +16,11 @@ var formatter = function (value)
     {
         value.station = value.number;
     }
-    value.identifier = value.station + value.last_update * 1000;
-    value.station = value.number;
+    if (value.last_update % 1000 != 0)
+    {
+        value.last_update *= 1000;
+    }
+    value.identifier = value.station + value.last_update * 100;
     var d = new Date(0);    // The 0 there is the key, which sets the date to the epoch
     d.setUTCSeconds(value.last_update);
     value.day = d.getDay();
