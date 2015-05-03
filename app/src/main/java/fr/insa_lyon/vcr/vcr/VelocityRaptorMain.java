@@ -27,12 +27,15 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import fr.insa_lyon.vcr.modele.MarqueurPerso;
 import fr.insa_lyon.vcr.modele.Station;
+import fr.insa_lyon.vcr.modele.StationVelov;
 import fr.insa_lyon.vcr.reseau.FetchStation;
 import fr.insa_lyon.vcr.reseau.UpdateStation;
 import fr.insa_lyon.vcr.utilitaires.FinishWithDialog;
@@ -48,8 +51,12 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
     private int rayonCercle = 500;
     private Circle cercleCourant;
     private boolean isModeDeposer = false;
-    List<Station> stations;
+    HashMap<String, Station> stations;
     List<MarqueurPerso> marqueurs;
+
+
+    // NEW STATION:
+    HashMap<String, StationVelov> mapStations;
 
     DialogFragment exitDialogFragment;
     boolean serverFailureDetected = false;
@@ -75,18 +82,15 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                     Toast.makeText(VelocityRaptorMain.this,
                             "Fetch complete",
                             Toast.LENGTH_LONG).show();
-                    if (json_string.length() >= 2) {
-                        parserStations(json_string);
+                    if (json_string.length() >= 3) {    // Json is not empty or "[]"
+                        //parseStations(json_string);
+                        fillMapStations(json_string);
                         stopService(intentStat);
                         startService(intentDyna);
                     }
                 } else {
-                    if (!serverFailureDetected) {
-                        serverFailureDetected = true;
-                        stopService(intentDyna);
-                        stopService(intentStat);
-                        exitDialogFragment.show(getFragmentManager(), "exitdialogDyna");
-                    }
+                    stopService(intentStat);
+                    exitDialogFragment.show(getFragmentManager(), "exitdialogDyna");
                 }
             }
         }
@@ -101,8 +105,8 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                 if (resultCode == RESULT_OK) {
                     String json_string = bundle.getString(UpdateStation.JSON_ARR);
                     Toast.makeText(VelocityRaptorMain.this, "Update complete", Toast.LENGTH_LONG).show();
-                    if (json_string.length() >= 2) {
-                        //parserStations(json_string);
+                    if (json_string.length() >= 3) {  // Json is not empty or "[]"
+                        //updateValues(json_string);
                     }
                 } else {
                     if (!serverFailureDetected) {
@@ -120,7 +124,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
-        stations = new ArrayList<>();
+        stations = new HashMap<String, Station>();
         marqueurs = new ArrayList<>();
 
         // alert dialog in case of server failure
@@ -177,6 +181,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         stopService(intentStat);
     }
 
+
     //----------------------------------------------------------------------- Listenners - CallBacks
 
     public void onButtonClickedMain(View v) {
@@ -228,17 +233,22 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                         m.getMarqueur().setAlpha(1f);
                     }
                 }
+
+                // NEW CODE :
+
+
+
             }
         });
 
         // créer les marqueurs
-        creerMarqueurs();
+        //creerMarqueurs();
     }
 
 
     //------------------------------------------------------------------------------ General Methods
-
-    private void parserStations(String jsonString) {
+/*
+    private void parseStations(String jsonString) {
         stations.clear();
         String strD = "Taille " + jsonString.length();
         Log.d("JSONString", strD);
@@ -246,32 +256,84 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
             JSONArray jArrayStations = new JSONArray(jsonString);
             Log.d("##JSONArray##", jArrayStations.get(0).toString());
             for(int i=0; i<jArrayStations.length();i++){
-                stations.add(new Station(jArrayStations.getJSONObject(i)));
+                String id = (String) jArrayStations.getJSONObject(i).get("id");
+                stations.put(id, new Station(jArrayStations.getJSONObject(i)));
             }
         }
         catch(JSONException j){
-            Log.e("ACTIVITY_MAP", "Problème en parsant le JSON");
+            Log.e("parseStations", "Problème en parsant le JSON");
         }
         Log.d("STATION 1", stations.get(0).getNom() + " // " + stations.get(0).getSnippetDeposer());
         Log.d("Marqueurs", "Création des marqueurs dans parserStations");
         creerMarqueurs();
+    }*/
+
+
+    /**
+     * This method mus be called only once, in order to fill the HashMap of StationVelov
+     * It gives a JSONObject and en empty marker to the constructor of StationVelov, which do all
+     * the rest.
+     *
+     * @param jsonString
+     */
+    private void fillMapStations(String jsonString) {
+        try {
+            JSONArray jArrayStations = new JSONArray(jsonString);
+            MarkerOptions currentOpt;
+            Marker currentMark;
+            LatLng currentPos;
+            for (int i = 0; i < jArrayStations.length(); i++) {
+                String id = (String) jArrayStations.getJSONObject(i).get("id");
+                currentOpt = new MarkerOptions();
+                currentMark = mMap.addMarker(currentOpt);
+                mapStations.put(id, new StationVelov(jArrayStations.getJSONObject(i), currentMark));
+            }
+        } catch (JSONException j) {
+            Log.e("parseStations", "Problem when parsing JSON");
+        }
     }
 
-    private void updateStations(String jsonString) {
-        // do nothing for the moment.
+    /**
+     * Method uses a json String received from UpdateStations via receiverDyna to update the number
+     * of bikes in all stations.
+     *
+     * @param json_string
+     */
+    private void updateStationValues(String json_string) {
+        try {
+            JSONArray jArrayMeasures = new JSONArray(json_string);
+            JSONObject currentStation;
+            JSONObject currentMeasure;
+            String stationId;
+            StationVelov updatedStation;
+            for (int i = 0; i < jArrayMeasures.length(); i++) {
+                // Find the station whose id is the same as the one in the jsonArray
+                currentMeasure = jArrayMeasures.getJSONObject(i);
+                currentStation = currentMeasure.getJSONObject("station");
+                stationId = currentStation.getString("id");
+                updatedStation = mapStations.get(stationId);            // will need to catch exception in case id is not found in hashmap
+                updatedStation.setNumberOfBikes(currentMeasure.getInt("available_bikes"));
+                updatedStation.setNumberOfFreeBikeStands(currentMeasure.getInt("available_bikes_stands"));
+                mapStations.put(stationId, updatedStation);
+            }
+        } catch (JSONException j) {
+            Log.e("updateStationValues", "Problem when parsing JSON");
+        }
     }
 
-    private void creerMarqueurs(){
+
+/*    private void creerMarqueurs(){
         marqueurs.clear();
         MarkerOptions optionsCourantes;
         Marker marqueurCourant;
-        for(Station s: stations){
+        for(String key : stations.keySet()){
+            Station s = stations.get(key);
             optionsCourantes = new MarkerOptions().position(s.getPosition()).title(s.getNom()).snippet("");
             majMarqueurs();
             marqueurCourant = mMap.addMarker(optionsCourantes);
             marqueurs.add(new MarqueurPerso(s, marqueurCourant));
         }
-    }
+    }*/
 
     private void majMarqueurs(){
         for(MarqueurPerso m : marqueurs){
