@@ -62,25 +62,6 @@ function analysis (datas,mode)
 	return 0;	// 0 as default return value, TODO throw ERROR ?
 }
 
-// get the max number of spots in a station (id) at a time
-// [DEPRECIATED], to rm later
-function getMaxVelov(id,time)
-{
-	var nb = 0;
-	/*Measure.find({}).exec(function findCB(err,found){
-  		while (found.length)
-    		console.log('-----------------> '+found.pop().name)
-  	});*/
-	return nb;
-}
-
-// get the current number of spots in a station (id) at a time
-// [DEPRECIATED], to rm later
-function getCurrVelov(id,time)
-{
-	var nb = 0;
-	return nb;
-}
 
 // returns the measures matching the specified id and withing time stamp of [time]
 function queryMeasures(id,time)
@@ -94,6 +75,128 @@ function queryMeasures(id,time)
       		return found;
       	}
     );
+}
+
+// If no period is found, used to define the default period
+var DEFAULT_PERIOD = -1;
+// used to loop through periods
+var NB_SPECIFIC_PERIODS = 5; // TODO add in JSON
+
+// Find the number of the period associated to the date (time)
+function find_period(json_periods,time)
+{
+	var date = new Date(time);
+	var year = String(date.getFullYear());
+	for (var i = 0; i < NB_SPECIFIC_PERIODS; i++) 
+	{ 
+/*		console.log(Date(json_periods[year][i].begin));
+		console.log(date);
+		console.log(Date(json_periods[year][i].end));*/
+	    if(new Date(json_periods[year][i].begin) <= date 
+	    	&& new Date(json_periods[year][i].end) >= date)	// If the date is within the period
+	    {
+	    	return i;
+	    }
+	}
+	return DEFAULT_PERIOD;
+}
+
+// Diff between arrays
+// thx to http://stackoverflow.com/questions/1187518/javascript-array-difference
+// NOT WORKING WITH DATES (and objects?)
+Array.prototype.diff = function(a) {
+    return this.filter(function(i) {return a.indexOf(i) < 0;});
+};
+
+// Diff between arrays
+// thx to http://stackoverflow.com/questions/1187518/javascript-array-difference
+// WORKING WITH DATES!
+function arr_diff(a1, a2)
+{
+	var a 		=[];
+	var diff 	=[];
+	for(var i=0;i<a1.length;i++)
+	{
+		a[a1[i]]=true;	
+	}
+	for(var i=0;i<a2.length;i++)
+	{
+		if(a[a2[i]])
+		{
+			delete a[a2[i]];
+		}	
+		else 
+		{
+			a[a2[i]]=true;
+		}	
+	}
+	for(var k in a)
+	{
+		diff.push(k);
+	}
+	return diff;
+}
+
+// Generate the "period" which excludes every specific period (classic time) (array of dates)
+// All dates - specific periods
+function generate_defaultPeriod(json_periods,limit_time,year_begin,year_end)
+{
+	var WEEK_SIZE 			= 7;
+	var all_dates 			= [];
+	var specific_dates 		= [];
+	for (var i = 0; i < NB_SPECIFIC_PERIODS; i++) 
+	{
+		specific_dates = specific_dates.concat(generate_specificPeriod(json_periods,limit_time,year_begin,year_end,i)); 
+	}
+/*	console.log(new Date(limit_time));
+	console.log(new Date(limit_time).getFullYear());
+	console.log(year_begin);*/
+	for (var d = new Date(limit_time); d.getFullYear() >= year_begin; d.setDate(d.getDate() - WEEK_SIZE)) 
+	{
+		//console.log("date: "+d);
+		if(limit_time.getDay()==d.getDay()) // Only if same day of the week, algo choice XXX
+		{
+			all_dates.push(new Date(d));				
+		}
+	}
+/*	console.log("All dates:");
+	console.log(all_dates);
+	console.log("Specific dates:");
+	console.log(specific_dates);
+	console.log("diff 1");
+	console.log(all_dates.diff(specific_dates)); // not working
+	console.log("diff 2");
+	console.log(_.difference(all_dates,specific_dates)); // not working
+	console.log("diff 3");
+	console.log(arr_diff(all_dates,specific_dates)); // working!*/
+	var defPeriod_dates = arr_diff(all_dates,specific_dates);
+	defPeriod_dates.pop(); // We remove last element which is strangly not a date but 'diff'
+	return defPeriod_dates;
+}
+
+// generate the selected period (arrays of dates)
+function generate_specificPeriod(json_periods,limit_time,year_begin,year_end,period)
+{
+	var dates = [];
+	var limit_date = new Date(limit_time);
+/*	console.log(year_begin);
+	console.log(year_end);*/
+	for (var y = year_begin; y <= year_end;y++)
+	{
+/*		console.log(json_periods[String(y)][period].end);
+		console.log(json_periods[String(y)][period].begin);*/
+		for (var d = new Date(json_periods[String(y)][period].end); d > new Date(json_periods[String(y)][period].begin); d.setDate(d.getDate() - 1)) 
+		{
+			if(limit_time.getDay()==d.getDay()) // Only if same day of the week, algo choice XXX
+			{
+				d.setHours(limit_date.getHours());
+				d.setMinutes(limit_date.getMinutes());
+				d.setSeconds(limit_date.getSeconds());
+				dates.push(new Date(d));				
+			}
+		}
+	}
+	return dates;
 }
 
 module.exports = {
@@ -136,20 +239,37 @@ module.exports = {
 	predict: function (id,time,analysisMode,callback) 
 	{
 		// ----- Data fetching
-		var WEEK_SIZE 		= 7;
-		//var selected_days 	= [];
-		var station_free	= [];
-		var station_occup	= [];
-		var query_result	= [];
-		var limit_date 		= new Date(2012, 0, 1);
-		var curr_date		= new Date();
-		for (var d = new Date(time); d > limit_date; d.setDate(d.getDate() - WEEK_SIZE)) 
+		var WEEK_SIZE 			= 7;
+		var station_free		= [];
+		var station_occup		= [];
+		var query_result		= [];
+		var curr_date			= new Date();
+		var util 				= require('util');
+		var json_timePeriods 	= require('../../data/time/vacances.json');
+		//console.log(util.inspect(json_timePeriods, {showHidden: false, depth: null}));
+		//console.log(json_timePeriods["2014"].Hiver.begin);
+		var date 				= new Date(time);
+		var year 				= date.getFullYear();
+		var period 				= find_period(json_timePeriods,time);
+		var dates 				= [];
+		if(period == DEFAULT_PERIOD)
 		{
-			curr_date = new Date(d);
+			dates = generate_defaultPeriod(json_timePeriods,date,2013,year);
+			console.log("Default period");
+		}
+		else
+		{
+			dates = generate_specificPeriod(json_timePeriods,date,2013,year,period);
+			console.log("Specific period: " + period);
+		}
+		//console.log(dates);
+		for (var j = 0; j < dates.length; j++) 
+		{
+			curr_date = new Date(dates[j]);
 			query_result = queryMeasures(id,curr_date);
 			if(query_result == undefined) // no data has been found corresponding to id (unlikely, or call para error) or time (possible)
 			{
-				console.log("skippind query result ("+id+" - "+curr_date);
+				console.log("Skipping query result ("+id+" - "+curr_date+")");
 				continue;	
 			}			
 			console.log(query_result+'\n');
@@ -158,9 +278,7 @@ module.exports = {
 				station_free.push(query_result[i].available_bike_stands);
 				station_occup.push(query_result[i].available_bike);
 			}
-			//selected_days.push(curr_date);
-			//station_max.push(getMaxVelov(id,curr_date));
-			//station_curr.push(getCurrVelov(id,curr_date));
+			console.log("Query result used ("+id+" - "+curr_date+")");
 		}
 
 		// ----- Data analysis

@@ -10,7 +10,8 @@ module.exports = {
 	analysis:
 		function (req, res, next)
         {
-        	var station_id		= 8001;
+        	var station_id		= 2040;
+            //var date            = new Date(2015,9,20);
 			var date 			= Date.now();
 			var analysisMode 	= PredictionService.analysis_mode.MEAN;
         	PredictionService.predict(station_id,date,analysisMode,

@@ -9,7 +9,11 @@ module.exports = {
     {
         var i = 0;
         var parser = parse({delimiter: ';'});
-        var input = fs.createReadStream('./data/sta10004.csv');
+        
+        //var input = fs.createReadStream('./assets/extrait.csv');
+        var input = fs.createReadStream('./data/velov.csv');
+        
+        var iter = 0;
         parser.on(
             'readable',
             function()
@@ -30,13 +34,9 @@ module.exports = {
                             //if (err) return next(err);
                         }
                     );
-                    i++;
-                    
-                    // 34726203
-                    if (i % 100 == 0)
-                    {
-                        console.log(i / 727 + "%");
-                    }
+                    if(iter%1000==0)
+                        console.log(iter+" items loaded");
+                    iter++;
                 }
             }
         );
