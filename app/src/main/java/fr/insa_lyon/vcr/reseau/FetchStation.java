@@ -14,9 +14,13 @@ import java.util.List;
 
 /**
  * Created by julien on 29/04/15.
+ *
+ * This service is used to fetch all stations when app starts
+ * It is use only once, that's why we don't bother creating its own thread
+ * unlike UpdateStation.
+ *
  */
 public class FetchStation extends IntentService {
-
 
     private int result = Activity.RESULT_CANCELED;
 

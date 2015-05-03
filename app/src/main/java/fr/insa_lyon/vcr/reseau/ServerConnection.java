@@ -69,8 +69,7 @@ public class ServerConnection {
 
         try {
             // buffered reader httpResponseStream
-            BufferedReader httpResponseReader = new BufferedReader(
-                    new InputStreamReader(httpResponseStream, "iso-8859-1"), 8);
+            BufferedReader httpResponseReader = new BufferedReader(new InputStreamReader(httpResponseStream, "iso-8859-1"), 8);
             // String to hold current line from httpResponseReader
             String line = null;
             // Clear jsonString
@@ -83,15 +82,16 @@ public class ServerConnection {
             // Close Response Stream
             httpResponseStream.close();
         } catch (Exception e) {
-            Log.e("Buffer Error", "Error converting result " + e.toString());
+            Log.e("Buffer Error", "Une erreur est survenue à la lecture des données. : " + e.toString());
         }
 
         try {
             // Create jsonObject from the jsonString and return it
             return new JSONArray(jsonString);
         } catch (JSONException e) {
-            Log.e("JSON Parser", "Error parsing data " + e.toString());
+            Log.e("JSON Parser", "Une erreur est survenue en parsant les données : " + e.toString());
             return null;
         }
     }
+
 }

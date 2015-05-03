@@ -61,9 +61,8 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
 
 
     /**
-     * Receiver chargé de récupérer les données dans le message broadcasté par
-     * le UpdateStation et de les retransformer en JSON avant de les passer à une méthode
-     * qui va mettre à jour la carte
+     * Callback from UpdateStation Service. Will receive the static data about all stations
+     * at app launching.
      */
     private BroadcastReceiver receiverStat = new BroadcastReceiver() {
         @Override
@@ -78,6 +77,8 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                             Toast.LENGTH_LONG).show();
                     if (json_string.length() >= 2) {
                         parserStations(json_string);
+                        stopService(intentStat);
+                        startService(intentDyna);
                     }
                 } else {
                     if (!serverFailureDetected) {
@@ -99,9 +100,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                 int resultCode = bundle.getInt(UpdateStation.RESULT);
                 if (resultCode == RESULT_OK) {
                     String json_string = bundle.getString(UpdateStation.JSON_ARR);
-                    Toast.makeText(VelocityRaptorMain.this,
-                            "Update complete",
-                            Toast.LENGTH_LONG).show();
+                    Toast.makeText(VelocityRaptorMain.this, "Update complete", Toast.LENGTH_LONG).show();
                     if (json_string.length() >= 2) {
                         //parserStations(json_string);
                     }
@@ -139,15 +138,15 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         intentStat = new Intent(this, FetchStation.class);
         intentStat.putExtra(FetchStation.SERVER_URL, server_url + "/station");
         intentStat.putExtra(FetchStation.URL_PARAM_N1, "limit");
-        intentStat.putExtra(FetchStation.URL_PARAM_V1, "0");
+        intentStat.putExtra(FetchStation.URL_PARAM_V1, "30");
         startService(intentStat);
 
         // fetch dynamic data
         intentDyna = new Intent(this, UpdateStation.class);
         intentDyna.putExtra(UpdateStation.SERVER_URL, server_url + "/lastmeasure");
         intentDyna.putExtra(UpdateStation.URL_PARAM_N1, "limit");
-        intentDyna.putExtra(UpdateStation.URL_PARAM_V1, "0");
-        startService(intentDyna);
+        intentDyna.putExtra(UpdateStation.URL_PARAM_V1, "30");
+        //startService(intentDyna);
 
 
         // Ajout du listener sur le switch
@@ -160,7 +159,6 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         });
     }
 
-
     /**
      * Permet de "s'enregistrer" pour être contacté dans le cas d'un envoi de broadcast par
      * UpdateStaion (l'intent contenant le JSON)
@@ -169,7 +167,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
     protected void onResume() {
         super.onResume();
         registerReceiver(receiverStat, new IntentFilter(FetchStation.NOTIFICATION));
-        registerReceiver(receiverDyna, new IntentFilter(FetchStation.NOTIFICATION));
+        registerReceiver(receiverDyna, new IntentFilter(UpdateStation.NOTIFICATION));
     }
 
     @Override
@@ -190,11 +188,11 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
+        // on récupère la map via ce callback
         mMap = googleMap;
-        // position, marker, etc -> setUpMap est ici
+        // réglages génraux
         mMap.setMyLocationEnabled(true);
         mUiSettings = mMap.getUiSettings();
-        // Keep the UI Settings state in sync with the checkboxes.
         mUiSettings.setZoomControlsEnabled(true);
         mUiSettings.setCompassEnabled(true);
         mUiSettings.setMapToolbarEnabled(true);
@@ -204,6 +202,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         mUiSettings.setRotateGesturesEnabled(true);
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(45.763478, 4.835442), 12));
 
+        // listenners sur la map
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
 
             @Override
@@ -232,11 +231,8 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
             }
         });
 
+        // créer les marqueurs
         creerMarqueurs();
-        // Ajouter les marqueurs des stations vélovs, avec info bulles, etc.. : récupérer ça du serveur.
-       /* MarkerOptions marOpt1 = new MarkerOptions().position(new LatLng(45.759948, 4.836593)).title("Lyon").snippet("Snippet Lyon");
-        Marker m = mMap.addMarker(marOpt1);
-        m.setTitle("Title changed");*/
     }
 
 
@@ -262,7 +258,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
     }
 
     private void updateStations(String jsonString) {
-
+        // do nothing for the moment.
     }
 
     private void creerMarqueurs(){

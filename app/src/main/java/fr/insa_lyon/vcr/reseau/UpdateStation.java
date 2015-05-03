@@ -27,7 +27,7 @@ public class UpdateStation extends IntentService {
     public static final String NOTIFICATION = "fr.insa_lyon.vcr.reseau.update";
 
     ServerConnection serverConnection = null;
-    JSONArray fetchedResult;
+    JSONArray updateResult;
     List<NameValuePair> url_Param;
 
 
@@ -51,12 +51,7 @@ public class UpdateStation extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        if (serverConnection != null) {
-            fetchedResult = serverConnection.makeHttpGet();
-            if (fetchedResult != null)
-                result = Activity.RESULT_OK;
-            publishResults(fetchedResult, result);
-        }
+
     }
 
     private void publishResults(JSONArray jsonArr, int result) {
@@ -66,4 +61,19 @@ public class UpdateStation extends IntentService {
             intent.putExtra(JSON_ARR, jsonArr.toString());
         sendBroadcast(intent);
     }
+
+    public void work() {
+        new Thread(new Runnable() {
+            public void run() {
+                if (serverConnection != null) {
+                    updateResult = serverConnection.makeHttpGet();
+                    if (updateResult != null)
+                        result = Activity.RESULT_OK;
+                    publishResults(updateResult, result);
+                }
+            }
+        }).start();
+    }
+
+
 }
