@@ -30,7 +30,6 @@ public class StationVelov {
         try {
             name = jsonObj.getString("name").split("-", 2)[1]; // get only second part of the name
             id = jsonObj.getString("id");
-            position = new LatLng(jsonObj.getDouble("latitude"), jsonObj.getDouble("longitude"));
         } catch (JSONException e) {
             Log.e("STATION_VELOV", "Problem when parsing JSONObject.");
         }
@@ -40,7 +39,7 @@ public class StationVelov {
         this.marker.setTitle(name);
         snippetText = this.marker.getSnippet();
         this.marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.marqueurperso));
-        this.marker.setPosition(position);
+        position = this.marker.getPosition();
         numberOfBikes = 0;      // waiting for VelocityRaptorMain to fetch these data...
         numberOfFreeBikeStands = 0;
         withdrawal = true;  // default case assume user want to withdraw a bike from the station.

@@ -29,14 +29,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
-import fr.insa_lyon.vcr.modele.MarqueurPerso;
-import fr.insa_lyon.vcr.modele.Station;
 import fr.insa_lyon.vcr.modele.StationVelov;
 import fr.insa_lyon.vcr.reseau.FetchStation;
 import fr.insa_lyon.vcr.reseau.UpdateStation;
@@ -48,13 +43,13 @@ import fr.insa_lyon.vcr.utilitaires.ServerFailureDialog;
 public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCallback, FinishWithDialog {
 
     // ----------------------------------------------------------------------------------- VARIABLES
-    private GoogleMap mMap;
-    private UiSettings mUiSettings;
-    private int rayonCercle = 500;
-    private Circle cercleCourant;
-    private boolean isWithdrawMode = false;
-    HashMap<String, Station> stations;
-    List<MarqueurPerso> marqueurs;
+    protected GoogleMap mMap;
+    protected int circleRadius = 500;
+    protected Circle currentCircle;
+    protected boolean isWithdrawMode = false;
+    protected final String SERVER_URL = "http://vps165245.ovh.net";
+    //HashMap<String, Station> stations;
+    //List<MarqueurPerso> marqueurs;
 
 
     // NEW STATION:
@@ -63,8 +58,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
     DialogFragment exitDialogFragment;
     boolean serverFailureDetected = false;
 
-    // adresse du serveur
-    private String server_url = "http://vps165245.ovh.net";
+    // Download services intent
     Intent intentDyna;
     Intent intentStat;
 
@@ -108,7 +102,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                     String json_string = bundle.getString(UpdateStation.JSON_ARR);
                     Toast.makeText(VelocityRaptorMain.this, "Update complete", Toast.LENGTH_LONG).show();
                     if (json_string.length() >= 3) {  // Json is not empty or "[]"
-                        //updateValues(json_string);
+                        updateStationValues(json_string);
                     }
                 } else {
                     if (!serverFailureDetected) {
@@ -126,8 +120,9 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
-        stations = new HashMap<String, Station>();
-        marqueurs = new ArrayList<>();
+        //stations = new HashMap<String, Station>();
+        //marqueurs = new ArrayList<>();
+        mapStations = new HashMap<String, StationVelov>();
 
         // alert dialog in case of server failure
         exitDialogFragment = new ServerFailureDialog();
@@ -142,14 +137,14 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
 
         // fetch static data for all stations
         intentStat = new Intent(this, FetchStation.class);
-        intentStat.putExtra(FetchStation.SERVER_URL, server_url + "/station");
+        intentStat.putExtra(FetchStation.SERVER_URL, SERVER_URL + "/station");
         intentStat.putExtra(FetchStation.URL_PARAM_N1, "limit");
         intentStat.putExtra(FetchStation.URL_PARAM_V1, "30");
         startService(intentStat);
 
         // fetch dynamic data
         intentDyna = new Intent(this, UpdateStation.class);
-        intentDyna.putExtra(UpdateStation.SERVER_URL, server_url + "/lastmeasure");
+        intentDyna.putExtra(UpdateStation.SERVER_URL, SERVER_URL + "/lastmeasure");
         intentDyna.putExtra(UpdateStation.URL_PARAM_N1, "limit");
         intentDyna.putExtra(UpdateStation.URL_PARAM_V1, "30");
         //startService(intentDyna);
@@ -160,15 +155,13 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         switchWithdrawDeposit.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 isWithdrawMode = !isWithdrawMode;
-                majMarqueurs();
+                //majMarqueurs();
+                updateMarkerMode();
             }
         });
     }
 
-    /**
-     * Permet de "s'enregistrer" pour être contacté dans le cas d'un envoi de broadcast par
-     * UpdateStaion (l'intent contenant le JSON)
-     */
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -199,7 +192,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         mMap = googleMap;
         // réglages génraux
         mMap.setMyLocationEnabled(true);
-        mUiSettings = mMap.getUiSettings();
+        UiSettings mUiSettings = mMap.getUiSettings();
         mUiSettings.setZoomControlsEnabled(true);
         mUiSettings.setCompassEnabled(true);
         mUiSettings.setMapToolbarEnabled(true);
@@ -214,36 +207,36 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
 
             @Override
             public void onMapClick(LatLng position) {
-                if(cercleCourant != null){
-                    cercleCourant.remove();
+                if (currentCircle != null) {
+                    currentCircle.remove();
 
                     for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
-                        if (MathsUti.getDistance(entry.getValue().getPosition(), cercleCourant.getCenter()) <= rayonCercle) {
+                        if (MathsUti.getDistance(entry.getValue().getPosition(), currentCircle.getCenter()) <= circleRadius) {
                             entry.getValue().getMarqueur().setIcon(BitmapDescriptorFactory.fromResource(R.drawable.marqueurperso));
                         }
                     }
 
                     /*for (MarqueurPerso m : marqueurs) {
-                        if (MathsUti.getDistance(m.getMarqueur().getPosition(), cercleCourant.getCenter()) <= rayonCercle) {
+                        if (MathsUti.getDistance(m.getMarqueur().getPosition(), currentCircle.getCenter()) <= circleRadius) {
                             m.getMarqueur().setIcon(BitmapDescriptorFactory.fromResource(R.drawable.marqueurperso));
                         }
                     }*/
                 }
-                cercleCourant = mMap.addCircle(new CircleOptions()
+                currentCircle = mMap.addCircle(new CircleOptions()
                         .center(position)
-                        .radius(rayonCercle)
+                        .radius(circleRadius)
                         .strokeColor(0xFF00e676)
                         .fillColor(0x734caf50));
 
                 for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
-                    if (MathsUti.getDistance(entry.getValue().getMarqueur().getPosition(), position) <= rayonCercle) {
+                    if (MathsUti.getDistance(entry.getValue().getMarqueur().getPosition(), position) <= circleRadius) {
                         entry.getValue().getMarqueur().setIcon(BitmapDescriptorFactory.fromResource(R.drawable.marqueurpersorouge));
                         entry.getValue().getMarqueur().setTitle("DETECTE");
                     }
                 }
                 
       /*          for(MarqueurPerso m : marqueurs){
-                    if(MathsUti.getDistance(m.getMarqueur().getPosition(),position)<=rayonCercle){
+                    if(MathsUti.getDistance(m.getMarqueur().getPosition(),position)<=circleRadius){
                         m.getMarqueur().setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
                         m.getMarqueur().setIcon(BitmapDescriptorFactory.fromResource(R.drawable.marqueurpersorouge));
                         m.getMarqueur().setTitle("DETECTE");
@@ -286,17 +279,20 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
      * It gives a JSONObject and en empty marker to the constructor of StationVelov, which do all
      * the rest.
      *
-     * @param jsonString
+     * @param jsonString  Json String that can be parsed to a json array
      */
     private void fillMapStations(String jsonString) {
         try {
             JSONArray jArrayStations = new JSONArray(jsonString);
+            JSONObject currentJSON;
             MarkerOptions currentOpt;
             Marker currentMark;
-            LatLng currentPos;
+            LatLng currentPosition;
             for (int i = 0; i < jArrayStations.length(); i++) {
-                String id = (String) jArrayStations.getJSONObject(i).get("id");
-                currentOpt = new MarkerOptions();
+                currentJSON = jArrayStations.getJSONObject(i);
+                String id = (String) currentJSON.get("id");
+                currentPosition = new LatLng(currentJSON.getDouble("latitude"), currentJSON.getDouble("longitude"));
+                currentOpt = new MarkerOptions().position(currentPosition);
                 currentMark = mMap.addMarker(currentOpt);
                 mapStations.put(id, new StationVelov(jArrayStations.getJSONObject(i), currentMark));
             }
@@ -309,11 +305,11 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
      * Method uses a json String received from UpdateStations via receiverDyna to update the number
      * of bikes in all stations.
      *
-     * @param json_string
+     * @param jsonString Json String that can be parsed to a json array
      */
-    private void updateStationValues(String json_string) {
+    protected void updateStationValues(String jsonString) {
         try {
-            JSONArray jArrayMeasures = new JSONArray(json_string);
+            JSONArray jArrayMeasures = new JSONArray(jsonString);
             JSONObject currentStation;
             JSONObject currentMeasure;
             String stationId;
@@ -347,7 +343,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         }
     }*/
 
-    private void majMarqueurs(){
+/*    private void majMarqueurs(){
         for(MarqueurPerso m : marqueurs){
             if (isWithdrawMode) {
                 m.getMarqueur().setSnippet(m.getStation().getSnippetDeposer());
@@ -357,11 +353,10 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
             }
             m.getMarqueur().hideInfoWindow();
         }
-    }
+    }*/
 
 
     public void updateMarkerMode() {
-        Iterator it = mapStations.keySet().iterator();
         for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
             entry.getValue().setMode(isWithdrawMode);
         }
