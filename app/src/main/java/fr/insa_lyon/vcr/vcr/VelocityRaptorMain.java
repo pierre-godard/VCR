@@ -45,7 +45,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
 
     // ----------------------------------------------------------------------------------- VARIABLES
     protected GoogleMap mMap;
-    protected int circleRadius = 500;
+    protected int circleRadius = 500; // in meters
     protected Circle currentCircle;
     protected boolean isWithdrawMode = false;
     protected final String SERVER_URL = "http://vps165245.ovh.net";
