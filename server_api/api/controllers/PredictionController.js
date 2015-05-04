@@ -19,7 +19,12 @@ module.exports = {
                 {
                     var object = 
                     {
-                        // TODO
+                        station: station_id,
+                        predict_bike_stands: free,
+                        predict_bikes: occup,
+                        predict_state: state,
+                        confidence: prediction_quality,
+                        time: date
                     };
                     Prediction.create(
                         object,
