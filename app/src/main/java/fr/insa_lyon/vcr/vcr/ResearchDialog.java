@@ -113,6 +113,7 @@ public class ResearchDialog extends Dialog {
             for (AutocompletePrediction prediction : autocompletePredictions) {
                 adp.add(new ResultatPartiel(prediction.getDescription(),prediction.getPlaceId()));
             }
+            autocompletePredictions.release();
         }
     }
 
@@ -134,6 +135,7 @@ public class ResearchDialog extends Dialog {
         protected void onPostExecute(PlaceBuffer places) {
             ((VelocityRaptorMain)activite).drawCircle(places.get(0).getLatLng());
             dismiss();
+            places.release();
         }
     }
 
