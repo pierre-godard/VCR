@@ -64,15 +64,20 @@ function analysis (datas,mode)
 
 
 // returns the measures matching the specified id and withing time stamp of [time]
-function queryMeasures(id,time)
+function queryMeasures(id,time,callback)
 {
 	Measure.find({station: id, day: time.getDay(), hour: time.getHours(), 
 		time_slice: Math.floor(time.getMinutes()/Measure.NB_TIME_SLICES) },
 		function(err, found) 
 		{
-      		console.log("found: "+found);
+      		/*console.log("found: "+found);
       		console.log("error: "+err);
-      		return found;
+      		for (var i = 0; i < found.length; i++) 
+			{
+      			console.log("available_bike_stands: "+found[i].available_bike_stands);
+				console.log("available_bikes:       "+found[i].available_bikes);
+			}*/
+      		callback(found);
       	}
     );
 }
@@ -262,23 +267,28 @@ module.exports = {
 			dates = generate_specificPeriod(json_timePeriods,date,2013,year,period);
 			console.log("Specific period: " + period);
 		}
-		//console.log(dates);
+		console.log("Dates [] lenght: "+dates.length);
 		for (var j = 0; j < dates.length; j++) 
 		{
 			curr_date = new Date(dates[j]);
-			query_result = queryMeasures(id,curr_date);
-			if(query_result == undefined) // no data has been found corresponding to id (unlikely, or call para error) or time (possible)
-			{
-				console.log("Skipping query result ("+id+" - "+curr_date+")");
-				continue;	
-			}			
-			console.log(query_result+'\n');
-			for (i = 0; i < query_result.length; i++) 
-			{ 
-				station_free.push(query_result[i].available_bike_stands);
-				station_occup.push(query_result[i].available_bike);
-			}
-			console.log("Query result used ("+id+" - "+curr_date+")");
+			queryMeasures(id,curr_date,
+				function(query_result)
+				{
+					if(query_result === undefined) // no data has been found corresponding to id (unlikely, or call para error) or time (possible)
+					{
+						console.log("Skipping query result ("+id+" - "+curr_date+")");
+					}	
+					else
+					{		
+						for (i = 0; i < query_result.length; i++) 
+						{ 
+							station_free.push(query_result[i].available_bike_stands);
+							station_occup.push(query_result[i].available_bikes);
+						}
+						console.log("Query result used ("+id+" - "+curr_date+")");
+					}
+				}
+			);
 		}
 
 		// ----- Data analysis
