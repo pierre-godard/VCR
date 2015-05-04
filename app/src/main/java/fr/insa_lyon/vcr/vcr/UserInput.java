@@ -91,7 +91,7 @@ public class UserInput extends Activity implements ConnectionCallbacks, OnConnec
     @Override
     public void onConnected(Bundle connectionHint) {
 
-        new GetPredictions().execute("b");
+        new GetPredictions().execute("boulevard");
         adp.add("work");
         t1.setAdapter(adp);
     }
@@ -116,8 +116,8 @@ public class UserInput extends Activity implements ConnectionCallbacks, OnConnec
                     Places.GeoDataApi.getAutocompletePredictions(mGoogleApiClient, test[0],
                             rectangleLyon, null);
             AutocompletePredictionBuffer autocompletePredictions = results
-                    .await();
-
+                    .await(120,TimeUnit.SECONDS);
+            Log.d("PATAPON",autocompletePredictions.getStatus().toString());
             final com.google.android.gms.common.api.Status status = autocompletePredictions.getStatus();
             if(!status.isSuccess()){
                 Log.e("API_connexion_failed", status.toString());
