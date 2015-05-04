@@ -36,7 +36,7 @@ public class StationVelov {
         this.marker.setTitle(name);
         snippetText = this.marker.getSnippet();
         this.marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.marqueurperso));
-        this.marker.setFlat(true);
+        this.marker.setFlat(false);
         position = this.marker.getPosition();
         numberOfBikes = 0;      // waiting for VelocityRaptorMain to fetch these data...
         numberOfFreeBikeStands = 0;
