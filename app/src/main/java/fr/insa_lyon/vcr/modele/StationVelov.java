@@ -22,9 +22,6 @@ public class StationVelov {
     boolean withdrawal;
     String snippetText;
 
-    public StationVelov() {
-    }
-
     public StationVelov(JSONObject jsonObj, Marker marqueur) {
         // Static Data
         try {
