@@ -226,7 +226,12 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                     drawCircle(marker.getPosition());
                 }
     
-                marker.showInfoWindow();
+                if(marker.isInfoWindowShown()){
+                    marker.hideInfoWindow();
+                }
+                else{
+                    marker.showInfoWindow();
+                }
                 return true;
             }
         });
@@ -265,6 +270,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
             }
         }
         currentCircle = c;
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(position));
     }
 
     /**
