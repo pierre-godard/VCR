@@ -59,6 +59,12 @@ module.exports.routes = {
     {
         controller: 'prediction',
         action: 'analysis'
+    },
+
+    '/prediction/all':
+    {
+        controller: 'prediction',
+        action: 'all'
     }
 
     /***************************************************************************

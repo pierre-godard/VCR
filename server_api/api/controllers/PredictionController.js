@@ -13,6 +13,8 @@ module.exports = {
         	var station_id		= 2040;
             //var date            = new Date(2015,9,20);
 			var date 			= Date.now();
+            /*var delta_date      = req.param('delta');
+            date+=delta_date;*/
 			var analysisMode 	= PredictionService.analysis_mode.MEAN;
         	PredictionService.predict(station_id,date,analysisMode,
         		function (state,free,occup,prediction_quality)
@@ -42,7 +44,13 @@ module.exports = {
     				res.end('\n');
     			}
         	);
+    
+        },
 
+    all:
+        function (req, res, next)
+        {
+            //PredictionController.analysis(req, res, next);    
         }
 
 };
