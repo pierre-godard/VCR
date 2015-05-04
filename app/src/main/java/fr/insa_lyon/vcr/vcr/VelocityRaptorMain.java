@@ -252,14 +252,14 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
     private Circle drawCircle(LatLng position) {
         Circle c = mMap.addCircle(new CircleOptions()
                 .center(position)
-                .strokeWidth(4)
+                .strokeWidth(6)
                 .radius(circleRadius)
-                .strokeColor(0xFF000000)
+                .strokeColor(0xFFFFFFFF)
                 .fillColor(0x734caf50));
 
         ValueAnimator vAnimator = new ValueAnimator();
         vAnimator.setIntValues(0, circleRadius);
-        vAnimator.setDuration(1500);
+        vAnimator.setDuration(100);
         vAnimator.setEvaluator(new IntEvaluator());
         vAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
         CustomAnimatorUpdateListener caul = new CustomAnimatorUpdateListener();
