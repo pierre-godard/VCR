@@ -34,9 +34,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".UserInput"
-            android:label="@string/title_activity_user_input" />
 
         <service
             android:name="fr.insa_lyon.vcr.reseau.FetchStation"

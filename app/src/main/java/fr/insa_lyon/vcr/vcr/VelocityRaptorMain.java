@@ -179,10 +179,12 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
     //----------------------------------------------------------------------- Listenners - CallBacks
 
     public void onButtonClickedMain(View v) {
-        if (v == findViewById(R.id.but_recherche)) {
+      /*  if (v == findViewById(R.id.but_recherche)) {
             Intent intent = new Intent(this, UserInput.class);
             startActivityForResult(intent, 1);
-        }
+        }*/
+        ResearchDialog dialog = new ResearchDialog(this);
+        dialog.show();
     }
 
     @Override
@@ -207,41 +209,14 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
 
             @Override
             public void onMapClick(LatLng position) {
-                if (currentCircle != null) {
-                    currentCircle.remove();
-                    for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
-                        if (MathsUti.getDistance(entry.getValue().getPosition(), currentCircle.getCenter()) <= circleRadius) {
-                            entry.getValue().setSelected(false);
-                        }
-                    }
-                }
-                currentCircle = drawCircle(position);
-                for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
-                    if (MathsUti.getDistance(entry.getValue().getMarqueur().getPosition(), position) <= circleRadius) {
-                        entry.getValue().setSelected(true);
-                    }
-                }
+                drawCircle(position);
             }
         });
 
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
-                if (currentCircle != null) {
-                    currentCircle.remove();
-                    for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
-                        if (MathsUti.getDistance(entry.getValue().getPosition(), marker.getPosition()) <= circleRadius) {
-                            entry.getValue().setSelected(false);
-                        }
-                    }
-                }
-                currentCircle = drawCircle(marker.getPosition());
-                for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
-                    if (MathsUti.getDistance(entry.getValue().getMarqueur().getPosition(), marker.getPosition()) <= circleRadius) {
-                        entry.getValue().setSelected(true);
-                    }
-                }
-                marker.showInfoWindow();
+                drawCircle(marker.getPosition());
                 return true;
             }
         });
@@ -249,7 +224,15 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
 
     //------------------------------------------------------------------------------ General Methods
 
-    private Circle drawCircle(LatLng position) {
+    public void drawCircle(LatLng position) {
+        if (currentCircle != null) {
+            currentCircle.remove();
+            for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
+                if (MathsUti.getDistance(entry.getValue().getPosition(), currentCircle.getCenter()) <= circleRadius) {
+                    entry.getValue().setSelected(false);
+                }
+            }
+        }
         Circle c = mMap.addCircle(new CircleOptions()
                 .center(position)
                 .strokeWidth(6)
@@ -266,7 +249,12 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         caul.setCircle(c);
         vAnimator.addUpdateListener(caul);
         vAnimator.start();
-        return c;
+        for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
+            if (MathsUti.getDistance(entry.getValue().getMarqueur().getPosition(), position) <= circleRadius) {
+                entry.getValue().setSelected(true);
+            }
+        }
+        currentCircle = c;
     }
 
     /**
