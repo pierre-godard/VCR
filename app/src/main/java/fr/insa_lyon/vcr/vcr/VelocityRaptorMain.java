@@ -216,8 +216,22 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
-                drawCircle(marker.getPosition());
-                marker.showInfoWindow();
+                boolean isMarkerSelected = false;
+                for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
+                    if (entry.getValue().getMarqueur().getId().equals(marker.getId()) && entry.getValue().isSelected()) {
+                        isMarkerSelected = true;
+                    }
+                }
+                if(!isMarkerSelected) {
+                    drawCircle(marker.getPosition());
+                }
+    
+                if(marker.isInfoWindowShown()){
+                    marker.hideInfoWindow();
+                }
+                else{
+                    marker.showInfoWindow();
+                }
                 return true;
             }
         });
@@ -236,10 +250,10 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         }
         Circle c = mMap.addCircle(new CircleOptions()
                 .center(position)
-                .strokeWidth(0)
+                .strokeWidth(6)
                 .radius(circleRadius)
                 .strokeColor(0xFFFFFFFF)
-                .fillColor(0x550080f1));
+                .fillColor(0x734caf50));
 
         ValueAnimator vAnimator = new ValueAnimator();
         vAnimator.setIntValues(0, circleRadius);
@@ -256,6 +270,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
             }
         }
         currentCircle = c;
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(position));
     }
 
     /**
