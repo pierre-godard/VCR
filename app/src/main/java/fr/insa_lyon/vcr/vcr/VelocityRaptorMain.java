@@ -50,7 +50,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
     protected GoogleMap mMap;
     protected int circleRadius = 600; // in meters
     protected Circle currentCircle;
-    protected boolean isWithdrawMode = false;
+    protected boolean isWithdrawMode = true;
     protected final String SERVER_URL = "http://vps165245.ovh.net";
 
     HashMap<String, StationVelov> mapStations;
@@ -252,10 +252,10 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         }
         Circle c = mMap.addCircle(new CircleOptions()
                 .center(position)
-                .strokeWidth(6)
+                .strokeWidth(0)
                 .radius(circleRadius)
                 .strokeColor(0xFFFFFFFF)
-                .fillColor(0x734caf50));
+                .fillColor(0x730080f1));
 
         ValueAnimator vAnimator = new ValueAnimator();
         vAnimator.setIntValues(0, circleRadius);
