@@ -219,8 +219,11 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                 Log.d("PATAPON", "MARKER CLIQUE, ISINFOWINDOWSHOWN="+marker.isInfoWindowShown());
                 boolean isMarkerSelected = false;
                 for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
-                    if (entry.getValue().getMarqueur().getId().equals(marker.getId()) && entry.getValue().isSelected()) {
-                        isMarkerSelected = true;
+                    if (entry.getValue().getMarqueur().getId().equals(marker.getId())) {
+                        entry.getValue().switchInfoWindowShown();
+                        if(entry.getValue().isSelected()) {
+                            isMarkerSelected = true;
+                        }
                         break;
                     }
                 }
