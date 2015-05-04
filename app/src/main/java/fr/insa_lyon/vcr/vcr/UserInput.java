@@ -21,9 +21,12 @@ import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.Result;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.places.AutocompleteFilter;
 import com.google.android.gms.location.places.AutocompletePrediction;
 import com.google.android.gms.location.places.AutocompletePredictionBuffer;
 
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.PlaceTypes;
 import com.google.android.gms.location.places.Places;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
@@ -33,6 +36,8 @@ import com.google.android.gms.plus.Plus;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 
 import fr.insa_lyon.vcr.modele.ResultatPartiel;
@@ -75,6 +80,7 @@ public class UserInput extends Activity implements ConnectionCallbacks, OnConnec
         //instance API
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(Places.GEO_DATA_API)
+                .addApi(Places.PLACE_DETECTION_API)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .build();
@@ -91,8 +97,8 @@ public class UserInput extends Activity implements ConnectionCallbacks, OnConnec
     @Override
     public void onConnected(Bundle connectionHint) {
 
-        new GetPredictions().execute("boulevard");
-        adp.add("work");
+        new GetPredictions().execute("boulevard stalingrad lyon");
+        //adp.add("work");
         t1.setAdapter(adp);
     }
 
@@ -111,23 +117,16 @@ public class UserInput extends Activity implements ConnectionCallbacks, OnConnec
             LatLng sudOuestLyon = new LatLng(45.708931, 4.745801);
             LatLng nordEstLyon = new LatLng(45.805918, 4.924447);
             LatLngBounds rectangleLyon = new LatLngBounds(sudOuestLyon, nordEstLyon);
-
+            Set<Integer> placeTypes = new TreeSet<>();
+            placeTypes.add(Place.TYPE_GEOCODE);
+            AutocompleteFilter filtre = AutocompleteFilter.create(placeTypes);
             PendingResult<AutocompletePredictionBuffer> results  =
                     Places.GeoDataApi.getAutocompletePredictions(mGoogleApiClient, test[0],
-                            rectangleLyon, null);
+                            rectangleLyon, filtre );
+            Log.d("PATAPON","Debut de await");
             AutocompletePredictionBuffer autocompletePredictions = results
-                    .await(120,TimeUnit.SECONDS);
-            Log.d("PATAPON",autocompletePredictions.getStatus().toString());
-            final com.google.android.gms.common.api.Status status = autocompletePredictions.getStatus();
-            if(!status.isSuccess()){
-                Log.e("API_connexion_failed", status.toString());
-
-            }
-            else{
-                Log.e("Not_API_Problem", "on sait pas ce que c'est");
-            }
-
-
+                    .await();
+            Log.d("PATAPON","Fin de doInBackground");
             return autocompletePredictions;
         }
 
@@ -135,14 +134,13 @@ public class UserInput extends Activity implements ConnectionCallbacks, OnConnec
          * the result from doInBackground() */
         @Override
          protected void onPostExecute(AutocompletePredictionBuffer autocompletePredictions) {
-
-            Iterator<AutocompletePrediction> iterator = autocompletePredictions.iterator();
-            while (iterator.hasNext()) {
-                AutocompletePrediction prediction = iterator.next();
-                adp.add(prediction.toString());
-
-                // Try somehow to return our Prediction's List
+            Log.d("PATAPON","Debut boucle buffer");
+            for (AutocompletePrediction prediction : autocompletePredictions) {
+                Log.d("PATAPON", prediction.getDescription());
+                Log.d("BANDE D'ENCULES", prediction.getPlaceTypes().toString());
+                adp.add(prediction.getDescription());
             }
+            Log.d("PATAPON","Fin boucle buffer");
         }
     }
 
