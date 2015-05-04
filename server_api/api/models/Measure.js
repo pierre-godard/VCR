@@ -25,6 +25,8 @@ var formatter = function (value)
     d.setUTCSeconds(value.last_update);
     value.day = d.getDay();
     value.hour = d.getHours(); 
+    value.date = d.getDate();
+    value.month = d.getMonth();
     value.time_slice = Math.floor(d.getMinutes()/Measure.NB_TIME_SLICES);
     delete value['number'];
     delete value['name'];
@@ -49,6 +51,14 @@ module.exports = {
             unique: true
         },
         last_update: {
+            type: 'integer',
+            required: true
+        },
+        month: {
+            type: 'integer',
+            required: true
+        },
+        date: {
             type: 'integer',
             required: true
         },

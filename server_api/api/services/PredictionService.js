@@ -66,16 +66,19 @@ function analysis (datas,mode)
 // returns the measures matching the specified id and withing time stamp of [time]
 function queryMeasures(id,time,callback)
 {
-	Measure.find({station: id, day: time.getDay(), hour: time.getHours(), 
+	Measure.find({station: id, day: time.getDay(), date: time.getDate(), 
+		month: time.getMonth(), hour: time.getHours(), 
 		time_slice: Math.floor(time.getMinutes()/Measure.NB_TIME_SLICES) },
 		function(err, found) 
 		{
-      		/*console.log("found: "+found);
+			console.log("-- Time:        "+time);
+/*      		console.log("found: "+found);
       		console.log("error: "+err);
       		for (var i = 0; i < found.length; i++) 
 			{
       			console.log("available_bike_stands: "+found[i].available_bike_stands);
 				console.log("available_bikes:       "+found[i].available_bikes);
+				console.log("last_update:           "+Date(found[i].last_update));
 			}*/
       		callback(found);
       	}
@@ -248,7 +251,6 @@ module.exports = {
 		var station_free		= [];
 		var station_occup		= [];
 		var query_result		= [];
-		var curr_date			= new Date();
 		var util 				= require('util');
 		var json_timePeriods 	= require('../../data/time/vacances.json');
 		//console.log(util.inspect(json_timePeriods, {showHidden: false, depth: null}));
@@ -268,16 +270,15 @@ module.exports = {
 			dates = generate_specificPeriod(json_timePeriods,date,2013,year,period);
 			console.log("Specific period: " + period);
 		}
-		console.log("Dates [] lenght: "+dates.length);
+		//console.log("Dates: "+dates);
 		for (var j = 0; j < dates.length; j++) 
 		{
-			curr_date = new Date(dates[j]);
-			queryMeasures(id,curr_date,
+			queryMeasures(id,new Date(dates[j]),
 				function(query_result)
 				{
-					if(query_result === undefined) // no data has been found corresponding to id (unlikely, or call para error) or time (possible)
+					if(query_result == undefined || query_result.length == 0) // no data has been found corresponding to id (unlikely, or call para error) or time (possible)
 					{
-						console.log("Skipping query result ("+id+" - "+curr_date+")");
+						console.log("                Skipping query result ("+id+")");
 					}	
 					else
 					{		
@@ -285,17 +286,18 @@ module.exports = {
 						{ 
 							station_free.push(query_result[i].available_bike_stands);
 							station_occup.push(query_result[i].available_bikes);
+							console.log("measure date:   "+new Date(query_result[i].last_update));
+							console.log("free - occup:   "+query_result[i].available_bike_stands+"/"+query_result[i].available_bikes);
 						}
-						console.log("Query result used ("+id+" - "+curr_date+")");
+						console.log("                Query result used     ("+id+")");
 					}
 					callback_nb++; // before to avoid dates.length - 1 at each loop
-					if(callback_nb == dates.length)
+					if(callback_nb == dates.length) // TODO via async ?
 					{		
 						// ----- Data analysis
 						var free_overTime 	= analysis(station_free,analysisMode);
 						var occup_overTime 	= analysis(station_occup,analysisMode);
 						//var diff_overTime 	= max_overTime - curr_overTime;
-
 						console.log("station_free:   "+station_free);
 						console.log("station_occup:  "+station_occup);
 						console.log("free_overTime:  "+free_overTime);
