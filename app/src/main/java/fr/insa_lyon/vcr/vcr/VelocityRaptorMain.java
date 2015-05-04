@@ -216,7 +216,15 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
-                drawCircle(marker.getPosition());
+                boolean isMarkerSelected = false;
+                for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
+                    if (entry.getValue().getMarqueur().getId().equals(marker.getId()) && entry.getValue().isSelected()) {
+                        isMarkerSelected = true;
+                    }
+                }
+                if(!isMarkerSelected) {
+                    drawCircle(marker.getPosition());
+                }
                 return true;
             }
         });
