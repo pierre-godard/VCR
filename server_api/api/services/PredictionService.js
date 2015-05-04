@@ -257,6 +257,7 @@ module.exports = {
 		var year 				= date.getFullYear();
 		var period 				= find_period(json_timePeriods,time);
 		var dates 				= [];
+		var callback_nb			= 0;
 		if(period == DEFAULT_PERIOD)
 		{
 			dates = generate_defaultPeriod(json_timePeriods,date,2013,year);
@@ -287,40 +288,45 @@ module.exports = {
 						}
 						console.log("Query result used ("+id+" - "+curr_date+")");
 					}
+					callback_nb++; // before to avoid dates.length - 1 at each loop
+					if(callback_nb == dates.length)
+					{		
+						// ----- Data analysis
+						var free_overTime 	= analysis(station_free,analysisMode);
+						var occup_overTime 	= analysis(station_occup,analysisMode);
+						//var diff_overTime 	= max_overTime - curr_overTime;
+
+						console.log("station_free:   "+station_free);
+						console.log("station_occup:  "+station_occup);
+						console.log("free_overTime:  "+free_overTime);
+						console.log("occup_overTime: "+occup_overTime);
+						//console.log("diff_overTime: "+diff_overTime);
+
+						// ----- State selection
+						if (isNaN(occup_overTime) || isNaN(free_overTime))
+						{
+							callback(PredictionService.station_state.UNKNOWN);
+						}
+						else if (free_overTime < PredictionService.station_values.FULL_LIMIT)
+						{
+							callback(PredictionService.station_state.FULL);
+						} 
+						else if (free_overTime <= PredictionService.station_values.NEAR_FULL_LIMIT)
+						{
+							callback(PredictionService.station_state.NEAR_FULL);
+						}
+						else if (occup_overTime < PredictionService.station_values.EMPTY_LIMIT)
+						{
+							callback(PredictionService.station_state.EMPTY);
+						}
+						else if (occup_overTime <= PredictionService.station_values.NEAR_EMPTY_LIMIT)
+						{
+							callback(PredictionService.station_state.NEAR_EMPTY);
+						}
+						callback(PredictionService.station_state.INTERM);
+					}
 				}
 			);
 		}
-
-		// ----- Data analysis
-		var free_overTime 	= analysis(station_free,analysisMode);
-		var occup_overTime 	= analysis(station_occup,analysisMode);
-		//var diff_overTime 	= max_overTime - curr_overTime;
-
-		console.log("free_overTime:  "+free_overTime);
-		console.log("occup_overTime: "+occup_overTime);
-		//console.log("diff_overTime: "+diff_overTime);
-
-		// ----- State selection
-		if (isNaN(occup_overTime) || isNaN(free_overTime))
-		{
-			callback(PredictionService.station_state.UNKNOWN);
-		}
-		else if (free_overTime < PredictionService.station_values.FULL_LIMIT)
-		{
-			callback(PredictionService.station_state.FULL);
-		} 
-		else if (free_overTime <= PredictionService.station_values.NEAR_FULL_LIMIT)
-		{
-			callback(PredictionService.station_state.NEAR_FULL);
-		}
-		else if (occup_overTime < PredictionService.station_values.EMPTY_LIMIT)
-		{
-			callback(PredictionService.station_state.EMPTY);
-		}
-		else if (occup_overTime <= PredictionService.station_values.NEAR_EMPTY_LIMIT)
-		{
-			callback(PredictionService.station_state.NEAR_EMPTY);
-		}
-		callback(PredictionService.station_state.INTERM);
 	}
 };
