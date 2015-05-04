@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import fr.insa_lyon.vcr.modele.ResultatPartiel;
+import fr.insa_lyon.vcr.utilitaires.UsefulConstants;
 
 /**
  * TODO: document your custom view class.
@@ -96,13 +97,9 @@ public class ResearchDialog extends Dialog {
         @Override
         protected AutocompletePredictionBuffer doInBackground(String... recherche) {
 
-            LatLng sudOuestLyon = new LatLng(45.708931, 4.745801);
-            LatLng nordEstLyon = new LatLng(45.805918, 4.924447);
-            LatLngBounds rectangleLyon = new LatLngBounds(sudOuestLyon, nordEstLyon);
-
             PendingResult<AutocompletePredictionBuffer> results  =
                     Places.GeoDataApi.getAutocompletePredictions(mGoogleApiClient, recherche[0],
-                            rectangleLyon, null );
+                            UsefulConstants.rectangleLyon, null );
             AutocompletePredictionBuffer autocompletePredictions = results
                     .await();
             return autocompletePredictions;
