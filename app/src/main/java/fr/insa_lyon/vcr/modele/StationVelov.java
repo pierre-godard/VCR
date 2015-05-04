@@ -32,13 +32,11 @@ public class StationVelov {
             Log.e("STATION_VELOV", "Problem when parsing JSONObject.");
         }
 
-
         // Marker
         this.marker = marqueur;
         this.marker.setTitle(name);
         snippetText = this.marker.getSnippet();
-        this.marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.marqueurperso));
-        //this.marker.setFlat(false);
+        this.marker.setFlat(false);
         position = this.marker.getPosition();
         numberOfBikes = 0;      // waiting for VelocityRaptorMain to fetch these data...
         numberOfFreeBikeStands = 0;
@@ -58,8 +56,6 @@ public class StationVelov {
 
     public void setMode(boolean withdrawal) {
         this.withdrawal = withdrawal;
-        setMarkerSnippet(numberOfBikes, numberOfFreeBikeStands);
-        marker.hideInfoWindow();
         updateMarkerIcon();
     }
 
@@ -112,14 +108,8 @@ public class StationVelov {
 
     public void setMarkerSnippet(int avail_Bikes, int avail_Spaces) {
         Log.d("SET_MARKER_SNIPPET", "Setting snippet for marker of station" + this.name);
-        String snippet;
-        if (withdrawal) {
-            snippet = "Retirer un vélo.\nVélos disponibles : " + avail_Bikes + ".\n" +
-                    "Empacements disponibles : " + avail_Spaces + ".";
-        } else {
-            snippet = "Reposer un vélo.\nVélos disponibles : " + avail_Bikes + ".\n" +
-                    "Empacements disponibles : " + avail_Spaces + ".";
-        }
+        String snippet = "Vélos disponibles : " + avail_Bikes + ".\n" +
+                "Empacements disponibles : " + avail_Spaces + ".";
         marker.setSnippet(snippet);
     }
 
