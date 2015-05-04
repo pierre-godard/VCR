@@ -26,6 +26,7 @@ import com.google.android.gms.location.places.AutocompletePrediction;
 import com.google.android.gms.location.places.AutocompletePredictionBuffer;
 
 import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.PlaceBuffer;
 import com.google.android.gms.location.places.PlaceTypes;
 import com.google.android.gms.location.places.Places;
 import com.google.android.gms.maps.GoogleMap;
@@ -43,7 +44,7 @@ import java.util.concurrent.TimeUnit;
 import fr.insa_lyon.vcr.modele.ResultatPartiel;
 
 
-public class UserInput extends Activity implements ConnectionCallbacks, OnConnectionFailedListener {
+public class UserInput extends Activity {
 
    /* private void majAdapter(String recherche, final ArrayAdapter adapter){
         LatLng sudOuestLyon = new LatLng(45.708931, 4.745801);
@@ -69,7 +70,7 @@ public class UserInput extends Activity implements ConnectionCallbacks, OnConnec
 // début test
 
     private GoogleApiClient mGoogleApiClient;
-    private ArrayAdapter<String> adp;
+    private ArrayAdapter<ResultatPartiel> adp;
     private AutoCompleteTextView t1;
 
     @Override
@@ -81,25 +82,39 @@ public class UserInput extends Activity implements ConnectionCallbacks, OnConnec
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(Places.GEO_DATA_API)
                 .addApi(Places.PLACE_DETECTION_API)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
                 .build();
 
         mGoogleApiClient.connect();
-        List<String> resultList = new ArrayList<>();
-        adp = new ArrayAdapter<String>(this,
+        List<ResultatPartiel> resultList = new ArrayList<>();
+        adp = new ArrayAdapter<ResultatPartiel>(this,
         android.R.layout.simple_dropdown_item_1line, resultList);
         adp.setNotifyOnChange(true);
         t1 = (AutoCompleteTextView) findViewById(R.id.autoCompleteDepart);
         t1.setThreshold(1);
-    }
+        t1.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                //Rien du tout
+            }
 
-    @Override
-    public void onConnected(Bundle connectionHint) {
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                new GetPredictions().execute(s.toString());
+                t1.setAdapter(adp);
+            }
 
-        new GetPredictions().execute("boulevard stalingrad lyon");
-        //adp.add("work");
-        t1.setAdapter(adp);
+            @Override
+            public void afterTextChanged(Editable s) {
+                //Rien du tout
+            }
+        });
+
+        t1.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                new GetPlace().execute(((ResultatPartiel)parent.getAdapter().getItem(position)).getIdentifiantPlace());
+            }
+        });
     }
 
 
@@ -109,24 +124,17 @@ public class UserInput extends Activity implements ConnectionCallbacks, OnConnec
 
         // Try to understand how AsyncTask works !!!!!!!
         @Override
-         protected AutocompletePredictionBuffer doInBackground(String... test) {
-
-            AutoCompleteTextView t1 = (AutoCompleteTextView)
-                    findViewById(R.id.autoCompleteDepart);
+         protected AutocompletePredictionBuffer doInBackground(String... recherche) {
 
             LatLng sudOuestLyon = new LatLng(45.708931, 4.745801);
             LatLng nordEstLyon = new LatLng(45.805918, 4.924447);
             LatLngBounds rectangleLyon = new LatLngBounds(sudOuestLyon, nordEstLyon);
-            Set<Integer> placeTypes = new TreeSet<>();
-            placeTypes.add(Place.TYPE_GEOCODE);
-            AutocompleteFilter filtre = AutocompleteFilter.create(placeTypes);
+
             PendingResult<AutocompletePredictionBuffer> results  =
-                    Places.GeoDataApi.getAutocompletePredictions(mGoogleApiClient, test[0],
-                            rectangleLyon, filtre );
-            Log.d("PATAPON","Debut de await");
+                    Places.GeoDataApi.getAutocompletePredictions(mGoogleApiClient, recherche[0],
+                            rectangleLyon, null );
             AutocompletePredictionBuffer autocompletePredictions = results
                     .await();
-            Log.d("PATAPON","Fin de doInBackground");
             return autocompletePredictions;
         }
 
@@ -134,48 +142,31 @@ public class UserInput extends Activity implements ConnectionCallbacks, OnConnec
          * the result from doInBackground() */
         @Override
          protected void onPostExecute(AutocompletePredictionBuffer autocompletePredictions) {
-            Log.d("PATAPON","Debut boucle buffer");
+            adp.clear();
             for (AutocompletePrediction prediction : autocompletePredictions) {
-                Log.d("PATAPON", prediction.getDescription());
-                Log.d("BANDE D'ENCULES", prediction.getPlaceTypes().toString());
-                adp.add(prediction.getDescription());
+                adp.add(new ResultatPartiel(prediction.getDescription(),prediction.getPlaceId()));
             }
-            Log.d("PATAPON","Fin boucle buffer");
         }
     }
 
-    @Override
-    public void onConnectionSuspended(int cause) {
+    private class GetPlace extends AsyncTask<String,Void,PlaceBuffer> {
+        /** The system calls this to perform work in a worker thread and
+         * delivers it the parameters given to AsyncTask.execute() */
 
-        List<String> listeDepart = new ArrayList<>();
+        // Try to understand how AsyncTask works !!!!!!!
+        @Override
+        protected PlaceBuffer doInBackground(String... placeId) {
+            PendingResult<PlaceBuffer> result  = Places.GeoDataApi.getPlaceById(mGoogleApiClient, placeId[0]);
+            PlaceBuffer place = result.await();
+            return place;
+        }
 
-        final ArrayAdapter<String> adp = new ArrayAdapter<String>(this,
-                android.R.layout.simple_dropdown_item_1line, listeDepart);
-
-        adp.add("fuck");
-
-    //    t1.setThreshold(1);
-    //    t1.setAdapter(adp);
-
-    }
-
-    @Override
-    public void onConnectionFailed(ConnectionResult result) {
-
-        AutoCompleteTextView t1 = (AutoCompleteTextView)
-                findViewById(R.id.autoCompleteDepart);
-
-
-        List<String> listeDepart = new ArrayList<>();
-
-        final ArrayAdapter<String> adp = new ArrayAdapter<String>(this,
-                android.R.layout.simple_dropdown_item_1line, listeDepart);
-
-        adp.add("fuck");
-
-      //  t1.setThreshold(1);
-      //  t1.setAdapter(adp);
-
+        /** The system calls this to perform work in the UI thread and delivers
+         * the result from doInBackground() */
+        @Override
+        protected void onPostExecute(PlaceBuffer places) {
+            Log.d("PATAPON",places.get(0).getLatLng().toString());
+        }
     }
 
 /* fin test
