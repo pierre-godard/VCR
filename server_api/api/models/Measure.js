@@ -22,7 +22,7 @@ var formatter = function (value)
     }
     value.identifier = value.station + value.last_update * 100;
     var d = new Date(0);    // The 0 there is the key, which sets the date to the epoch
-    d.setUTCSeconds(value.last_update);
+    d.setUTCMilliseconds(value.last_update);
     value.day = d.getDay();
     value.hour = d.getHours(); 
     value.date = d.getDate();

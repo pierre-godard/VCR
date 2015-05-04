@@ -72,14 +72,15 @@ function queryMeasures(id,time,callback)
 		function(err, found) 
 		{
 			console.log("-- Time:        "+time);
-/*      		console.log("found: "+found);
+      		console.log("found: "+found);
       		console.log("error: "+err);
       		for (var i = 0; i < found.length; i++) 
 			{
+				console.log(found[i]);
       			console.log("available_bike_stands: "+found[i].available_bike_stands);
 				console.log("available_bikes:       "+found[i].available_bikes);
-				console.log("last_update:           "+Date(found[i].last_update));
-			}*/
+				console.log("last_update:           "+new Date(found[i].last_update));
+			}
       		callback(found);
       	}
     );
