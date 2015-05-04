@@ -6,13 +6,14 @@ import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
+import com.google.maps.android.clustering.ClusterItem;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import fr.insa_lyon.vcr.vcr.R;
 
-public class StationVelov {
+public class StationVelov implements ClusterItem {
 
     String id;
     String name;
@@ -72,9 +73,11 @@ public class StationVelov {
      * stations at the same time on the map (icons will have different shapes) so that we can
      * display a whole itinerary, with potential departure stations, and potential arrival stations
      */
-    private void updateMarkerIcon() {
+    private BitmapDescriptor updateMarkerIcon() {
+        BitmapDescriptor bitmap;
         if (numberOfBikes + numberOfFreeBikeStands == 0) {
-            this.marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.marker_y7));
+            bitmap = BitmapDescriptorFactory.fromResource(R.drawable.marker_y7);
+            this.marker.setIcon(bitmap);
         } else {
             float ratio;
             if (withdrawal) { //ratio of avail bikes on the total of possible bikes in the station
@@ -83,7 +86,6 @@ public class StationVelov {
                 ratio = ((float) (numberOfFreeBikeStands)) / (numberOfBikes + numberOfFreeBikeStands);
             }
 
-            BitmapDescriptor bitmap;
             // choose icon according to ratio :
             if (ratio == 0) {            // no bike / bike stand at the station
                 if (!selected) {
@@ -138,6 +140,7 @@ public class StationVelov {
         }
 
 
+        return bitmap;
     }
 
     public void setMarkerSnippet(int avail_Bikes, int avail_Spaces) {
@@ -172,6 +175,7 @@ public class StationVelov {
         this.name = name;
     }
 
+    @Override
     public LatLng getPosition() {
         return position;
     }
@@ -212,6 +216,10 @@ public class StationVelov {
         }
     }
 
+
+    public BitmapDescriptor getIcon() {
+        return updateMarkerIcon();
+    }
 
 
 }

@@ -26,6 +26,8 @@ import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.maps.android.clustering.ClusterManager;
+import com.google.maps.android.clustering.algo.GridBasedAlgorithm;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -37,6 +39,7 @@ import java.util.Map;
 import fr.insa_lyon.vcr.modele.StationVelov;
 import fr.insa_lyon.vcr.reseau.FetchStation;
 import fr.insa_lyon.vcr.reseau.UpdateStation;
+import fr.insa_lyon.vcr.utilitaires.ClusterIconRenderer;
 import fr.insa_lyon.vcr.utilitaires.CustomAnimatorUpdateListener;
 import fr.insa_lyon.vcr.utilitaires.CustomInfoWindow;
 import fr.insa_lyon.vcr.utilitaires.FinishWithDialog;
@@ -61,6 +64,8 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
     // Download services intent
     Intent intentDyna;
     Intent intentStat;
+
+    private ClusterManager<StationVelov> mClusterManager;
 
 
     /**
@@ -216,25 +221,24 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
-                Log.d("PATAPON", "MARKER CLIQUE, ISINFOWINDOWSHOWN="+marker.isInfoWindowShown());
+                Log.d("PATAPON", "MARKER CLIQUE, ISINFOWINDOWSHOWN=" + marker.isInfoWindowShown());
                 boolean isMarkerSelected = false;
                 for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
                     if (entry.getValue().getMarqueur().getId().equals(marker.getId())) {
                         entry.getValue().switchInfoWindowShown();
-                        if(entry.getValue().isSelected()) {
+                        if (entry.getValue().isSelected()) {
                             isMarkerSelected = true;
                         }
                         break;
                     }
                 }
-                if(!isMarkerSelected) {
+                if (!isMarkerSelected) {
                     drawCircle(marker.getPosition());
                 }
-    
-                if(marker.isInfoWindowShown()){
+
+                if (marker.isInfoWindowShown()) {
                     marker.hideInfoWindow();
-                }
-                else{
+                } else {
                     marker.showInfoWindow();
                 }
                 return true;
@@ -292,18 +296,30 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
             MarkerOptions currentOpt;
             Marker currentMark;
             LatLng currentPosition;
+            StationVelov currentStation;
             for (int i = 0; i < jArrayStations.length(); i++) {
                 currentJSON = jArrayStations.getJSONObject(i);
                 String id = (String) currentJSON.get("id");
                 currentPosition = new LatLng(currentJSON.getDouble("latitude"), currentJSON.getDouble("longitude"));
                 currentOpt = new MarkerOptions().position(currentPosition);
                 currentMark = mMap.addMarker(currentOpt);
-                mapStations.put(id, new StationVelov(jArrayStations.getJSONObject(i), currentMark));
+                currentStation = new StationVelov(jArrayStations.getJSONObject(i), currentMark);
+                mapStations.put(id, currentStation);
             }
         } catch (JSONException j) {
             Log.e("parseStations", "Problem when parsing JSON");
         }
+        mClusterManager = new ClusterManager<StationVelov>(this, mMap);
+        mMap.setOnCameraChangeListener(mClusterManager);
+        mMap.setOnMarkerClickListener(mClusterManager);
+        for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
+            mClusterManager.addItem(entry.getValue());
+        }
+        mClusterManager.setRenderer(new ClusterIconRenderer(this, mMap, mClusterManager));
+        mClusterManager.setAlgorithm(new GridBasedAlgorithm<StationVelov>());
+        mClusterManager.cluster();
     }
+
 
     /**
      * Method uses a json String received from UpdateStations via receiverDyna to update the number
