@@ -19,10 +19,7 @@ module.exports = {
                 {
                     var object = 
                     {
-                        last_update: record[1],
-                        available_bike_stands: record[4],
-                        available_bikes: record[5],
-                        station: record[0]
+                        // TODO
                     };
                     Prediction.create(
                         object,
