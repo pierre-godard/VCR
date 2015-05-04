@@ -15,11 +15,28 @@ module.exports = {
 			var date 			= Date.now();
 			var analysisMode 	= PredictionService.analysis_mode.MEAN;
         	PredictionService.predict(station_id,date,analysisMode,
-        		function (state)
+        		function (state,free,occup,prediction_quality)
                 {
+                    var object = 
+                    {
+                        last_update: record[1],
+                        available_bike_stands: record[4],
+                        available_bikes: record[5],
+                        station: record[0]
+                    };
+                    Prediction.create(
+                        object,
+                        function (err, added)
+                        {
+                            if (err) console.log(err);
+                        }
+                    );
                     res.writeHead(200, {'Content-Type': 'text/plain; charset=utf-8'});
-        			res.write("Prediction using "+analysisMode+" (date: "+new Date(date)+" - station: "+station_id+"): "
-        				+state+"\n");
+        			res.write("Prediction using "+analysisMode+" (date: "+new Date(date)+" - station: "+station_id+"):\n");
+        			res.write("State:              "+state+"\n");
+                    res.write("Free:               "+free+"\n");
+                    res.write("Occup:              "+occup+"\n");
+                    res.write("Prediction quality: "+prediction_quality+"\n");
     				res.end('\n');
     			}
         	);

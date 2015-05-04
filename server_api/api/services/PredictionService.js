@@ -44,6 +44,21 @@ function decreasingFactor_mean (factor,step,array)
 	return sum_val/final_denominator;
 }
 
+// Calculates the variance given the array
+function variance(array)
+{
+	var avg = mean(array);
+	var i = array.length;
+	var v = 0;
+ 
+	while( i-- )
+	{
+		v += Math.pow( (array[ i ] - avg), 2 );
+	}
+	v /= array.length;
+	return v;
+}
+
 // Analyse a set of datas using the selected mode
 // Returns the caracteristic value associated with the analysis
 function analysis (datas,mode) 
@@ -62,6 +77,11 @@ function analysis (datas,mode)
 	return 0;	// 0 as default return value, TODO throw ERROR ?
 }
 
+// return the level of quality of the prediction
+function quality_analysis(arr_free,arr_occup)
+{
+	return (arr_free.length + arr_occup.length)/(1 + variance(arr_free) + variance(arr_occup));
+}
 
 // returns the measures matching the specified id and withing time stamp of [time]
 function queryMeasures(id,time,callback)
@@ -113,8 +133,14 @@ function find_period(json_periods,time)
 // Diff between arrays
 // thx to http://stackoverflow.com/questions/1187518/javascript-array-difference
 // NOT WORKING WITH DATES (and objects?)
-Array.prototype.diff = function(a) {
-    return this.filter(function(i) {return a.indexOf(i) < 0;});
+Array.prototype.diff = function(a) 
+{
+    return this.filter(
+    	function(i) 
+	    {
+	    	return a.indexOf(i) < 0;
+	    }
+	);
 };
 
 // Diff between arrays
@@ -296,37 +322,43 @@ module.exports = {
 					if(callback_nb == dates.length) // TODO via async ?
 					{		
 						// ----- Data analysis
-						var free_overTime 	= analysis(station_free,analysisMode);
-						var occup_overTime 	= analysis(station_occup,analysisMode);
+						var free_overTime 		= analysis(station_free,analysisMode);
+						var occup_overTime 		= analysis(station_occup,analysisMode);
+						var prediction_quality  = quality_analysis(station_free,station_occup);
+
 						//var diff_overTime 	= max_overTime - curr_overTime;
 						console.log("station_free:   "+station_free);
 						console.log("station_occup:  "+station_occup);
 						console.log("free_overTime:  "+free_overTime);
 						console.log("occup_overTime: "+occup_overTime);
 						//console.log("diff_overTime: "+diff_overTime);
-
+						var state;
 						// ----- State selection
 						if (isNaN(occup_overTime) || isNaN(free_overTime))
 						{
-							callback(PredictionService.station_state.UNKNOWN);
+							state = PredictionService.station_state.UNKNOWN;
 						}
 						else if (free_overTime < PredictionService.station_values.FULL_LIMIT)
 						{
-							callback(PredictionService.station_state.FULL);
+							state = PredictionService.station_state.FULL;
 						} 
 						else if (free_overTime <= PredictionService.station_values.NEAR_FULL_LIMIT)
 						{
-							callback(PredictionService.station_state.NEAR_FULL);
+							state = PredictionService.station_state.NEAR_FULL;
 						}
 						else if (occup_overTime < PredictionService.station_values.EMPTY_LIMIT)
 						{
-							callback(PredictionService.station_state.EMPTY);
+							state = PredictionService.station_state.EMPTY;
 						}
 						else if (occup_overTime <= PredictionService.station_values.NEAR_EMPTY_LIMIT)
 						{
-							callback(PredictionService.station_state.NEAR_EMPTY);
+							state = PredictionService.station_state.NEAR_EMPTY;
 						}
-						callback(PredictionService.station_state.INTERM);
+						else
+						{
+							state = PredictionService.station_state.INTERM;
+						}
+						callback(state,free_overTime,occup_overTime,prediction_quality);
 					}
 				}
 			);
