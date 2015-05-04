@@ -30,7 +30,7 @@ public class CustomInfoWindow implements GoogleMap.InfoWindowAdapter {
         LinearLayout ll = (LinearLayout) customInfoView.findViewById(R.id.infoLayout);
         Drawable dr = customInfoView.getResources().getDrawable(R.drawable.cadre);
         Bitmap bitmap = ((BitmapDrawable) dr).getBitmap();
-        Drawable d = new BitmapDrawable(customInfoView.getResources(), Bitmap.createScaledBitmap(bitmap, 200, 60, true));
+        Drawable d = new BitmapDrawable(customInfoView.getResources(), Bitmap.createScaledBitmap(bitmap, 450, 150, true));
         int sdk = android.os.Build.VERSION.SDK_INT;
         if (sdk < android.os.Build.VERSION_CODES.JELLY_BEAN) {
             ll.setBackgroundDrawable(d);

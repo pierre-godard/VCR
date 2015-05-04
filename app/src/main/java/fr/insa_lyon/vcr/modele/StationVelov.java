@@ -21,6 +21,7 @@ public class StationVelov {
     int numberOfFreeBikeStands;
     boolean withdrawal;
     String snippetText;
+    boolean selected = false;
 
     public StationVelov(JSONObject jsonObj, Marker marqueur) {
         // Static Data
@@ -149,5 +150,16 @@ public class StationVelov {
     public boolean getMode() {
         return withdrawal;
     }
+
+
+    public boolean isSelected() {
+        return selected;
+    }
+
+    public void setSelected(boolean selected) {
+        this.selected = selected;
+        updateMarkerIcon();
+    }
+
 
 }
