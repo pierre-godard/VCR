@@ -46,7 +46,7 @@ public class ResearchDialog extends Dialog {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_user_input);
+        setContentView(R.layout.research_dialog);
 
         //instance API
         mGoogleApiClient = new GoogleApiClient.Builder(this.getContext())
@@ -59,7 +59,7 @@ public class ResearchDialog extends Dialog {
         adp = new ArrayAdapter<ResultatPartiel>(this.getContext(),
                 android.R.layout.simple_dropdown_item_1line, resultList);
         adp.setNotifyOnChange(true);
-        t1 = (AutoCompleteTextView) findViewById(R.id.autoCompleteDepart);
+        t1 = (AutoCompleteTextView) findViewById(R.id.autoComplete);
         t1.setThreshold(1);
         t1.addTextChangedListener(new TextWatcher() {
             @Override
@@ -135,8 +135,8 @@ public class ResearchDialog extends Dialog {
          * the result from doInBackground() */
         @Override
         protected void onPostExecute(PlaceBuffer places) {
-            //((VelocityRaptorMain)activite).
-            //Log.d("PATAPON", places.get(0).getLatLng().toString());
+            ((VelocityRaptorMain)activite).drawCircle(places.get(0).getLatLng());
+            dismiss();
         }
     }
 
