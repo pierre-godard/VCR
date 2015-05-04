@@ -71,7 +71,7 @@ function queryMeasures(id,time,callback)
 		time_slice: Math.floor(time.getMinutes()*Measure.NB_TIME_SLICES/60) },
 		function(err, found) 
 		{
-			console.log("-- Time:        "+time);
+/*			console.log("-- Time:        "+time);
       		console.log("found: "+found);
       		console.log("error: "+err);
       		for (var i = 0; i < found.length; i++) 
@@ -80,7 +80,7 @@ function queryMeasures(id,time,callback)
       			console.log("available_bike_stands: "+found[i].available_bike_stands);
 				console.log("available_bikes:       "+found[i].available_bikes);
 				console.log("last_update:           "+new Date(found[i].last_update));
-			}
+			}*/
       		callback(found);
       	}
     );
@@ -279,7 +279,7 @@ module.exports = {
 				{
 					if(query_result == undefined || query_result.length == 0) // no data has been found corresponding to id (unlikely, or call para error) or time (possible)
 					{
-						console.log("                Skipping query result ("+id+")");
+						//console.log("                Skipping query result ("+id+")");
 					}	
 					else
 					{		
@@ -290,7 +290,7 @@ module.exports = {
 							console.log("measure date:   "+new Date(query_result[i].last_update));
 							console.log("free - occup:   "+query_result[i].available_bike_stands+"/"+query_result[i].available_bikes);
 						}
-						console.log("                Query result used     ("+id+")");
+						//console.log("                Query result used     ("+id+")");
 					}
 					callback_nb++; // before to avoid dates.length - 1 at each loop
 					if(callback_nb == dates.length) // TODO via async ?
