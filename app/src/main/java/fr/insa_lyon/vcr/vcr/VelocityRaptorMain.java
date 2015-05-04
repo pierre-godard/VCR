@@ -139,14 +139,14 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         intentStat = new Intent(this, FetchStation.class);
         intentStat.putExtra(FetchStation.SERVER_URL, SERVER_URL + "/station");
         intentStat.putExtra(FetchStation.URL_PARAM_N1, "limit");
-        intentStat.putExtra(FetchStation.URL_PARAM_V1, "30");
+        intentStat.putExtra(FetchStation.URL_PARAM_V1, "0");
         startService(intentStat);
 
         // fetch dynamic data
         intentDyna = new Intent(this, UpdateStation.class);
         intentDyna.putExtra(UpdateStation.SERVER_URL, SERVER_URL + "/lastmeasure");
         intentDyna.putExtra(UpdateStation.URL_PARAM_N1, "limit");
-        intentDyna.putExtra(UpdateStation.URL_PARAM_V1, "30");
+        intentDyna.putExtra(UpdateStation.URL_PARAM_V1, "0");
 
         // Ajout du listener sur le switch
         Switch switchWithdrawDeposit = (Switch) findViewById(R.id.switchDeposerRetirer);
@@ -217,6 +217,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
             @Override
             public boolean onMarkerClick(Marker marker) {
                 drawCircle(marker.getPosition());
+                marker.showInfoWindow();
                 return true;
             }
         });
@@ -235,10 +236,10 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         }
         Circle c = mMap.addCircle(new CircleOptions()
                 .center(position)
-                .strokeWidth(6)
+                .strokeWidth(0)
                 .radius(circleRadius)
                 .strokeColor(0xFFFFFFFF)
-                .fillColor(0x734caf50));
+                .fillColor(0x550080f1));
 
         ValueAnimator vAnimator = new ValueAnimator();
         vAnimator.setIntValues(0, circleRadius);
