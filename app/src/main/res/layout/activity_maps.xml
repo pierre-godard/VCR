@@ -25,15 +25,28 @@
         android:onClick="onButtonClickedMain"
         android:nestedScrollingEnabled="true" />
 
-    <Switch
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/switchDeposerRetirer"
         android:layout_gravity="center_horizontal|bottom"
-        android:checked="false"
-        android:textOn="Déposer un vélo"
-        android:textOff="Retirer un vélo"
-        />
+        android:orientation="vertical">
+
+
+        <SeekBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/seekBar"
+            android:layout_gravity="center_horizontal|bottom" />
+
+        <Switch
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/switchDeposerRetirer"
+            android:checked="false"
+            android:textOn="Déposer un vélo"
+            android:textOff="Retirer un vélo" />
+    </LinearLayout>
+
 
 </FrameLayout>
 

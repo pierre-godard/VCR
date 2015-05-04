@@ -57,6 +57,8 @@ public class StationVelov {
 
     public void setMode(boolean withdrawal) {
         this.withdrawal = withdrawal;
+        setMarkerSnippet(numberOfBikes, numberOfFreeBikeStands);
+        marker.hideInfoWindow();
         updateMarkerIcon();
     }
 

@@ -1,5 +1,7 @@
 package fr.insa_lyon.vcr.vcr;
 
+import android.animation.IntEvaluator;
+import android.animation.ValueAnimator;
 import android.app.DialogFragment;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -9,6 +11,7 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.Toast;
@@ -34,6 +37,7 @@ import java.util.Map;
 import fr.insa_lyon.vcr.modele.StationVelov;
 import fr.insa_lyon.vcr.reseau.FetchStation;
 import fr.insa_lyon.vcr.reseau.UpdateStation;
+import fr.insa_lyon.vcr.utilitaires.CustomAnimatorUpdateListener;
 import fr.insa_lyon.vcr.utilitaires.CustomInfoWindow;
 import fr.insa_lyon.vcr.utilitaires.FinishWithDialog;
 import fr.insa_lyon.vcr.utilitaires.MathsUti;
@@ -246,11 +250,23 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
     //------------------------------------------------------------------------------ General Methods
 
     private Circle drawCircle(LatLng position) {
-        return mMap.addCircle(new CircleOptions()
+        Circle c = mMap.addCircle(new CircleOptions()
                 .center(position)
+                .strokeWidth(4)
                 .radius(circleRadius)
-                .strokeColor(0xFF00e676)
+                .strokeColor(0xFF000000)
                 .fillColor(0x734caf50));
+
+        ValueAnimator vAnimator = new ValueAnimator();
+        vAnimator.setIntValues(0, circleRadius);
+        vAnimator.setDuration(1500);
+        vAnimator.setEvaluator(new IntEvaluator());
+        vAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
+        CustomAnimatorUpdateListener caul = new CustomAnimatorUpdateListener();
+        caul.setCircle(c);
+        vAnimator.addUpdateListener(caul);
+        vAnimator.start();
+        return c;
     }
 
     /**
