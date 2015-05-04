@@ -2,6 +2,7 @@ package fr.insa_lyon.vcr.modele;
 
 import android.util.Log;
 
+import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
@@ -43,6 +44,7 @@ public class StationVelov {
         numberOfBikes = 0;      // waiting for VelocityRaptorMain to fetch these data...
         numberOfFreeBikeStands = 0;
         withdrawal = true;  // default case assume user want to withdraw a bike from the station.
+        updateMarkerIcon();
     }
 
     //------------------------------------------------------------------------- OPERATIONS ON MARKER
@@ -70,44 +72,71 @@ public class StationVelov {
      * display a whole itinerary, with potential departure stations, and potential arrival stations
      */
     private void updateMarkerIcon() {
-
-        if (numberOfFreeBikeStands == 0) {
-            if (withdrawal) {    // user want to withdraw
-                // set icon to green : station is full of bikes
-                return;
-            }
-            // set icon to red : no place to put your bike
-        } else if (numberOfFreeBikeStands > 0 && numberOfFreeBikeStands <= 5) {
-            if (withdrawal) {
-
-                return;
-            }
-
-        } else if (numberOfFreeBikeStands > 5 && numberOfFreeBikeStands <= 10) {
-            if (withdrawal) {
-
-                return;
-            }
-
-        } else if (numberOfFreeBikeStands > 10 && numberOfFreeBikeStands <= 15) {
-            if (withdrawal) {
-
-                return;
-            }
-
-        } else if (numberOfFreeBikeStands > 15 && numberOfFreeBikeStands <= 20) {
-            if (withdrawal) {
-
-                return;
-            }
-
+        if (numberOfBikes + numberOfFreeBikeStands == 0) {
+            this.marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.marker_y7));
         } else {
-            if (withdrawal) {
-
-                return;
+            float ratio;
+            if (withdrawal) { //ratio of avail bikes on the total of possible bikes in the station
+                ratio = ((float) numberOfBikes) / (numberOfBikes + numberOfFreeBikeStands);
+            } else { // ration of avail stands on the total of possible bikes in the station
+                ratio = ((float) (numberOfFreeBikeStands)) / (numberOfBikes + numberOfFreeBikeStands);
             }
 
+            BitmapDescriptor bitmap;
+            // choose icon according to ratio :
+            if (ratio == 0) {            // no bike / bike stand at the station
+                if (!selected) {
+                    bitmap = BitmapDescriptorFactory.fromResource(R.drawable.marker_a0);
+                } else {
+                    bitmap = BitmapDescriptorFactory.fromResource(R.drawable.marker_z0);
+                }
+            } else if (ratio > 0 && ratio <= 0.2) {
+                if (!selected) {
+                    bitmap = BitmapDescriptorFactory.fromResource(R.drawable.marker_a1);
+                } else {
+                    bitmap = BitmapDescriptorFactory.fromResource(R.drawable.marker_z1);
+                }
+            } else if (ratio > 0.2 && ratio <= 0.4) {
+                if (!selected) {
+                    bitmap = BitmapDescriptorFactory.fromResource(R.drawable.marker_a2);
+                } else {
+                    bitmap = BitmapDescriptorFactory.fromResource(R.drawable.marker_z2);
+                }
+            } else if (ratio > 0.4 && ratio <= 0.5) {
+                if (!selected) {
+                    bitmap = BitmapDescriptorFactory.fromResource(R.drawable.marker_a3);
+                } else {
+                    bitmap = BitmapDescriptorFactory.fromResource(R.drawable.marker_z3);
+                }
+            } else if (ratio > 0.5 && ratio <= 0.6) {
+                if (!selected) {
+                    bitmap = BitmapDescriptorFactory.fromResource(R.drawable.marker_a4);
+                } else {
+                    bitmap = BitmapDescriptorFactory.fromResource(R.drawable.marker_z4);
+                }
+            } else if (ratio > 0.6 && ratio <= 0.8) {
+                if (!selected) {
+                    bitmap = BitmapDescriptorFactory.fromResource(R.drawable.marker_a5);
+                } else {
+                    bitmap = BitmapDescriptorFactory.fromResource(R.drawable.marker_z5);
+                }
+            } else if (ratio > 0.8 && ratio < 1) {
+                if (!selected) {
+                    bitmap = BitmapDescriptorFactory.fromResource(R.drawable.marker_a6);
+                } else {
+                    bitmap = BitmapDescriptorFactory.fromResource(R.drawable.marker_z6);
+                }
+            } else {
+                if (!selected) {
+                    bitmap = BitmapDescriptorFactory.fromResource(R.drawable.marker_a7);
+                } else {
+                    bitmap = BitmapDescriptorFactory.fromResource(R.drawable.marker_z7);
+                }
+            }
+            this.marker.setIcon(bitmap);
         }
+
+
     }
 
     public void setMarkerSnippet(int avail_Bikes, int avail_Spaces) {

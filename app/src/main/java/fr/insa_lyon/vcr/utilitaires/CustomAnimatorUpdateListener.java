@@ -13,9 +13,11 @@ import com.google.android.gms.maps.model.Circle;
 public class CustomAnimatorUpdateListener implements ValueAnimator.AnimatorUpdateListener {
 
     Circle c;
+    double center;
 
     public void setCircle(Circle c) {
         this.c = c;
+        center = c.getRadius();
     }
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR1)
@@ -23,6 +25,7 @@ public class CustomAnimatorUpdateListener implements ValueAnimator.AnimatorUpdat
     public void onAnimationUpdate(ValueAnimator animation) {
         float animatedFraction = animation.getAnimatedFraction();
         // Log.e("", "" + animatedFraction);
-        c.setRadius(animatedFraction * 1000);
+
+        c.setRadius(animatedFraction * center);
     }
 }

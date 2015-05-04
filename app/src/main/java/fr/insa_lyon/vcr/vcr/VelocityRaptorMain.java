@@ -139,14 +139,14 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         intentStat = new Intent(this, FetchStation.class);
         intentStat.putExtra(FetchStation.SERVER_URL, SERVER_URL + "/station");
         intentStat.putExtra(FetchStation.URL_PARAM_N1, "limit");
-        intentStat.putExtra(FetchStation.URL_PARAM_V1, "30");
+        intentStat.putExtra(FetchStation.URL_PARAM_V1, "0");
         startService(intentStat);
 
         // fetch dynamic data
         intentDyna = new Intent(this, UpdateStation.class);
         intentDyna.putExtra(UpdateStation.SERVER_URL, SERVER_URL + "/lastmeasure");
         intentDyna.putExtra(UpdateStation.URL_PARAM_N1, "limit");
-        intentDyna.putExtra(UpdateStation.URL_PARAM_V1, "30");
+        intentDyna.putExtra(UpdateStation.URL_PARAM_V1, "0");
 
         // Ajout du listener sur le switch
         Switch switchWithdrawDeposit = (Switch) findViewById(R.id.switchDeposerRetirer);
@@ -225,6 +225,8 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                 if(!isMarkerSelected) {
                     drawCircle(marker.getPosition());
                 }
+    
+                marker.showInfoWindow();
                 return true;
             }
         });
