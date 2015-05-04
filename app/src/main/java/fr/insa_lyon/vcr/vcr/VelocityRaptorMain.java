@@ -150,6 +150,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 isWithdrawMode = !isWithdrawMode;
                 //majMarqueurs();
+                Log.d("SWITCH LISTENNER", "BEFORE UPDATE MARKER MODE");
                 updateMarkerMode();
             }
         });
@@ -236,6 +237,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                         entry.getValue().setSelected(true);
                     }
                 }
+                marker.showInfoWindow();
                 return true;
             }
         });
@@ -324,6 +326,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
     public void updateMarkerMode() {
         for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
             entry.getValue().setMode(isWithdrawMode);
+            Log.d("UPDATE_MARKER_MODE", "Station " + entry.getValue().getName() + " has mode withdraw = " + entry.getValue().getMode());
         }
     }
 

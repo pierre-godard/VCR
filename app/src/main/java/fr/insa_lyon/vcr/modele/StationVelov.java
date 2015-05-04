@@ -109,8 +109,14 @@ public class StationVelov {
 
     public void setMarkerSnippet(int avail_Bikes, int avail_Spaces) {
         Log.d("SET_MARKER_SNIPPET", "Setting snippet for marker of station" + this.name);
-        String snippet = "Vélos disponibles : " + avail_Bikes + ".\n" +
-                "Empacements disponibles : " + avail_Spaces + ".";
+        String snippet;
+        if (withdrawal) {
+            snippet = "Retirer un vélo.\nVélos disponibles : " + avail_Bikes + ".\n" +
+                    "Empacements disponibles : " + avail_Spaces + ".";
+        } else {
+            snippet = "Reposer un vélo.\nVélos disponibles : " + avail_Bikes + ".\n" +
+                    "Empacements disponibles : " + avail_Spaces + ".";
+        }
         marker.setSnippet(snippet);
     }
 
