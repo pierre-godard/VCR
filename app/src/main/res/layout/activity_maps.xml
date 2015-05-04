@@ -15,13 +15,13 @@
     <Button
         android:id="@+id/but_recherche"
         android:layout_width="wrap_content"
-        android:layout_height="48dp"
+        android:layout_height="40dp"
         android:layout_gravity="left|top"
         android:text="@string/Recherche"
         android:padding="10dp"
-        android:layout_marginTop="4dp"
-        android:layout_marginLeft="4dp"
-        android:background="#CCe8f5e9"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="10dp"
+        android:background="#bbffffff"
         android:onClick="onButtonClickedMain"
         android:nestedScrollingEnabled="true" />
 

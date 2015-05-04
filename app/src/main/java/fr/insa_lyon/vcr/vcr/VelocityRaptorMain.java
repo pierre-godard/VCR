@@ -18,7 +18,6 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.UiSettings;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
@@ -45,7 +44,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
 
     // ----------------------------------------------------------------------------------- VARIABLES
     protected GoogleMap mMap;
-    protected int circleRadius = 500;
+    protected int circleRadius = 600; // in meters
     protected Circle currentCircle;
     protected boolean isWithdrawMode = false;
     protected final String SERVER_URL = "http://vps165245.ovh.net";
@@ -151,6 +150,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 isWithdrawMode = !isWithdrawMode;
                 //majMarqueurs();
+                Log.d("SWITCH LISTENNER", "BEFORE UPDATE MARKER MODE");
                 updateMarkerMode();
             }
         });
@@ -205,30 +205,53 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
             public void onMapClick(LatLng position) {
                 if (currentCircle != null) {
                     currentCircle.remove();
-
                     for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
                         if (MathsUti.getDistance(entry.getValue().getPosition(), currentCircle.getCenter()) <= circleRadius) {
-                            entry.getValue().getMarqueur().setIcon(BitmapDescriptorFactory.fromResource(R.drawable.marqueurperso));
+                            entry.getValue().setSelected(false);
                         }
                     }
                 }
-                currentCircle = mMap.addCircle(new CircleOptions()
-                        .center(position)
-                        .radius(circleRadius)
-                        .strokeColor(0xFF00e676)
-                        .fillColor(0x734caf50));
-
+                currentCircle = drawCircle(position);
                 for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
                     if (MathsUti.getDistance(entry.getValue().getMarqueur().getPosition(), position) <= circleRadius) {
-                        entry.getValue().getMarqueur().setIcon(BitmapDescriptorFactory.fromResource(R.drawable.marqueurpersorouge));
+                        entry.getValue().setSelected(true);
                     }
                 }
             }
         });
+
+        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                if (currentCircle != null) {
+                    currentCircle.remove();
+                    for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
+                        if (MathsUti.getDistance(entry.getValue().getPosition(), marker.getPosition()) <= circleRadius) {
+                            entry.getValue().setSelected(false);
+                        }
+                    }
+                }
+                currentCircle = drawCircle(marker.getPosition());
+                for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
+                    if (MathsUti.getDistance(entry.getValue().getMarqueur().getPosition(), marker.getPosition()) <= circleRadius) {
+                        entry.getValue().setSelected(true);
+                    }
+                }
+                marker.showInfoWindow();
+                return true;
+            }
+        });
     }
 
-
     //------------------------------------------------------------------------------ General Methods
+
+    private Circle drawCircle(LatLng position) {
+        return mMap.addCircle(new CircleOptions()
+                .center(position)
+                .radius(circleRadius)
+                .strokeColor(0xFF00e676)
+                .fillColor(0x734caf50));
+    }
 
     /**
      * This method mus be called only once, in order to fill the HashMap of StationVelov
@@ -303,6 +326,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
     public void updateMarkerMode() {
         for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
             entry.getValue().setMode(isWithdrawMode);
+            Log.d("UPDATE_MARKER_MODE", "Station " + entry.getValue().getName() + " has mode withdraw = " + entry.getValue().getMode());
         }
     }
 
