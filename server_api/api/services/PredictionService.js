@@ -68,7 +68,7 @@ function queryMeasures(id,time,callback)
 {
 	Measure.find({station: id, day: time.getDay(), date: time.getDate(), 
 		month: time.getMonth(), hour: time.getHours(), 
-		time_slice: Math.floor(time.getMinutes()/Measure.NB_TIME_SLICES) },
+		time_slice: Math.floor(time.getMinutes()*Measure.NB_TIME_SLICES/60) },
 		function(err, found) 
 		{
 			console.log("-- Time:        "+time);

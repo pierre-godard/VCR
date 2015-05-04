@@ -27,7 +27,7 @@ var formatter = function (value)
     value.hour = d.getHours(); 
     value.date = d.getDate();
     value.month = d.getMonth();
-    value.time_slice = Math.floor(d.getMinutes()/Measure.NB_TIME_SLICES);
+    value.time_slice = Math.floor(d.getMinutes()*Measure.NB_TIME_SLICES/60);
     delete value['number'];
     delete value['name'];
     delete value['address'];
