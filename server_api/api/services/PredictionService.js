@@ -78,6 +78,8 @@ function analysis (datas,mode)
 }
 
 // return the level of quality of the prediction (0 -> 1)
+// 0 -> prediction with no assurance
+// 1 -> sure (nearly)
 function quality_analysis(arr_free,arr_occup)
 {
 	// Normalized. The inside walue is the raw quality. If this quality is supp to 10000
@@ -238,6 +240,15 @@ function generate_specificPeriod(json_periods,limit_time,year_begin,year_end,per
 	return dates;
 }
 
+// Uses the recent datas to update de prediction
+// in order to match the reality
+function prediction_adapt()
+{
+	// TODO
+	// predict = predict(futur) + (predict(now) - now)
+	// predict = (predict_quality*predict(futur)+predict)/(1+predict_quality)
+}
+
 module.exports = {
 
 	// Velov station potential state
@@ -307,7 +318,7 @@ module.exports = {
 				{
 					if(query_result == undefined || query_result.length == 0) // no data has been found corresponding to id (unlikely, or call para error) or time (possible)
 					{
-						console.log("                Skipping query result ("+id+")");
+						//console.log("                Skipping query result ("+id+")");
 					}	
 					else
 					{		
@@ -318,7 +329,7 @@ module.exports = {
 							console.log("measure date:   "+new Date(query_result[i].last_update));
 							console.log("free - occup:   "+query_result[i].available_bike_stands+"/"+query_result[i].available_bikes);
 						}
-						console.log("                Query result used     ("+id+")");
+						//console.log("                Query result used     ("+id+")");
 					}
 					callback_nb++; // before to avoid dates.length - 1 at each loop
 					if(callback_nb == dates.length) // TODO via async ?

@@ -45,8 +45,8 @@ module.exports = {
     load:
         function (req, res, next)
         {
-            UtilService.load_measures(
-                "velov.csv",
+            UtilService.load_all_measures(
+                './data/stations/',
                 function (err)
                 {
                     
