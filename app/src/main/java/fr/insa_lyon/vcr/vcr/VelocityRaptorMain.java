@@ -188,8 +188,12 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
             Intent intent = new Intent(this, UserInput.class);
             startActivityForResult(intent, 1);
         }*/
-        ResearchDialog dialog = new ResearchDialog(this);
-        dialog.show();
+
+        DialogFragment newFragment = new ResearchDialog();
+        newFragment.show(getFragmentManager() , "search");
+
+        /* ResearchDialog dialog = new ResearchDialog(this);
+         dialog.show();*/
     }
 
     @Override
