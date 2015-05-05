@@ -443,6 +443,7 @@ module.exports = {
 	predict: function (id,time,analysisMode,callback) 
 	{
 		// ----- Data fetching
+		var t_init = new Date().getTime(); 
 		var WEEK_SIZE 			= 7;
 		var station_free		= [];
 		var station_occup		= [];
@@ -450,12 +451,10 @@ module.exports = {
 		var util 				= require('util');
 		var date 				= new Date(time);
 		var year 				= date.getFullYear();
-		var dates 				= [];
-		var callback_nb			= 0;
+		var t0 = new Date().getTime();
 		queryMeasures(id,new Date(time),
 			function(query_result)
 			{
-				//t_query_cb_0 = new Date().getTime();
 				if(query_result == undefined || query_result.length == 0) // no data has been found corresponding to id (unlikely, or call para error) or time (possible)
 				{
 					//console.log("                Skipping query result ("+id+")");
@@ -470,55 +469,48 @@ module.exports = {
 						console.log("free - occup:   "+query_result[i].available_bike_stands+"/"+query_result[i].available_bikes);
 					}
 					//console.log("                Query result used     ("+id+")");
-				}
-				callback_nb++; // before to avoid dates.length - 1 at each loop
-				//t_query_cb_1 = new Date().getTime();
-				console.log("delta t = "+(t_query_cb_1-t_query_cb_0));
-				if(callback_nb == dates.length) // TODO via async ?
-				{		
-					// ----- Data analysis
-					
-					var t1 = new Date().getTime();
-					var free_overTime 		= analysis(station_free,analysisMode);
-					var occup_overTime 		= analysis(station_occup,analysisMode);
-					var prediction_quality  = quality_analysis(station_free,station_occup,analysisMode);
-					var t2 = new Date().getTime();
-					console.log((t_0-t_init)+"-"+(t1-t0)+"-"+(t2-t1));
+				}	
+				
+				// ----- Data analysis	
+				var t1 = new Date().getTime();
+				var free_overTime 		= analysis(station_free,analysisMode);
+				var occup_overTime 		= analysis(station_occup,analysisMode);
+				var prediction_quality  = quality_analysis(station_free,station_occup,analysisMode);
+				var t2 = new Date().getTime();
+				console.log((t0-t_init)+"-"+(t1-t0)+"-"+(t2-t1));
 
-					//var diff_overTime 	= max_overTime - curr_overTime;
-					console.log("station_free:   "+station_free);
-					console.log("station_occup:  "+station_occup);
-					console.log("free_overTime:  "+free_overTime);
-					console.log("occup_overTime: "+occup_overTime);
-					//console.log("diff_overTime: "+diff_overTime);
-					var state;
-					// ----- State selection
-					if (isNaN(occup_overTime) || isNaN(free_overTime))
-					{
-						state = PredictionService.station_state.UNKNOWN;
-					}
-					else if (free_overTime < PredictionService.station_values.FULL_LIMIT)
-					{
-						state = PredictionService.station_state.FULL;
-					} 
-					else if (free_overTime <= PredictionService.station_values.NEAR_FULL_LIMIT)
-					{
-						state = PredictionService.station_state.NEAR_FULL;
-					}
-					else if (occup_overTime < PredictionService.station_values.EMPTY_LIMIT)
-					{
-						state = PredictionService.station_state.EMPTY;
-					}
-					else if (occup_overTime <= PredictionService.station_values.NEAR_EMPTY_LIMIT)
-					{
-						state = PredictionService.station_state.NEAR_EMPTY;
-					}
-					else
-					{
-						state = PredictionService.station_state.INTERM;
-					}
-					callback(state,free_overTime,occup_overTime,prediction_quality);
+				console.log("station_free:   "+station_free);
+				console.log("station_occup:  "+station_occup);
+				console.log("free_overTime:  "+free_overTime);
+				console.log("occup_overTime: "+occup_overTime);
+
+				var state;
+				// ----- State selection
+				if (isNaN(occup_overTime) || isNaN(free_overTime))
+				{
+					state = PredictionService.station_state.UNKNOWN;
 				}
+				else if (free_overTime < PredictionService.station_values.FULL_LIMIT)
+				{
+					state = PredictionService.station_state.FULL;
+				} 
+				else if (free_overTime <= PredictionService.station_values.NEAR_FULL_LIMIT)
+				{
+					state = PredictionService.station_state.NEAR_FULL;
+				}
+				else if (occup_overTime < PredictionService.station_values.EMPTY_LIMIT)
+				{
+					state = PredictionService.station_state.EMPTY;
+				}
+				else if (occup_overTime <= PredictionService.station_values.NEAR_EMPTY_LIMIT)
+				{
+					state = PredictionService.station_state.NEAR_EMPTY;
+				}
+				else
+				{
+					state = PredictionService.station_state.INTERM;
+				}
+				callback(state,free_overTime,occup_overTime,prediction_quality);
 			}
 		);
 
