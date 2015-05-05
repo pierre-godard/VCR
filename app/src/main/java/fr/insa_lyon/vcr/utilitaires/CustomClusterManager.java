@@ -28,7 +28,6 @@ public class CustomClusterManager extends ClusterManager<StationVelov> {
     public boolean onMarkerClick(Marker marker){
         Log.d("PATAPON", "MARQUEUR DECLENCHE");
         activity.drawAround(marker);
-        activity.reloadAllMarkers();
         return true;
     }
 }

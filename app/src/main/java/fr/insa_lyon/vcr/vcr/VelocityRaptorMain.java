@@ -263,7 +263,6 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
             @Override
             public void onMapClick(LatLng position) {
                 drawCircle(position);
-                reloadAllMarkers();
             }
         });
         mMap.setOnMarkerClickListener(mClusterManager);
@@ -299,6 +298,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
             if (MathsUti.getDistance(entry.getValue().getPosition(), position) <= circleRadius) {
                 entry.getValue().setSelected(true);
+                reloadMarker(entry.getValue());
             }
         }
         currentCircle = c;
@@ -407,21 +407,13 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
 
     public void drawAround(Marker marker){
         boolean isMarkerSelected = false;
+        Map.Entry<String,StationVelov> entryMarker = null;
         for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
             // title of current station
             Log.d("PATAPON", "DESSIN AUTOUR DU MARQUEUR");
             String strId = entry.getValue().getTitle();
             if (strId.equals(marker.getTitle())) {
-                Log.d("PATAPON", "MARKER TROUVE DANS LA MAP");
-                entry.getValue().switchInfoWindowShown();
-                if(entry.getValue().isInfoWindowShown()){
-                    Log.d("PATAPON","ON AFFICHE");
-                    marker.showInfoWindow();
-                }
-                else{
-                    Log.d("PATAPON", "C'EST CA CACHE TOI");
-                    marker.hideInfoWindow();
-                }
+                entryMarker = entry;
                 if (entry.getValue().isSelected()) {
                     // marker selected
                     isMarkerSelected = true;
@@ -433,13 +425,19 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         if (!isMarkerSelected) {
             drawCircle(marker.getPosition());
         }
-    }
 
-    public void reloadAllMarkers() {
-        for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
-            reloadMarker(entry.getValue());
+        Log.d("PATAPON", "MARKER TROUVE DANS LA MAP");
+        entryMarker.getValue().switchInfoWindowShown();
+        if(entryMarker.getValue().isInfoWindowShown()){
+            Log.d("PATAPON","ON AFFICHE");
+            marker.showInfoWindow();
+        }
+        else{
+            Log.d("PATAPON", "C'EST CA CACHE TOI");
+            marker.hideInfoWindow();
         }
     }
+
     /**
      * Workarround to repaint markers
      *
