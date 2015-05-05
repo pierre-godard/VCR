@@ -287,6 +287,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
             for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
                 if (MathsUti.getDistance(entry.getValue().getPosition(), currentCircle.getCenter()) <= circleRadius) {
                     entry.getValue().setSelected(false);
+                    reloadMarker(entry.getValue());
                 }
             }
         }
