@@ -31,7 +31,6 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.maps.android.MarkerManager;
 import com.google.maps.android.clustering.ClusterManager;
-import com.google.maps.android.clustering.algo.GridBasedAlgorithm;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -55,16 +54,14 @@ import fr.insa_lyon.vcr.utilitaires.ServerFailureDialog;
 
 public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCallback, FinishWithDialog {
 
+    public static final String ALARM_NOTIFICATION = "fr.insa_lyon.vcr.alarm";
+    public static final int ALARM_DURATION = 20; // in seconds
+    protected final String SERVER_URL = "http://vps165245.ovh.net";
     // ----------------------------------------------------------------------------------- VARIABLES
     protected GoogleMap mMap;
     protected int circleRadius = 600; // in meters
     protected Circle currentCircle;
     protected boolean isWithdrawMode = true;
-    protected final String SERVER_URL = "http://vps165245.ovh.net";
-
-    public static final String ALARM_NOTIFICATION = "fr.insa_lyon.vcr.alarm";
-    public static final int ALARM_DURATION = 20; // in seconds
-
     HashMap<String, StationVelov> mapStations;
 
     DialogFragment exitDialogFragment;
@@ -253,7 +250,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         MarkerManager markerManager = new MarkerManager(mMap);
         mClusterManager = new CustomClusterManager(this, mMap, this);
         // Grid based display for Clusters
-        mClusterManager.setAlgorithm(new GridBasedAlgorithm<StationVelov>());
+        //mClusterManager.setAlgorithm(new GridBasedAlgorithm<StationVelov>());
         // add custom Icon renderer.
         mClusterIconRenderer = new ClusterIconRenderer(this, mMap, mClusterManager);
         mClusterManager.setRenderer(mClusterIconRenderer);
