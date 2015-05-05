@@ -46,12 +46,25 @@ public class ResearchDialog extends DialogFragment {
         super.onAttach(activity);
     }
 
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
+    public Dialog onCreateDialog(Bundle savedInstanceState) {
 
-        ImageView imageView = (ImageView)((View)t1).findViewById(R.id.autoComplete);
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        LayoutInflater inflater = getActivity().getLayoutInflater();
+        View v = inflater.inflate(R.layout.research_dialog,null);
+        //instance API
+        mGoogleApiClient = new GoogleApiClient.Builder(this.getActivity())
+                .addApi(Places.GEO_DATA_API)
+                .addApi(Places.PLACE_DETECTION_API)
+                .build();
 
-        t1 = (AutoCompleteTextView) getActivity().findViewById(R.id.autoComplete);
+        mGoogleApiClient.connect();
+        List<ResultatPartiel> resultList = new ArrayList<>();
+        adp = new ArrayAdapter<ResultatPartiel>(this.getActivity(),
+                android.R.layout.simple_dropdown_item_1line, resultList);
+        adp.setNotifyOnChange(true);
+
+        t1 = (AutoCompleteTextView) v.findViewById(R.id.autoComplete);
         t1.setThreshold(1);
         t1.addTextChangedListener(new TextWatcher() {
             @Override
@@ -77,32 +90,7 @@ public class ResearchDialog extends DialogFragment {
                 new GetPlace().execute(((ResultatPartiel)parent.getAdapter().getItem(position)).getIdentifiantPlace());
             }
         });
-
-        return t1;
-    }
-
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        // Get the layout inflater
-        LayoutInflater inflater = getActivity().getLayoutInflater();
-
-        // Inflate and set the layout for the dialog
-        // Pass null as the parent view because its going in the dialog layout
-        builder.setView(inflater.inflate(R.layout.research_dialog, null));
-
-
-        //instance API
-        mGoogleApiClient = new GoogleApiClient.Builder(this.getActivity())
-                .addApi(Places.GEO_DATA_API)
-                .addApi(Places.PLACE_DETECTION_API)
-                .build();
-
-        mGoogleApiClient.connect();
-        List<ResultatPartiel> resultList = new ArrayList<>();
-        adp = new ArrayAdapter<ResultatPartiel>(this.getActivity(),
-                android.R.layout.simple_dropdown_item_1line, resultList);
-        adp.setNotifyOnChange(true);
-
+        builder.setView(v);
         return builder.create();
     }
 
