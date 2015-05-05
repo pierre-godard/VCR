@@ -190,6 +190,10 @@ public class StationVelov implements ClusterItem {
         return infoWindowShown;
     }
 
+    public void switchInfoWindowShown(){
+        infoWindowShown=!infoWindowShown;
+    }
+
 
     public BitmapDescriptor getIcon() {
         return updateMarkerIcon();

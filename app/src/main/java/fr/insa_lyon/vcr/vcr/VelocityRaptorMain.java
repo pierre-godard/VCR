@@ -412,10 +412,19 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         boolean isMarkerSelected = false;
         for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
             // title of current station
+            Log.d("PATAPON", "DESSIN AUTOUR DU MARQUEUR");
             String strId = entry.getValue().getTitle();
-
             if (strId.equals(marker.getTitle())) {
-                // in case of match check if station is selected
+                Log.d("PATAPON", "MARKER TROUVE DANS LA MAP");
+                entry.getValue().switchInfoWindowShown();
+                if(entry.getValue().isInfoWindowShown()){
+                    Log.d("PATAPON","ON AFFICHE");
+                    marker.showInfoWindow();
+                }
+                else{
+                    Log.d("PATAPON", "C'EST CA CACHE TOI");
+                    marker.hideInfoWindow();
+                }
                 if (entry.getValue().isSelected()) {
                     // marker selected
                     isMarkerSelected = true;
