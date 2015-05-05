@@ -13,7 +13,9 @@ module.exports = {
         	var station_id		= req.param('id');
 			var date 			= Date.now();
             var delta_date      = req.param('delta');
-            date+=delta_date;
+            var date            = new Date(date + delta_date*60000).getTime(); // increm date by delta_date minutes
+            console.log(date);
+            console.log(station_id);
 			var analysisMode 	= PredictionService.analysis_mode.MEAN;
         	PredictionService.predict(station_id,date,analysisMode,
         		function (state,free,occup,prediction_quality)
