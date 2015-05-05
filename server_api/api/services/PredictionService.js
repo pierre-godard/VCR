@@ -303,6 +303,7 @@ module.exports = {
 	predict: function (id,time,analysisMode,callback) 
 	{
 		// ----- Data fetching
+		var t_init = new Date().getTime();
 		var WEEK_SIZE 			= 7;
 		var station_free		= [];
 		var station_occup		= [];
@@ -325,11 +326,15 @@ module.exports = {
 			//console.log("Specific period: " + period);
 		}
 		//console.log("Dates: "+dates);
+		var t0 = new Date().getTime();
+		//var t_query_cb_0 = 0;
+		//var t_query_cb_1 = 0;
 		for (var j = 0; j < dates.length; j++) 
 		{
 			queryMeasures(id,new Date(dates[j]),
 				function(query_result)
 				{
+					//t_query_cb_0 = new Date().getTime();
 					if(query_result == undefined || query_result.length == 0) // no data has been found corresponding to id (unlikely, or call para error) or time (possible)
 					{
 						//console.log("                Skipping query result ("+id+")");
@@ -346,12 +351,18 @@ module.exports = {
 						//console.log("                Query result used     ("+id+")");
 					}
 					callback_nb++; // before to avoid dates.length - 1 at each loop
+					//t_query_cb_1 = new Date().getTime();
+					console.log("delta t = "+(t_query_cb_1-t_query_cb_0));
 					if(callback_nb == dates.length) // TODO via async ?
 					{		
 						// ----- Data analysis
+						
+						var t1 = new Date().getTime();
 						var free_overTime 		= analysis(station_free,analysisMode);
 						var occup_overTime 		= analysis(station_occup,analysisMode);
 						var prediction_quality  = quality_analysis(station_free,station_occup,analysisMode);
+						var t2 = new Date().getTime();
+						console.log((t_0-t_init)+"-"+(t1-t0)+"-"+(t2-t1));
 
 						//var diff_overTime 	= max_overTime - curr_overTime;
 						console.log("station_free:   "+station_free);
