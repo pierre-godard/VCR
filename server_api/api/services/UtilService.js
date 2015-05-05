@@ -59,7 +59,7 @@ module.exports = {
             {
                 if(file == null)
                 {
-                    console.log("Error while reading file: file is null");
+                    //console.log("Error while reading file: file is null");
                 }
                 else
                 {
@@ -104,7 +104,7 @@ module.exports = {
                             if (err) console.log(err);
                             //if (err) return next(err);
                             if(iter%1000==0)
-                                console.log(iter+" items loaded");
+                                console.log(iter+" items loaded from "+path);
                             iter++;
                         }
                     );
