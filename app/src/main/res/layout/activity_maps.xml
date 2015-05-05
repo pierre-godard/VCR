@@ -1,36 +1,47 @@
-<FrameLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context="fr.insa_lyon.vcr.vcr.GoogleMapFragment"
-    android:id="@+id/container">
 
-    <fragment
-        android:id="@+id/map"
+<android.support.v4.widget.DrawerLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/drawer_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- The main content view -->
+    <FrameLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        class="com.google.android.gms.maps.SupportMapFragment" />
+        tools:context="fr.insa_lyon.vcr.vcr.GoogleMapFragment"
+        android:id="@+id/container">
 
-    <Button
-        android:id="@+id/but_recherche"
-        android:layout_width="wrap_content"
-        android:layout_height="40dp"
-        android:layout_gravity="left|top"
-        android:text="@string/Recherche"
-        android:padding="10dp"
-        android:layout_marginTop="10dp"
-        android:layout_marginLeft="10dp"
-        android:background="#bbffffff"
-        android:onClick="onButtonClickedMain"
-        android:nestedScrollingEnabled="true" />
+        <fragment
+            android:id="@+id/map"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            class="com.google.android.gms.maps.SupportMapFragment" />
 
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal|bottom"
-        android:orientation="vertical">
+    </FrameLayout>
 
+    <!-- The navigation drawer -->
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:orientation="vertical" >
+
+        <Button
+            android:id="@+id/but_recherche"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:layout_gravity="left|top"
+            android:text="@string/Recherche"
+            android:padding="10dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginLeft="10dp"
+            android:background="#bbffffff"
+            android:onClick="onButtonClickedMain"
+            android:nestedScrollingEnabled="true" />
 
         <SeekBar
             android:layout_width="wrap_content"
@@ -46,9 +57,9 @@
             android:checked="false"
             android:textOn="Déposer un vélo"
             android:textOff="Retirer un vélo" />
+
     </LinearLayout>
-
-
-</FrameLayout>
-
+<!--
+-->
+</android.support.v4.widget.DrawerLayout>
 

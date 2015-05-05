@@ -57,7 +57,7 @@ import fr.insa_lyon.vcr.utilitaires.ServerFailureDialog;
 public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCallback, FinishWithDialog {
 
     public static final String ALARM_NOTIFICATION = "fr.insa_lyon.vcr.alarm";
-    public static final int ALARM_DURATION = 20; // in seconds
+    public static final int ALARM_DURATION = 120; // in seconds
     protected final String SERVER_URL = "http://vps165245.ovh.net";
     // ----------------------------------------------------------------------------------- VARIABLES
     protected GoogleMap mMap;
