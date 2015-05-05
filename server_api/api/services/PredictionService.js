@@ -285,10 +285,91 @@ function generate_specificPeriod(json_periods,limit_time,year_begin,year_end,per
 	return dates;
 }
 
-// Uses the recent datas to update de prediction
-// in order to match the reality
-function prediction_adapt()
+// Gives a prediction of the state
+// of a Velov station (id)
+// at a certain point in time (time) 
+// using the selected analysis algorithm (analysisMode) 
+// based only on past datas
+function predict_fromDatas(id,time,analysisMode,callback) 
 {
+	// ----- Data fetching
+	var t_init = new Date().getTime(); 
+	var WEEK_SIZE 			= 7;
+	var station_free		= [];
+	var station_occup		= [];
+	var query_result		= [];
+	var util 				= require('util');
+	var date 				= new Date(time);
+	var year 				= date.getFullYear();
+	var t0 = new Date().getTime();
+	queryMeasures(id,new Date(time),
+		function(query_result)
+		{
+			if(query_result == undefined || query_result.length == 0) // no data has been found corresponding to id (unlikely, or call para error) or time (possible)
+			{
+				//console.log("                Skipping query result ("+id+")");
+			}	
+			else
+			{		
+				for (i = 0; i < query_result.length; i++) 
+				{ 
+					station_free.push(query_result[i].available_bike_stands);
+					station_occup.push(query_result[i].available_bikes);
+					console.log("measure date:   "+new Date(query_result[i].last_update));
+					console.log("free - occup:   "+query_result[i].available_bike_stands+"/"+query_result[i].available_bikes);
+				}
+				//console.log("                Query result used     ("+id+")");
+			}	
+			
+			// ----- Data analysis	
+			var t1 = new Date().getTime();
+			var free_overTime 		= analysis(station_free,analysisMode);
+			var occup_overTime 		= analysis(station_occup,analysisMode);
+			var prediction_quality  = quality_analysis(station_free,station_occup,analysisMode);
+			var t2 = new Date().getTime();
+			console.log((t0-t_init)+"-"+(t1-t0)+"-"+(t2-t1));
+
+			console.log("station_free:   "+station_free);
+			console.log("station_occup:  "+station_occup);
+			console.log("free_overTime:  "+free_overTime);
+			console.log("occup_overTime: "+occup_overTime);
+
+			var state;
+			// ----- State selection
+			if (isNaN(occup_overTime) || isNaN(free_overTime))
+			{
+				state = PredictionService.station_state.UNKNOWN;
+			}
+			else if (free_overTime < PredictionService.station_values.FULL_LIMIT)
+			{
+				state = PredictionService.station_state.FULL;
+			} 
+			else if (free_overTime <= PredictionService.station_values.NEAR_FULL_LIMIT)
+			{
+				state = PredictionService.station_state.NEAR_FULL;
+			}
+			else if (occup_overTime < PredictionService.station_values.EMPTY_LIMIT)
+			{
+				state = PredictionService.station_state.EMPTY;
+			}
+			else if (occup_overTime <= PredictionService.station_values.NEAR_EMPTY_LIMIT)
+			{
+				state = PredictionService.station_state.NEAR_EMPTY;
+			}
+			else
+			{
+				state = PredictionService.station_state.INTERM;
+			}
+			callback(state,free_overTime,occup_overTime,prediction_quality);
+		}
+	);
+}
+
+// Uses the recent datas to update de prediction based only on datas
+// in order to match the reality
+function prediction_adapt(id,time,analysisMode,callback)
+{
+	predict_fromDatas(id,time,analysisMode,callback);
 	// TODO
 	// predict = predict(futur) + (predict(now) - now)
 	// predict = (predict_quality*predict(futur)+predict)/(1+predict_quality)
@@ -336,191 +417,9 @@ module.exports = {
 		return find_period(json_timePeriods,time);
 	},
 	
-	// [OLD version]
-	// Gives a prediction of the state
-	// of a Velov station (id)
-	// at a certain point in time (time) 
-	// using the selected analysis algorithm (analysisMode) 
-	// TODO -> not useful anymore, smalled database but a lot slower
-	predict_old: function (id,time,analysisMode,callback) 
-	{
-		// ----- Data fetching
-		var t_init = new Date().getTime();
-		var WEEK_SIZE 			= 7;
-		var station_free		= [];
-		var station_occup		= [];
-		var query_result		= [];
-		var util 				= require('util');
-		var json_timePeriods 	= require('../../data/time/vacances.json');
-		var date 				= new Date(time);
-		var year 				= date.getFullYear();
-		var period 				= find_period(json_timePeriods,time);
-		var dates 				= [];
-		var callback_nb			= 0;
-		if(period == DEFAULT_PERIOD)
-		{
-			dates = generate_defaultPeriod(json_timePeriods,date,2013,year);
-			//console.log("Default period");
-		}
-		else
-		{
-			dates = generate_specificPeriod(json_timePeriods,date,2013,year,period);
-			//console.log("Specific period: " + period);
-		}
-		//console.log("Dates: "+dates);
-		var t0 = new Date().getTime();
-		//var t_query_cb_0 = 0;
-		//var t_query_cb_1 = 0;
-		for (var j = 0; j < dates.length; j++) 
-		{
-			queryMeasures(id,new Date(dates[j]),
-				function(query_result)
-				{
-					//t_query_cb_0 = new Date().getTime();
-					if(query_result == undefined || query_result.length == 0) // no data has been found corresponding to id (unlikely, or call para error) or time (possible)
-					{
-						//console.log("                Skipping query result ("+id+")");
-					}	
-					else
-					{		
-						for (i = 0; i < query_result.length; i++) 
-						{ 
-							station_free.push(query_result[i].available_bike_stands);
-							station_occup.push(query_result[i].available_bikes);
-							console.log("measure date:   "+new Date(query_result[i].last_update));
-							console.log("free - occup:   "+query_result[i].available_bike_stands+"/"+query_result[i].available_bikes);
-						}
-						//console.log("                Query result used     ("+id+")");
-					}
-					callback_nb++; // before to avoid dates.length - 1 at each loop
-					//t_query_cb_1 = new Date().getTime();
-					console.log("delta t = "+(t_query_cb_1-t_query_cb_0));
-					if(callback_nb == dates.length) // TODO via async ?
-					{		
-						// ----- Data analysis
-						
-						var t1 = new Date().getTime();
-						var free_overTime 		= analysis(station_free,analysisMode);
-						var occup_overTime 		= analysis(station_occup,analysisMode);
-						var prediction_quality  = quality_analysis(station_free,station_occup,analysisMode);
-						var t2 = new Date().getTime();
-						console.log((t_0-t_init)+"-"+(t1-t0)+"-"+(t2-t1));
-
-						//var diff_overTime 	= max_overTime - curr_overTime;
-						console.log("station_free:   "+station_free);
-						console.log("station_occup:  "+station_occup);
-						console.log("free_overTime:  "+free_overTime);
-						console.log("occup_overTime: "+occup_overTime);
-						//console.log("diff_overTime: "+diff_overTime);
-						var state;
-						// ----- State selection
-						if (isNaN(occup_overTime) || isNaN(free_overTime))
-						{
-							state = PredictionService.station_state.UNKNOWN;
-						}
-						else if (free_overTime < PredictionService.station_values.FULL_LIMIT)
-						{
-							state = PredictionService.station_state.FULL;
-						} 
-						else if (free_overTime <= PredictionService.station_values.NEAR_FULL_LIMIT)
-						{
-							state = PredictionService.station_state.NEAR_FULL;
-						}
-						else if (occup_overTime < PredictionService.station_values.EMPTY_LIMIT)
-						{
-							state = PredictionService.station_state.EMPTY;
-						}
-						else if (occup_overTime <= PredictionService.station_values.NEAR_EMPTY_LIMIT)
-						{
-							state = PredictionService.station_state.NEAR_EMPTY;
-						}
-						else
-						{
-							state = PredictionService.station_state.INTERM;
-						}
-						callback(state,free_overTime,occup_overTime,prediction_quality);
-					}
-				}
-			);
-		}
-	},
-	// Gives a prediction of the state
-	// of a Velov station (id)
-	// at a certain point in time (time) 
-	// using the selected analysis algorithm (analysisMode) 
 	predict: function (id,time,analysisMode,callback) 
 	{
-		// ----- Data fetching
-		var t_init = new Date().getTime(); 
-		var WEEK_SIZE 			= 7;
-		var station_free		= [];
-		var station_occup		= [];
-		var query_result		= [];
-		var util 				= require('util');
-		var date 				= new Date(time);
-		var year 				= date.getFullYear();
-		var t0 = new Date().getTime();
-		queryMeasures(id,new Date(time),
-			function(query_result)
-			{
-				if(query_result == undefined || query_result.length == 0) // no data has been found corresponding to id (unlikely, or call para error) or time (possible)
-				{
-					//console.log("                Skipping query result ("+id+")");
-				}	
-				else
-				{		
-					for (i = 0; i < query_result.length; i++) 
-					{ 
-						station_free.push(query_result[i].available_bike_stands);
-						station_occup.push(query_result[i].available_bikes);
-						console.log("measure date:   "+new Date(query_result[i].last_update));
-						console.log("free - occup:   "+query_result[i].available_bike_stands+"/"+query_result[i].available_bikes);
-					}
-					//console.log("                Query result used     ("+id+")");
-				}	
-				
-				// ----- Data analysis	
-				var t1 = new Date().getTime();
-				var free_overTime 		= analysis(station_free,analysisMode);
-				var occup_overTime 		= analysis(station_occup,analysisMode);
-				var prediction_quality  = quality_analysis(station_free,station_occup,analysisMode);
-				var t2 = new Date().getTime();
-				console.log((t0-t_init)+"-"+(t1-t0)+"-"+(t2-t1));
-
-				console.log("station_free:   "+station_free);
-				console.log("station_occup:  "+station_occup);
-				console.log("free_overTime:  "+free_overTime);
-				console.log("occup_overTime: "+occup_overTime);
-
-				var state;
-				// ----- State selection
-				if (isNaN(occup_overTime) || isNaN(free_overTime))
-				{
-					state = PredictionService.station_state.UNKNOWN;
-				}
-				else if (free_overTime < PredictionService.station_values.FULL_LIMIT)
-				{
-					state = PredictionService.station_state.FULL;
-				} 
-				else if (free_overTime <= PredictionService.station_values.NEAR_FULL_LIMIT)
-				{
-					state = PredictionService.station_state.NEAR_FULL;
-				}
-				else if (occup_overTime < PredictionService.station_values.EMPTY_LIMIT)
-				{
-					state = PredictionService.station_state.EMPTY;
-				}
-				else if (occup_overTime <= PredictionService.station_values.NEAR_EMPTY_LIMIT)
-				{
-					state = PredictionService.station_state.NEAR_EMPTY;
-				}
-				else
-				{
-					state = PredictionService.station_state.INTERM;
-				}
-				callback(state,free_overTime,occup_overTime,prediction_quality);
-			}
-		);
-
+		prediction_adapt(id,time,analysisMode,callback);
 	}
+
 };
