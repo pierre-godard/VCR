@@ -38,7 +38,7 @@ public class ResearchDialog extends DialogFragment {
 
     private GoogleApiClient mGoogleApiClient;
     private ArrayAdapter<ResultatPartiel> adp;
-    private View t1;
+    private AutoCompleteTextView t1;
     //private Activity activite;
 
     @Override
