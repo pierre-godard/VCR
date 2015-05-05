@@ -2,12 +2,15 @@ package fr.insa_lyon.vcr.vcr;
 
 import android.animation.IntEvaluator;
 import android.animation.ValueAnimator;
+import android.app.AlarmManager;
 import android.app.DialogFragment;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.View;
@@ -56,6 +59,9 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
     protected boolean isWithdrawMode = true;
     protected final String SERVER_URL = "http://vps165245.ovh.net";
 
+    public static final String ALARM_NOTIFICATION = "fr.insa_lyon.vcr.alarm";
+    public static final int ALARM_DURATION = 20; // in seconds
+
     HashMap<String, StationVelov> mapStations;
 
     DialogFragment exitDialogFragment;
@@ -64,6 +70,9 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
     // Download services intent
     Intent intentDyna;
     Intent intentStat;
+    Intent intentAlarm;
+    PendingIntent pendingIntentAlarm;
+    AlarmManager alarmManager;
 
     private ClusterManager<StationVelov> mClusterManager;
 
@@ -110,6 +119,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                         Log.d("RECEIVER_DYNA", "Before call to updateStationValues");
                         updateStationValues(json_string);
                     }
+                    alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + 20 * 1000, pendingIntentAlarm);
                 } else {
                     if (!serverFailureDetected) {
                         serverFailureDetected = true;
@@ -119,6 +129,14 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                     }
                 }
             }
+        }
+    };
+
+    private BroadcastReceiver receiverAlarm = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Toast.makeText(VelocityRaptorMain.this, "Reload stations", Toast.LENGTH_LONG).show();
+            context.startService(intentDyna);
         }
     };
 
@@ -153,6 +171,11 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         intentDyna.putExtra(UpdateStation.URL_PARAM_N1, "limit");
         intentDyna.putExtra(UpdateStation.URL_PARAM_V1, "0");
 
+        // Setting up the alarm manager that will be used for fetching dynamic data
+        alarmManager = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
+        intentAlarm = new Intent(ALARM_NOTIFICATION);
+        pendingIntentAlarm = PendingIntent.getBroadcast(this.getApplicationContext(), 0, intentAlarm, 0);
+
         // Ajout du listener sur le switch
         Switch switchWithdrawDeposit = (Switch) findViewById(R.id.switchDeposerRetirer);
         switchWithdrawDeposit.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -171,6 +194,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         super.onResume();
         registerReceiver(receiverStat, new IntentFilter(FetchStation.NOTIFICATION));
         registerReceiver(receiverDyna, new IntentFilter(UpdateStation.NOTIFICATION));
+        registerReceiver(receiverAlarm, new IntentFilter(ALARM_NOTIFICATION));
     }
 
     @Override
