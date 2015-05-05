@@ -24,7 +24,7 @@ var formatter = function (value)
     var d = new Date(0);    // The 0 there is the key, which sets the date to the epoch
     d.setUTCMilliseconds(value.last_update);
     //value.specif_time = Measure.date_to_specificTime(d);
-    value.period = PerdictionService.period(value.last_update);
+    value.period = PredictionService.period(value.last_update);
     value.day = d.getDay();
     value.hour = d.getHours(); 
     /*value.date = d.getDate();

@@ -131,11 +131,10 @@ function queryMeasures_old(id,time,callback)
 // for the perdiction calculation
 function queryMeasures(id,time,callback)
 {
-	Measure.find({station: id, specif_time: Measure.date_to_specificTime(time)
-			/*hour: time.getHours(),
-		    date: time.getDate(),
-		    month: time.getMonth(),
-		    time_slice: Math.floor(time.getMinutes()*Measure.NB_TIME_SLICES/60)*/ },
+	Measure.find({station: id, 
+			period: PredictionService.period(time),
+			hour: time.getHours(),
+		    time_slice: Math.floor(time.getMinutes()*Measure.NB_TIME_SLICES/60) },
 		function(err, found) 
 		{
       		callback(found);
@@ -145,6 +144,8 @@ function queryMeasures(id,time,callback)
 
 // If no period is found, used to define the default period
 var DEFAULT_PERIOD = -1;
+//error period -> problem during period calculation
+var ERROR_PERIOD = -2;
 // used to loop through periods
 var NB_SPECIFIC_PERIODS = 5; // TODO add in JSON
 
@@ -153,9 +154,14 @@ function find_period(json_periods,time)
 {
 	var date = new Date(time);
 	var year = String(date.getFullYear());
+	if(time == 0 || json_periods[year] == undefined)
+	{
+		return ERROR_PERIOD; // TODO better error management
+	}
+	//console.log("year ======== "+year);
 	for (var i = 0; i < NB_SPECIFIC_PERIODS; i++) 
 	{ 
-/*		console.log(Date(json_periods[year][i].begin));
+		/*console.log(Date(json_periods[year][i].begin));
 		console.log(date);
 		console.log(Date(json_periods[year][i].end));*/
 	    if(new Date(json_periods[year][i].begin) <= date 
@@ -319,7 +325,7 @@ module.exports = {
 	// returns the period associated to the time
 	period: function (time)
 	{
-		find_period(json_timePeriods,time);
+		return find_period(json_timePeriods,time);
 	},
 	
 	// [OLD version]
@@ -446,7 +452,7 @@ module.exports = {
 		var year 				= date.getFullYear();
 		var dates 				= [];
 		var callback_nb			= 0;
-		queryMeasures(id,new Date(dates[j]),
+		queryMeasures(id,new Date(time),
 			function(query_result)
 			{
 				//t_query_cb_0 = new Date().getTime();
