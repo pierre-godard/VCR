@@ -313,6 +313,9 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                 reloadMarker(entry.getValue());
             }
         }
+        for(String s: idStationsSelectionnees){
+            Log.d("PATAPON",s);
+        }
         currentCircle = c;
         mMap.moveCamera(CameraUpdateFactory.newLatLng(position));
     }
