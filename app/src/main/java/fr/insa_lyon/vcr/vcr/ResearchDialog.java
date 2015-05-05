@@ -38,7 +38,7 @@ public class ResearchDialog extends DialogFragment {
 
     private GoogleApiClient mGoogleApiClient;
     private ArrayAdapter<ResultatPartiel> adp;
-    private View t1;
+    private AutoCompleteTextView t1;
     //private Activity activite;
 
     @Override
@@ -49,7 +49,7 @@ public class ResearchDialog extends DialogFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
 
-        ImageView imageView = (ImageView)t1.findViewById(R.id.autoComplete);
+        ImageView imageView = (ImageView)((View)t1).findViewById(R.id.autoComplete);
 
         t1 = (AutoCompleteTextView) getActivity().findViewById(R.id.autoComplete);
         t1.setThreshold(1);
