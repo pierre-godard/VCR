@@ -23,11 +23,11 @@ var formatter = function (value)
     value.identifier = value.station + value.last_update * 100;
     var d = new Date(0);    // The 0 there is the key, which sets the date to the epoch
     d.setUTCMilliseconds(value.last_update);
-    //value.specif_time = Measure.date_to_specificTime(d);
+    value.specif_time = Measure.date_to_specificTime(d);
     value.period = PredictionService.period(value.last_update);
-    value.day = d.getDay();
+    /*value.day = d.getDay();
     value.hour = d.getHours(); 
-    /*value.date = d.getDate();
+    value.date = d.getDate();
     value.month = d.getMonth();*/
     value.time_slice = Math.floor(d.getMinutes()*Measure.NB_TIME_SLICES/60);
     delete value['number'];
@@ -69,7 +69,7 @@ module.exports =
         {
             type: 'integer',
             required: true
-        },*/
+        },
         day: 
         {
             type: 'integer',
@@ -84,7 +84,7 @@ module.exports =
         {
             type: 'integer',
             required: true
-        },
+        },*/
         station: 
         {
             model: 'Station',
@@ -100,11 +100,11 @@ module.exports =
             type: 'integer',
             required: true
         },
-        /*specif_time: 
+        specif_time: 
         {
             type: 'string', // TODO as integer?
             required: true
-        },*/
+        },
         period:
         {
             type: 'integer',
@@ -115,7 +115,7 @@ module.exports =
     // d as date
     date_to_specificTime: function(d)
     {
-        return d.getMonth()+"-"+d.getDate()+"-"+d.getDay()+"-"+d.getHours()+
+        return /*d.getMonth()+"-"+d.getDate()+"-"+*/d.getDay()+"-"+d.getHours()+
             "-"+Math.floor(d.getMinutes()*Measure.NB_TIME_SLICES/60);
     },
     

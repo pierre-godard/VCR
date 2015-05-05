@@ -131,10 +131,18 @@ function queryMeasures_old(id,time,callback)
 // for the perdiction calculation
 function queryMeasures(id,time,callback)
 {
+	/*console.log(time);
+	console.log(id);
+	console.log(PredictionService.period(time));
+	console.log(time.getDay());
+	console.log(time.getHours());
+	console.log(Math.floor(time.getMinutes()*Measure.NB_TIME_SLICES/60));*/
 	Measure.find({station: id, 
-			period: PredictionService.period(time),
+			specif_time: Measure.date_to_specificTime(time)
+			/*period: PredictionService.period(time),
+			day: time.getDay(),
 			hour: time.getHours(),
-		    time_slice: Math.floor(time.getMinutes()*Measure.NB_TIME_SLICES/60) },
+		    time_slice: Math.floor(time.getMinutes()*Measure.NB_TIME_SLICES/60)*/ },
 		function(err, found) 
 		{
       		callback(found);
