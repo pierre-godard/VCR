@@ -51,7 +51,7 @@ function decreasingFactor_mean (factor,step,array)
 function variance(array,mode)
 {
 	var avg = 0;
-	switch(mode) 
+	/*switch(mode) 
 	{
 	    case PredictionService.analysis_mode.MEAN:
 	    	avg = mean(array);
@@ -60,7 +60,8 @@ function variance(array,mode)
 	    	avg = decreasingFactor_mean(DFM_DEFAULT_FACTOR,DFM_DEFAULT_STEP,array);
 	        break;
 	    default:
-	}
+	}*/
+	avg = mean(array);
 	var i = array.length;
 	var v = 0;
  
@@ -93,11 +94,11 @@ function analysis (datas,mode)
 // return the level of quality of the prediction (0 -> 1)
 // 0 -> prediction with no assurance
 // 1 -> sure (nearly)
-function quality_analysis(arr_free,arr_occup)
+function quality_analysis(arr_free,arr_occup,mode)
 {
 	// Normalized. The inside walue is the raw quality. If this quality is supp to 10000
 	// we considerate we are sure about the result (log(10000)/4 = 1)
-	return Math.min(1,Math.log(1+(arr_free.length + arr_occup.length)/(1 + variance(arr_free) + variance(arr_occup)))/4);
+	return Math.min(1,Math.log(1+(arr_free.length + arr_occup.length)/(1 + variance(arr_free,mode) + variance(arr_occup,mode)))/4);
 }
 
 // returns the measures matching the specified id and withing time stamp of [time]
@@ -350,7 +351,7 @@ module.exports = {
 						// ----- Data analysis
 						var free_overTime 		= analysis(station_free,analysisMode);
 						var occup_overTime 		= analysis(station_occup,analysisMode);
-						var prediction_quality  = quality_analysis(station_free,station_occup);
+						var prediction_quality  = quality_analysis(station_free,station_occup,analysisMode);
 
 						//var diff_overTime 	= max_overTime - curr_overTime;
 						console.log("station_free:   "+station_free);
