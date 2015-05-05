@@ -313,9 +313,6 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                 reloadMarker(entry.getValue());
             }
         }
-        for(String s: idStationsSelectionnees){
-            Log.d("PATAPON",s);
-        }
         currentCircle = c;
         mMap.moveCamera(CameraUpdateFactory.newLatLng(position));
     }
@@ -425,7 +422,6 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         Map.Entry<String,StationVelov> entryMarker = null;
         for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
             // title of current station
-            Log.d("PATAPON", "DESSIN AUTOUR DU MARQUEUR");
             String strId = entry.getValue().getTitle();
             if (strId.equals(marker.getTitle())) {
                 entryMarker = entry;
@@ -441,14 +437,11 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
             drawCircle(marker.getPosition());
         }
 
-        Log.d("PATAPON", "MARKER TROUVE DANS LA MAP");
         entryMarker.getValue().switchInfoWindowShown();
         if(entryMarker.getValue().isInfoWindowShown()){
-            Log.d("PATAPON","ON AFFICHE");
             marker.showInfoWindow();
         }
         else{
-            Log.d("PATAPON", "C'EST CA CACHE TOI");
             marker.hideInfoWindow();
         }
     }

@@ -45,7 +45,8 @@
             android:id="@+id/switchDeposerRetirer"
             android:checked="false"
             android:textOn="Déposer un vélo"
-            android:textOff="Retirer un vélo" />
+            android:textOff="Retirer un vélo"
+            style="@android:style/Widget.Holo.Button.Toggle" />
     </LinearLayout>
 
 
