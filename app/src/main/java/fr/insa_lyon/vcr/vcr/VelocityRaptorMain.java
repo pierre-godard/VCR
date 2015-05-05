@@ -46,6 +46,7 @@ import fr.insa_lyon.vcr.reseau.FetchStation;
 import fr.insa_lyon.vcr.reseau.UpdateStation;
 import fr.insa_lyon.vcr.utilitaires.ClusterIconRenderer;
 import fr.insa_lyon.vcr.utilitaires.CustomAnimatorUpdateListener;
+import fr.insa_lyon.vcr.utilitaires.CustomClusterManager;
 import fr.insa_lyon.vcr.utilitaires.CustomInfoWindow;
 import fr.insa_lyon.vcr.utilitaires.FinishWithDialog;
 import fr.insa_lyon.vcr.utilitaires.MathsUti;
@@ -250,82 +251,25 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
 
         // ######-------------------------------------------------------------------##### Clustering
         MarkerManager markerManager = new MarkerManager(mMap);
-        mClusterManager = new ClusterManager<StationVelov>(this, mMap, markerManager);
+        mClusterManager = new CustomClusterManager(this, mMap, this);
         // Grid based display for Clusters
         mClusterManager.setAlgorithm(new GridBasedAlgorithm<StationVelov>());
         // add custom Icon renderer.
         mClusterIconRenderer = new ClusterIconRenderer(this, mMap, mClusterManager);
         mClusterManager.setRenderer(mClusterIconRenderer);
-
+       // mClusterManager.getMarkerCollection().
         // listenners sur la map
+        mMap.setOnMarkerClickListener(mClusterManager);
+
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
 
             @Override
             public void onMapClick(LatLng position) {
                 drawCircle(position);
-                for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
-                    reloadMarker(entry.getValue());
-                }
-
+                reloadAllMarkers();
             }
         });
-
-        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-            @Override
-            public boolean onMarkerClick(Marker marker) {
-                boolean isMarkerSelected = false;
-
-                // retrieve station associated with marker clicked
-                for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
-
-                    // title of current station
-                    String strId = entry.getValue().getTitle();
-
-                    if (strId.equals(marker.getTitle())) {
-                        // in case of match check if station is selected
-                        if (entry.getValue().isSelected()) {
-                            // marker selected
-                            isMarkerSelected = true;
-                        }
-                        break;
-                    }
-                }
-                // draw circle around marker
-                if (!isMarkerSelected) {
-                    drawCircle(marker.getPosition());
-                }
-
-
-                // Show/Hide InfoWindow
-                if (marker.isInfoWindowShown()) {
-                    marker.hideInfoWindow();
-                } else {
-                    marker.showInfoWindow();
-                }
-
-
-                /*for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
-                    if (entry.getValue().getMarqueur().getId().equals(marker.getId())) {
-                        entry.getValue().switchInfoWindowShown();
-                        if (entry.getValue().isSelected()) {
-                            isMarkerSelected = true;
-                        }
-                        break;
-                    }
-                }
-                if (!isMarkerSelected) {
-                    drawCircle(marker.getPosition());
-                }
-
-                if (marker.isInfoWindowShown()) {
-                    marker.hideInfoWindow();
-                } else {
-                    marker.showInfoWindow();
-                }*/
-                return true;
-            }
-        });
-
+        mMap.setOnMarkerClickListener(mClusterManager);
     }
 
     //------------------------------------------------------------------------------ General Methods
@@ -442,6 +386,8 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         }
     }
 
+
+
     public void updateStationMode() {
         for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
             entry.getValue().setMode(isWithdrawMode);
@@ -462,7 +408,32 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         finish();
     }
 
+    public void drawAround(Marker marker){
+        boolean isMarkerSelected = false;
+        for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
+            // title of current station
+            String strId = entry.getValue().getTitle();
 
+            if (strId.equals(marker.getTitle())) {
+                // in case of match check if station is selected
+                if (entry.getValue().isSelected()) {
+                    // marker selected
+                    isMarkerSelected = true;
+                }
+                break;
+            }
+        }
+        // draw circle around marker
+        if (!isMarkerSelected) {
+            drawCircle(marker.getPosition());
+        }
+    }
+
+    public void reloadAllMarkers() {
+        for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
+            reloadMarker(entry.getValue());
+        }
+    }
     /**
      * Workarround to repaint markers
      *
