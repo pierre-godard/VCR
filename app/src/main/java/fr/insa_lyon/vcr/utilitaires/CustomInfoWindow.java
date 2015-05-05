@@ -54,7 +54,6 @@ public class CustomInfoWindow implements GoogleMap.InfoWindowAdapter {
     @Override
     public View getInfoWindow(Marker marker) {
 
-
         TextView textView_title = ((TextView) customInfoView.findViewById(R.id.title));
         textView_title.setText(marker.getTitle());
         TextView textView_BikeAvail = ((TextView) customInfoView.findViewById(R.id.snippet));

@@ -29,6 +29,7 @@ import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.maps.android.MarkerManager;
 import com.google.maps.android.clustering.ClusterManager;
 import com.google.maps.android.clustering.algo.GridBasedAlgorithm;
 
@@ -36,6 +37,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -75,6 +77,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
     AlarmManager alarmManager;
 
     private ClusterManager<StationVelov> mClusterManager;
+    private ClusterIconRenderer mClusterIconRenderer;
 
 
     /**
@@ -158,6 +161,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         }
 
 
+
         // fetch static data for all stations
         intentStat = new Intent(this, FetchStation.class);
         intentStat.putExtra(FetchStation.SERVER_URL, SERVER_URL + "/station");
@@ -182,8 +186,8 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 isWithdrawMode = !isWithdrawMode;
                 //majMarqueurs();
-                Log.d("SWITCH LISTENNER", "BEFORE UPDATE MARKER MODE");
-                updateMarkerMode();
+                //Log.d("SWITCH LISTENNER", "BEFORE UPDATE MARKER MODE");
+                updateStationMode();
             }
         });
     }
@@ -237,19 +241,32 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         mUiSettings.setRotateGesturesEnabled(true);
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(45.763478, 4.835442), 12));
 
+
+        // Clustering
+        MarkerManager markerManager = new MarkerManager(mMap);
+        mClusterManager = new ClusterManager<StationVelov>(this, mMap, markerManager);
+        mClusterManager.setAlgorithm(new GridBasedAlgorithm<StationVelov>());
+        mClusterIconRenderer = new ClusterIconRenderer(this, mMap, mClusterManager);
+        mClusterManager.setRenderer(mClusterIconRenderer);
+
+
         // listenners sur la map
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
 
             @Override
             public void onMapClick(LatLng position) {
                 drawCircle(position);
+                for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
+                    reloadMarker(entry.getValue());
+                }
+
             }
         });
 
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
-                Log.d("PATAPON", "MARKER CLIQUE, ISINFOWINDOWSHOWN=" + marker.isInfoWindowShown());
+                //Log.d("PATAPON", "MARKER CLIQUE, ISINFOWINDOWSHOWN=" + marker.isInfoWindowShown());
                 boolean isMarkerSelected = false;
                 for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
                     if (entry.getValue().getMarqueur().getId().equals(marker.getId())) {
@@ -272,6 +289,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                 return true;
             }
         });
+
     }
 
     //------------------------------------------------------------------------------ General Methods
@@ -302,7 +320,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         vAnimator.addUpdateListener(caul);
         vAnimator.start();
         for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
-            if (MathsUti.getDistance(entry.getValue().getMarqueur().getPosition(), position) <= circleRadius) {
+            if (MathsUti.getDistance(entry.getValue().getPosition(), position) <= circleRadius) {
                 entry.getValue().setSelected(true);
             }
         }
@@ -329,22 +347,21 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                 currentJSON = jArrayStations.getJSONObject(i);
                 String id = (String) currentJSON.get("id");
                 currentPosition = new LatLng(currentJSON.getDouble("latitude"), currentJSON.getDouble("longitude"));
-                currentOpt = new MarkerOptions().position(currentPosition);
-                currentMark = mMap.addMarker(currentOpt);
-                currentStation = new StationVelov(jArrayStations.getJSONObject(i), currentMark);
+                //currentOpt = new MarkerOptions().position(currentPosition);
+                //currentMark = mMap.addMarker(currentOpt);
+                //currentStation = new StationVelov(jArrayStations.getJSONObject(i), currentMark);
+                currentStation = new StationVelov(jArrayStations.getJSONObject(i));
                 mapStations.put(id, currentStation);
             }
         } catch (JSONException j) {
             Log.e("parseStations", "Problem when parsing JSON");
         }
-        mClusterManager = new ClusterManager<StationVelov>(this, mMap);
+
         mMap.setOnCameraChangeListener(mClusterManager);
         mMap.setOnMarkerClickListener(mClusterManager);
         for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
             mClusterManager.addItem(entry.getValue());
         }
-        mClusterManager.setRenderer(new ClusterIconRenderer(this, mMap, mClusterManager));
-        mClusterManager.setAlgorithm(new GridBasedAlgorithm<StationVelov>());
         mClusterManager.cluster();
     }
 
@@ -356,7 +373,6 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
      * @param jsonString Json String that can be parsed to a json array
      */
     protected void updateStationValues(String jsonString) {
-        Log.d("UPDATE_STATION_VALUES", "In method");
         try {
             JSONArray jArrayMeasures = new JSONArray(jsonString);
             JSONObject currentStation;
@@ -371,33 +387,33 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                 updatedStation = mapStations.get(stationId);            // will need to catch exception in case id is not found in hashmap
                 updatedStation.setBikesAndStands(currentMeasure.getInt("available_bikes"), currentMeasure.getInt("available_bike_stands"));
                 mapStations.put(stationId, updatedStation);
-                Log.d("UPDATE_STATION_VALUES", "Station " + updatedStation.getName() + " has been updated");
             }
         } catch (JSONException j) {
             Log.e("updateStationValues", "Problem when parsing JSON : " + j);
         }
-        Log.d("UPDATE_STATION_VALUES", "-----------DONE-----------");
-    }
-
-/*    private void majMarqueurs(){
-        for(MarqueurPerso m : marqueurs){
-            if (isWithdrawMode) {
-                m.getMarqueur().setSnippet(m.getStation().getSnippetDeposer());
-            }
-            else{
-                m.getMarqueur().setSnippet(m.getStation().getSnippetRetirer());
-            }
-            m.getMarqueur().hideInfoWindow();
+        for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
+            reloadMarker(entry.getValue());
         }
-    }*/
+
+    }
 
 
     public void updateMarkerMode() {
         for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
             entry.getValue().setMode(isWithdrawMode);
-            Log.d("UPDATE_MARKER_MODE", "Station " + entry.getValue().getName() + " has mode withdraw = " + entry.getValue().getMode());
+            reloadMarker(entry.getValue());
+            //Log.d("UPDATE_MARKER_MODE", "Station " + entry.getValue().getTitle() + " has mode withdraw = " + entry.getValue().getMode());
         }
     }
+
+    public void updateStationMode() {
+        for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
+            entry.getValue().setModeNoMarker(isWithdrawMode);
+            reloadMarker(entry.getValue());
+            //Log.d("UPDATE_MARKER_MODE", "Station " + entry.getValue().getTitle() + " has mode withdraw = " + entry.getValue().getMode());
+        }
+    }
+
 
 
     /**
@@ -408,5 +424,25 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
     public void onChoose() {
         // Quite a lot of things to add here on order to finsh the activity in a "cleaner"  way
         finish();
+    }
+
+
+    /**
+     * Workarround to repaint markers
+     *
+     * @param item item to repaint
+     */
+    public void reloadMarker(StationVelov item) {
+        MarkerManager.Collection markerCollection = mClusterManager.getMarkerCollection();
+        Collection<Marker> markers = markerCollection.getMarkers();
+        String strId = item.getTitle();
+        for (Marker m : markers) {
+            if (strId.equals(m.getTitle())) {
+                m.setIcon(item.getIcon());
+                m.setSnippet(item.getSnippet());
+                break;
+            }
+        }
+
     }
 }

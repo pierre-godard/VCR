@@ -16,8 +16,9 @@ import fr.insa_lyon.vcr.vcr.R;
 public class StationVelov implements ClusterItem {
 
     String id;
-    String name;
+    String title;
     LatLng position;
+    String snippet;
     Marker marker;
     int numberOfBikes;
     int numberOfFreeBikeStands;
@@ -29,16 +30,15 @@ public class StationVelov implements ClusterItem {
     public StationVelov(JSONObject jsonObj, Marker marqueur) {
         // Static Data
         try {
-            name = jsonObj.getString("name").split("-", 2)[1]; // get only second part of the name
+            title = jsonObj.getString("name").split("-", 2)[1]; // get only second part of the name
             id = jsonObj.getString("id");
         } catch (JSONException e) {
             Log.e("STATION_VELOV", "Problem when parsing JSONObject.");
         }
 
-
         // Marker
         this.marker = marqueur;
-        this.marker.setTitle(name);
+        this.marker.setTitle(title);
         snippetText = this.marker.getSnippet();
         this.marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.marqueurperso));
         //this.marker.setFlat(false);
@@ -49,22 +49,48 @@ public class StationVelov implements ClusterItem {
         updateMarkerIcon();
     }
 
+
+    public StationVelov(JSONObject jsonObj) {
+        // Static Data
+        try {
+            title = jsonObj.getString("name").split("-", 2)[1]; // get only second part of the name
+            id = jsonObj.getString("id");
+            position = new LatLng(jsonObj.getDouble("latitude"), jsonObj.getDouble("longitude"));
+        } catch (JSONException e) {
+            Log.e("STATION_VELOV", "Problem when parsing JSONObject.");
+        }
+        //setMarkerSnippet(0,0);
+
+        numberOfBikes = 0;      // waiting for VelocityRaptorMain to fetch these data...
+        numberOfFreeBikeStands = 0;
+        withdrawal = true;  // default case assume user want to withdraw a bike from the station.
+    }
+
     //------------------------------------------------------------------------- OPERATIONS ON MARKER
 
     public void setBikesAndStands(int bikes, int stands) {
-        Log.d("SET_BIKES_AND_STANDS", "In method.");
+        //Log.d("SET_BIKES_AND_STANDS", "In method.");
         numberOfBikes = bikes;
         numberOfFreeBikeStands = stands;
-        setMarkerSnippet(numberOfBikes, numberOfFreeBikeStands);
+        //setMarkerSnippet(numberOfBikes, numberOfFreeBikeStands);
         updateMarkerIcon();
-        Log.d("SET_BIKES_AND_STANDS", "Done");
+        setSnippet();
+        //Log.d("SET_BIKES_AND_STANDS", "Done");
     }
 
     public void setMode(boolean withdrawal) {
         this.withdrawal = withdrawal;
-        setMarkerSnippet(numberOfBikes, numberOfFreeBikeStands);
+        //setMarkerSnippet(numberOfBikes, numberOfFreeBikeStands);
         marker.hideInfoWindow();
         updateMarkerIcon();
+        setSnippet();
+    }
+
+    public void setModeNoMarker(boolean withdrawal) {
+        this.withdrawal = withdrawal;
+        updateMarkerIcon();
+        setSnippet();
+
     }
 
     /**
@@ -75,9 +101,11 @@ public class StationVelov implements ClusterItem {
      */
     private BitmapDescriptor updateMarkerIcon() {
         BitmapDescriptor bitmap;
+
         if (numberOfBikes + numberOfFreeBikeStands == 0) {
             bitmap = BitmapDescriptorFactory.fromResource(R.drawable.marker_y7);
-            this.marker.setIcon(bitmap);
+            if (marker != null)
+                this.marker.setIcon(bitmap);
         } else {
             float ratio;
             if (withdrawal) { //ratio of avail bikes on the total of possible bikes in the station
@@ -136,22 +164,27 @@ public class StationVelov implements ClusterItem {
                     bitmap = BitmapDescriptorFactory.fromResource(R.drawable.marker_z7);
                 }
             }
-            this.marker.setIcon(bitmap);
+            if (marker != null)
+                this.marker.setIcon(bitmap);
         }
-
-
         return bitmap;
     }
 
-    public void setMarkerSnippet(int avail_Bikes, int avail_Spaces) {
-        Log.d("SET_MARKER_SNIPPET", "Setting snippet for marker of station" + this.name);
-        String snippet;
-        if (withdrawal) {
-            snippet = "Vélos disponibles : " + avail_Bikes;
+    public void setSnippet() {
+        if (numberOfFreeBikeStands + numberOfBikes != 0) {
+            if (withdrawal) {
+                snippet = "Vélos disponibles : " + numberOfBikes;
+            } else {
+                snippet = "Empacements disponibles : " + numberOfFreeBikeStands;
+            }
         } else {
-            snippet = "Empacements disponibles : " + avail_Spaces;
+            snippet = "Attente des données";
         }
-        marker.setSnippet(snippet);
+    }
+
+    public String getSnippet() {
+        setSnippet();
+        return snippet;
     }
 
     public void setMarkerTitle(String text) {
@@ -167,12 +200,12 @@ public class StationVelov implements ClusterItem {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public String getTitle() {
+        return title;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     @Override
