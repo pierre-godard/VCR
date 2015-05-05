@@ -24,7 +24,7 @@ var formatter = function (value)
     var d = new Date(0);    // The 0 there is the key, which sets the date to the epoch
     d.setUTCMilliseconds(value.last_update);
     value.specif_time = Measure.date_to_specificTime(d);
-/*    value.day = d.getDay();
+    /*value.day = d.getDay();
     value.hour = d.getHours(); 
     value.date = d.getDate();
     value.month = d.getMonth();
@@ -109,7 +109,7 @@ module.exports =
     // d as date
     date_to_specificTime: function(d)
     {
-        return d.getMonth()+"-"+d.getDate()+"-"+d.getDay()+"-"+d.getHours()+
+        return d.getMonth()+/*"-"+d.getDate()+*/"-"+d.getDay()+"-"+d.getHours()+
             "-"+Math.floor(d.getMinutes()*Measure.NB_TIME_SLICES/60);
     },
     

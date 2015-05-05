@@ -86,10 +86,14 @@ function quality_analysis(arr_free,arr_occup)
 // returns the measures matching the specified id and withing time stamp of [time]
 function queryMeasures(id,time,callback)
 {
-	Measure.find({station: id, specif_time: Measure.date_to_specificTime(time) },
+	Measure.find({station: id, specif_time: Measure.date_to_specificTime(time)
+			/*hour: time.getHours(),
+		    date: time.getDate(),
+		    month: time.getMonth(),
+		    time_slice: Math.floor(time.getMinutes()*Measure.NB_TIME_SLICES/60)*/ },
 		function(err, found) 
 		{
-			console.log("-- Time:        "+time);
+			/*console.log("-- Time:        "+time);
       		console.log("found: "+found);
       		console.log("error: "+err);
       		for (var i = 0; i < found.length; i++) 
@@ -98,7 +102,7 @@ function queryMeasures(id,time,callback)
       			console.log("available_bike_stands: "+found[i].available_bike_stands);
 				console.log("available_bikes:       "+found[i].available_bikes);
 				console.log("last_update:           "+new Date(found[i].last_update));
-			}
+			}*/
       		callback(found);
       	}
     );
@@ -286,12 +290,12 @@ module.exports = {
 		if(period == DEFAULT_PERIOD)
 		{
 			dates = generate_defaultPeriod(json_timePeriods,date,2013,year);
-			console.log("Default period");
+			//console.log("Default period");
 		}
 		else
 		{
 			dates = generate_specificPeriod(json_timePeriods,date,2013,year,period);
-			console.log("Specific period: " + period);
+			//console.log("Specific period: " + period);
 		}
 		//console.log("Dates: "+dates);
 		for (var j = 0; j < dates.length; j++) 
