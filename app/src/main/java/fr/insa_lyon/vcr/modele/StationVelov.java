@@ -23,6 +23,7 @@ public class StationVelov {
     boolean withdrawal;
     String snippetText;
     boolean selected = false;
+    boolean infoWindowShown = false;
 
     public StationVelov(JSONObject jsonObj, Marker marqueur) {
         // Static Data
@@ -33,11 +34,13 @@ public class StationVelov {
             Log.e("STATION_VELOV", "Problem when parsing JSONObject.");
         }
 
+
         // Marker
         this.marker = marqueur;
         this.marker.setTitle(name);
         snippetText = this.marker.getSnippet();
-        this.marker.setFlat(false);
+        this.marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.marqueurperso));
+        //this.marker.setFlat(false);
         position = this.marker.getPosition();
         numberOfBikes = 0;      // waiting for VelocityRaptorMain to fetch these data...
         numberOfFreeBikeStands = 0;
@@ -58,6 +61,8 @@ public class StationVelov {
 
     public void setMode(boolean withdrawal) {
         this.withdrawal = withdrawal;
+        setMarkerSnippet(numberOfBikes, numberOfFreeBikeStands);
+        marker.hideInfoWindow();
         updateMarkerIcon();
     }
 
@@ -137,8 +142,12 @@ public class StationVelov {
 
     public void setMarkerSnippet(int avail_Bikes, int avail_Spaces) {
         Log.d("SET_MARKER_SNIPPET", "Setting snippet for marker of station" + this.name);
-        String snippet = "Vélos disponibles : " + avail_Bikes + ".\n" +
-                "Empacements disponibles : " + avail_Spaces + ".";
+        String snippet;
+        if (withdrawal) {
+            snippet = "Vélos disponibles : " + avail_Bikes;
+        } else {
+            snippet = "Empacements disponibles : " + avail_Spaces;
+        }
         marker.setSnippet(snippet);
     }
 
@@ -188,6 +197,21 @@ public class StationVelov {
         this.selected = selected;
         updateMarkerIcon();
     }
+
+
+    public boolean isInfoWindowShown() {
+        return infoWindowShown;
+    }
+
+    public void switchInfoWindowShown() {
+        infoWindowShown = !infoWindowShown;
+        if (infoWindowShown) {
+            this.marker.showInfoWindow();
+        } else {
+            this.marker.hideInfoWindow();
+        }
+    }
+
 
 
 }

@@ -50,7 +50,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
     protected GoogleMap mMap;
     protected int circleRadius = 600; // in meters
     protected Circle currentCircle;
-    protected boolean isWithdrawMode = false;
+    protected boolean isWithdrawMode = true;
     protected final String SERVER_URL = "http://vps165245.ovh.net";
 
     HashMap<String, StationVelov> mapStations;
@@ -183,8 +183,12 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
             Intent intent = new Intent(this, UserInput.class);
             startActivityForResult(intent, 1);
         }*/
-        ResearchDialog dialog = new ResearchDialog(this);
-        dialog.show();
+
+        DialogFragment newFragment = new ResearchDialog();
+        newFragment.show(getFragmentManager() , "search");
+
+        /* ResearchDialog dialog = new ResearchDialog(this);
+         dialog.show();*/
     }
 
     @Override
@@ -216,10 +220,15 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
+                Log.d("PATAPON", "MARKER CLIQUE, ISINFOWINDOWSHOWN="+marker.isInfoWindowShown());
                 boolean isMarkerSelected = false;
                 for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
-                    if (entry.getValue().getMarqueur().getId().equals(marker.getId()) && entry.getValue().isSelected()) {
-                        isMarkerSelected = true;
+                    if (entry.getValue().getMarqueur().getId().equals(marker.getId())) {
+                        entry.getValue().switchInfoWindowShown();
+                        if(entry.getValue().isSelected()) {
+                            isMarkerSelected = true;
+                        }
+                        break;
                     }
                 }
                 if(!isMarkerSelected) {
@@ -250,10 +259,10 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         }
         Circle c = mMap.addCircle(new CircleOptions()
                 .center(position)
-                .strokeWidth(6)
+                .strokeWidth(0)
                 .radius(circleRadius)
                 .strokeColor(0xFFFFFFFF)
-                .fillColor(0x734caf50));
+                .fillColor(0x730080f1));
 
         ValueAnimator vAnimator = new ValueAnimator();
         vAnimator.setIntValues(0, circleRadius);
