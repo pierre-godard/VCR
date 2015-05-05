@@ -38,11 +38,12 @@ module.exports = {
                             if (err) console.log(err);
                         }
                     );
-        			res.write("Prediction using "+analysisMode+" (date: "+new Date(date)+" - station: "+station_id+"):\n");
+                    res.write(JSON.stringify(object));
+        			/*res.write("Prediction using "+analysisMode+" (date: "+new Date(date)+" - station: "+station_id+"):\n");
         			res.write("State:              "+state+"\n");
                     res.write("Free:               "+free+"\n");
                     res.write("Occup:              "+occup+"\n");
-                    res.write("Prediction quality: "+prediction_quality+"\n");
+                    res.write("Prediction quality: "+prediction_quality+"\n");*/
                     res.end('\n'); 
     			}
         	);
