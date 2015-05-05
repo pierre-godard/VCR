@@ -86,12 +86,10 @@ function quality_analysis(arr_free,arr_occup)
 // returns the measures matching the specified id and withing time stamp of [time]
 function queryMeasures(id,time,callback)
 {
-	Measure.find({station: id, day: time.getDay(), date: time.getDate(), 
-		month: time.getMonth(), hour: time.getHours(), 
-		time_slice: Math.floor(time.getMinutes()*Measure.NB_TIME_SLICES/60) },
+	Measure.find({station: id, specif_time: Measure.date_to_specificTime(time) },
 		function(err, found) 
 		{
-/*			console.log("-- Time:        "+time);
+			console.log("-- Time:        "+time);
       		console.log("found: "+found);
       		console.log("error: "+err);
       		for (var i = 0; i < found.length; i++) 
@@ -100,7 +98,7 @@ function queryMeasures(id,time,callback)
       			console.log("available_bike_stands: "+found[i].available_bike_stands);
 				console.log("available_bikes:       "+found[i].available_bikes);
 				console.log("last_update:           "+new Date(found[i].last_update));
-			}*/
+			}
       		callback(found);
       	}
     );
@@ -280,8 +278,6 @@ module.exports = {
 		var query_result		= [];
 		var util 				= require('util');
 		var json_timePeriods 	= require('../../data/time/vacances.json');
-		//console.log(util.inspect(json_timePeriods, {showHidden: false, depth: null}));
-		//console.log(json_timePeriods["2014"].Hiver.begin);
 		var date 				= new Date(time);
 		var year 				= date.getFullYear();
 		var period 				= find_period(json_timePeriods,time);
@@ -305,7 +301,7 @@ module.exports = {
 				{
 					if(query_result == undefined || query_result.length == 0) // no data has been found corresponding to id (unlikely, or call para error) or time (possible)
 					{
-						//console.log("                Skipping query result ("+id+")");
+						console.log("                Skipping query result ("+id+")");
 					}	
 					else
 					{		
@@ -316,7 +312,7 @@ module.exports = {
 							console.log("measure date:   "+new Date(query_result[i].last_update));
 							console.log("free - occup:   "+query_result[i].available_bike_stands+"/"+query_result[i].available_bikes);
 						}
-						//console.log("                Query result used     ("+id+")");
+						console.log("                Query result used     ("+id+")");
 					}
 					callback_nb++; // before to avoid dates.length - 1 at each loop
 					if(callback_nb == dates.length) // TODO via async ?
