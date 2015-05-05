@@ -77,10 +77,12 @@ function analysis (datas,mode)
 	return 0;	// 0 as default return value, TODO throw ERROR ?
 }
 
-// return the level of quality of the prediction
+// return the level of quality of the prediction (0 -> 1)
 function quality_analysis(arr_free,arr_occup)
 {
-	return (arr_free.length + arr_occup.length)/(1 + variance(arr_free) + variance(arr_occup));
+	// Normalized. The inside walue is the raw quality. If this quality is supp to 10000
+	// we considerate we are sure about the result (log(10000)/4 = 1)
+	return Math.min(1,Math.log(1+(arr_free.length + arr_occup.length)/(1 + variance(arr_free) + variance(arr_occup)))/4);
 }
 
 // returns the measures matching the specified id and withing time stamp of [time]

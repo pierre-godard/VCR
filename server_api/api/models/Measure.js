@@ -109,7 +109,7 @@ module.exports =
     // d as date
     date_to_specificTime: function(d)
     {
-        return d.getMonth()+/*"-"+d.getDate()+*/"-"+d.getDay()+"-"+d.getHours()+
+        return d.getMonth()+"-"+d.getDate()+"-"+d.getDay()+"-"+d.getHours()+
             "-"+Math.floor(d.getMinutes()*Measure.NB_TIME_SLICES/60);
     },
     
