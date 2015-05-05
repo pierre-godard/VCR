@@ -20,6 +20,9 @@ function mean (array)
 	return sum_val/i;
 }
 
+var DFM_DEFAULT_STEP = 1;
+var DFM_DEFAULT_FACTOR = 0.98;
+
 // Mean of the array passed as parameter
 // Each element weight is decreased using the factor after each step
 // ex 0.5 , 1 , [10,20,30]
@@ -44,10 +47,20 @@ function decreasingFactor_mean (factor,step,array)
 	return sum_val/final_denominator;
 }
 
-// Calculates the variance given the array
-function variance(array)
+// Calculates the variance given the array (using the specified mode)
+function variance(array,mode)
 {
-	var avg = mean(array);
+	var avg = 0;
+	switch(mode) 
+	{
+	    case PredictionService.analysis_mode.MEAN:
+	    	avg = mean(array);
+	        break;	
+	    case PredictionService.analysis_mode.DFM:
+	    	avg = decreasingFactor_mean(DFM_DEFAULT_FACTOR,DFM_DEFAULT_STEP,array);
+	        break;
+	    default:
+	}
 	var i = array.length;
 	var v = 0;
  
@@ -69,8 +82,8 @@ function analysis (datas,mode)
 	    case PredictionService.analysis_mode.MEAN:
 	    	return mean(datas);
 	        break;	// no use but used to keep the code clear
-	    case PredictionService.analysis_mode.FDM:
-	    	return decreasingFactor_mean(datas);
+	    case PredictionService.analysis_mode.DFM:
+	    	return decreasingFactor_mean(DFM_DEFAULT_FACTOR,DFM_DEFAULT_STEP,datas);
 	        break;
 	    default:
 	}
@@ -278,7 +291,7 @@ module.exports = {
 	analysis_mode: Object.freeze(
 	{
 		MEAN: 	"mean",
-		FDM: 	"decreasing factor mean",
+		DFM: 	"decreasing factor mean",
 		NONE: 	"none" 
 	}),
 	
