@@ -38,8 +38,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import fr.insa_lyon.vcr.modele.StationVelov;
@@ -65,6 +67,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
     protected Circle currentCircle;
     protected boolean isWithdrawMode = true;
     HashMap<String, StationVelov> mapStations;
+    List<String> idStationsSelectionnees;
 
     DialogFragment exitDialogFragment;
     boolean serverFailureDetected = false;
@@ -149,7 +152,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
         mapStations = new HashMap<String, StationVelov>();
-
+        idStationsSelectionnees = new ArrayList<String>();
         // alert dialog in case of server failure
         exitDialogFragment = new ServerFailureDialog();
 
@@ -279,6 +282,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
     //------------------------------------------------------------------------------ General Methods
 
     public void drawCircle(LatLng position) {
+        idStationsSelectionnees.clear();
         if (currentCircle != null) {
             currentCircle.remove();
             for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
@@ -306,6 +310,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
             if (MathsUti.getDistance(entry.getValue().getPosition(), position) <= circleRadius) {
                 entry.getValue().setSelected(true);
+                idStationsSelectionnees.add(entry.getValue().getId());
                 reloadMarker(entry.getValue());
             }
         }
