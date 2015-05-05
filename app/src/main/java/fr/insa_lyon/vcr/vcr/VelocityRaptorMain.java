@@ -30,6 +30,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.maps.android.MarkerManager;
+import com.google.maps.android.clustering.Cluster;
 import com.google.maps.android.clustering.ClusterManager;
 
 import org.json.JSONArray;
@@ -256,6 +257,12 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         mClusterManager.setRenderer(mClusterIconRenderer);
        // mClusterManager.getMarkerCollection().
         // listenners sur la map
+        mClusterManager.setOnClusterClickListener(new ClusterManager.OnClusterClickListener<StationVelov>() {
+            @Override
+            public boolean onClusterClick(Cluster<StationVelov> stationVelovCluster) {
+                return false;
+            }
+        });
         mMap.setOnMarkerClickListener(mClusterManager);
 
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
