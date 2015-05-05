@@ -32,6 +32,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.maps.android.MarkerManager;
 import com.google.maps.android.clustering.Cluster;
 import com.google.maps.android.clustering.ClusterManager;
+import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -70,6 +71,8 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
 
     DialogFragment exitDialogFragment;
     boolean serverFailureDetected = false;
+
+    SlidingUpPanelLayout slidingUp;
 
     // Download services intent
     Intent intentDyna;
@@ -161,6 +164,9 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                     (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
             mapFragment.getMapAsync(this);
         }
+
+        slidingUp = (SlidingUpPanelLayout) findViewById(R.id.sliding_layout);
+        //slidingUp.
 
 
         // ####### Fetch static data for all stations #######
@@ -376,6 +382,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                 stationId = currentStation.getString("id");
                 updatedStation = mapStations.get(stationId);            // will need to catch exception in case id is not found in hashmap
                 updatedStation.setBikesAndStands(currentMeasure.getInt("available_bikes"), currentMeasure.getInt("available_bike_stands"));
+                Log.d("UPDATE STATION =>", "Station " + updatedStation.getTitle() + " being updated");
                 mapStations.put(stationId, updatedStation);
             }
         } catch (JSONException j) {
@@ -458,6 +465,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         String strId = item.getTitle();
         for (Marker m : markers) {
             if (strId.equals(m.getTitle())) {
+                Log.d("RELOAD MARKER =>", "Station "+m.getTitle()+" being updated");
                 m.setIcon(item.getIcon());
                 m.setSnippet(item.getSnippet());
                 break;

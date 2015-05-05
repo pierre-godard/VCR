@@ -1,6 +1,6 @@
 <com.sothree.slidinguppanel.SlidingUpPanelLayout
-    xmlns:sothree="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:sothree="http://schemas.android.com/apk/res-auto"
     android:id="@+id/sliding_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -11,51 +11,52 @@
     <FrameLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="top"
-        tools:context="fr.insa_lyon.vcr.vcr.GoogleMapFragment"
-        android:id="@+id/container">
+        tools:context="fr.insa_lyon.vcr.vcr.GoogleMapFragment">
 
         <fragment
             android:id="@+id/map"
+            class="com.google.android.gms.maps.SupportMapFragment"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            class="com.google.android.gms.maps.SupportMapFragment" />
+            android:layout_height="match_parent" />
 
     </FrameLayout>
 
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:id="@+id/side_menu"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal|bottom"
+        android:background="#76FFFFFF"
         android:gravity="bottom"
         android:orientation="vertical">
-        android:id="@+id/side_menu">
 
         <TextView
             android:layout_width="match_parent"
-            android:layout_height="50dp"
+            android:layout_height="wrap_content"
+            android:background="#ffebebeb"
             android:text="Menu"
-            android:textSize="20sp"
-            android:textStyle="bold"
             android:textAlignment="center"
-            android:background="#ffebebeb" />
+            android:textSize="20sp"
+            android:textStyle="bold"/>
 
         <SeekBar
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:thumb="@color/material_blue_grey_900"
             android:id="@+id/seekBar"
-            android:layout_gravity="center_horizontal|bottom" />
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="100"/>
 
         <Switch
+            android:id="@+id/switchDeposerRetirer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/switchDeposerRetirer"
+            android:
             android:checked="false"
-            android:textOn="Déposer un vélo"
             android:textOff="Retirer un vélo"
+            android:textOn="Déposer un vélo"
             />
 
         <!--
@@ -74,9 +75,9 @@
             -->
 
         <AutoCompleteTextView
-            android:layout_height="wrap_content"
-            android:layout_width="206dp"
             android:id="@+id/autoComplete"
+            android:layout_width="206dp"
+            android:layout_height="wrap_content"
             android:hint="Adresse" />
 
     </LinearLayout>

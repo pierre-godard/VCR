@@ -51,13 +51,6 @@ public class StationVelov implements ClusterItem {
         updtSnippet();
     }
 
-    public void setMode(boolean withdrawal) {
-        this.withdrawal = withdrawal;
-        updateMarkerIcon();
-        updtSnippet();
-    }
-
-
     /**
      * Update the icon according to the number of places left and the user choice
      * (withdraw or deposit a bike). Updating icon here allows us to have both withdraw and deposit
@@ -131,7 +124,6 @@ public class StationVelov implements ClusterItem {
         return bitmap;
     }
 
-
     public void updtSnippet() {
         if (numberOfFreeBikeStands + numberOfBikes != 0) {
             if (withdrawal) {
@@ -140,7 +132,7 @@ public class StationVelov implements ClusterItem {
                 snippet = "Empacements disponibles : " + numberOfFreeBikeStands;
             }
         } else {
-            snippet = "Attente des données";
+            snippet = "Pas de données";
         }
     }
 
@@ -171,11 +163,15 @@ public class StationVelov implements ClusterItem {
         return position;
     }
 
-
     public boolean getMode() {
         return withdrawal;
     }
 
+    public void setMode(boolean withdrawal) {
+        this.withdrawal = withdrawal;
+        updateMarkerIcon();
+        updtSnippet();
+    }
 
     public boolean isSelected() {
         return selected;
