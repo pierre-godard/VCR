@@ -46,7 +46,7 @@
             android:checked="false"
             android:textOn="Déposer un vélo"
             android:textOff="Retirer un vélo"
-            style="@android:style/Widget.Holo.Button.Toggle" />
+         />
     </LinearLayout>
 
 
