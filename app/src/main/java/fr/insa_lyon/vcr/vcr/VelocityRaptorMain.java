@@ -50,7 +50,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
     protected GoogleMap mMap;
     protected int circleRadius = 600; // in meters
     protected Circle currentCircle;
-    protected boolean isWithdrawMode = false;
+    protected boolean isWithdrawMode = true;
     protected final String SERVER_URL = "http://vps165245.ovh.net";
 
     HashMap<String, StationVelov> mapStations;
@@ -139,14 +139,14 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         intentStat = new Intent(this, FetchStation.class);
         intentStat.putExtra(FetchStation.SERVER_URL, SERVER_URL + "/station");
         intentStat.putExtra(FetchStation.URL_PARAM_N1, "limit");
-        intentStat.putExtra(FetchStation.URL_PARAM_V1, "30");
+        intentStat.putExtra(FetchStation.URL_PARAM_V1, "0");
         startService(intentStat);
 
         // fetch dynamic data
         intentDyna = new Intent(this, UpdateStation.class);
         intentDyna.putExtra(UpdateStation.SERVER_URL, SERVER_URL + "/lastmeasure");
         intentDyna.putExtra(UpdateStation.URL_PARAM_N1, "limit");
-        intentDyna.putExtra(UpdateStation.URL_PARAM_V1, "30");
+        intentDyna.putExtra(UpdateStation.URL_PARAM_V1, "0");
 
         // Ajout du listener sur le switch
         Switch switchWithdrawDeposit = (Switch) findViewById(R.id.switchDeposerRetirer);
@@ -183,8 +183,12 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
             Intent intent = new Intent(this, UserInput.class);
             startActivityForResult(intent, 1);
         }*/
-        ResearchDialog dialog = new ResearchDialog(this);
-        dialog.show();
+
+        DialogFragment newFragment = new ResearchDialog();
+        newFragment.show(getFragmentManager() , "search");
+
+        /* ResearchDialog dialog = new ResearchDialog(this);
+         dialog.show();*/
     }
 
     @Override
@@ -216,7 +220,27 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
-                drawCircle(marker.getPosition());
+                Log.d("PATAPON", "MARKER CLIQUE, ISINFOWINDOWSHOWN="+marker.isInfoWindowShown());
+                boolean isMarkerSelected = false;
+                for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
+                    if (entry.getValue().getMarqueur().getId().equals(marker.getId())) {
+                        entry.getValue().switchInfoWindowShown();
+                        if(entry.getValue().isSelected()) {
+                            isMarkerSelected = true;
+                        }
+                        break;
+                    }
+                }
+                if(!isMarkerSelected) {
+                    drawCircle(marker.getPosition());
+                }
+    
+                if(marker.isInfoWindowShown()){
+                    marker.hideInfoWindow();
+                }
+                else{
+                    marker.showInfoWindow();
+                }
                 return true;
             }
         });
@@ -235,10 +259,10 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         }
         Circle c = mMap.addCircle(new CircleOptions()
                 .center(position)
-                .strokeWidth(6)
+                .strokeWidth(0)
                 .radius(circleRadius)
                 .strokeColor(0xFFFFFFFF)
-                .fillColor(0x734caf50));
+                .fillColor(0x730080f1));
 
         ValueAnimator vAnimator = new ValueAnimator();
         vAnimator.setIntValues(0, circleRadius);
@@ -255,6 +279,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
             }
         }
         currentCircle = c;
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(position));
     }
 
     /**

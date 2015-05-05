@@ -3,6 +3,7 @@ package fr.insa_lyon.vcr.vcr;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.app.DialogFragment;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Editable;
@@ -12,6 +13,8 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.app.AlertDialog;
+import android.view.LayoutInflater;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
@@ -21,15 +24,151 @@ import com.google.android.gms.location.places.PlaceBuffer;
 import com.google.android.gms.location.places.Places;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
-
+import android.view.ViewGroup;
+import android.widget.ImageView;
 import java.util.ArrayList;
 import java.util.List;
 
 import fr.insa_lyon.vcr.modele.ResultatPartiel;
+import fr.insa_lyon.vcr.utilitaires.UsefulConstants;
+
+
+
+public class ResearchDialog extends DialogFragment {
+
+    private GoogleApiClient mGoogleApiClient;
+    private ArrayAdapter<ResultatPartiel> adp;
+    private View t1;
+    //private Activity activite;
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+    }
+
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
+
+        ImageView imageView = (ImageView)t1.findViewById(R.id.autoComplete);
+
+        t1 = (AutoCompleteTextView) getActivity().findViewById(R.id.autoComplete);
+        t1.setThreshold(1);
+        t1.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                //Rien du tout
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                new GetPredictions().execute(s.toString());
+                t1.setAdapter(adp);
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                //Rien du tout
+            }
+        });
+
+        t1.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                new GetPlace().execute(((ResultatPartiel)parent.getAdapter().getItem(position)).getIdentifiantPlace());
+            }
+        });
+
+        return t1;
+    }
+
+    public Dialog onCreateDialog(Bundle savedInstanceState) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        // Get the layout inflater
+        LayoutInflater inflater = getActivity().getLayoutInflater();
+
+        // Inflate and set the layout for the dialog
+        // Pass null as the parent view because its going in the dialog layout
+        builder.setView(inflater.inflate(R.layout.research_dialog, null));
+
+
+        //instance API
+        mGoogleApiClient = new GoogleApiClient.Builder(this.getActivity())
+                .addApi(Places.GEO_DATA_API)
+                .addApi(Places.PLACE_DETECTION_API)
+                .build();
+
+        mGoogleApiClient.connect();
+        List<ResultatPartiel> resultList = new ArrayList<>();
+        adp = new ArrayAdapter<ResultatPartiel>(this.getActivity(),
+                android.R.layout.simple_dropdown_item_1line, resultList);
+        adp.setNotifyOnChange(true);
+
+        return builder.create();
+    }
+
+
+    private class GetPredictions extends AsyncTask<String,Void,AutocompletePredictionBuffer> {
+/** The system calls this to perform work in a worker thread and
+ * delivers it the parameters given to AsyncTask.execute() */
+
+// Try to understand how AsyncTask works !!!!!!!
+        @Override
+        protected AutocompletePredictionBuffer doInBackground(String... recherche) {
+
+            PendingResult<AutocompletePredictionBuffer> results  =
+                    Places.GeoDataApi.getAutocompletePredictions(mGoogleApiClient, recherche[0],
+                            UsefulConstants.rectangleLyon, null );
+            AutocompletePredictionBuffer autocompletePredictions = results
+                    .await();
+            return autocompletePredictions;
+        }
+
+/** The system calls this to perform work in the UI thread and delivers
+ * the result from doInBackground() */
+        @Override
+        protected void onPostExecute(AutocompletePredictionBuffer autocompletePredictions) {
+            adp.clear();
+            for (AutocompletePrediction prediction : autocompletePredictions) {
+                adp.add(new ResultatPartiel(prediction.getDescription(),prediction.getPlaceId()));
+            }
+            autocompletePredictions.release();
+        }
+    }
+
+    private class GetPlace extends AsyncTask<String,Void,PlaceBuffer> {
+/** The system calls this to perform work in a worker thread and
+ * delivers it the parameters given to AsyncTask.execute() */
+
+// Try to understand how AsyncTask works !!!!!!!
+        @Override
+        protected PlaceBuffer doInBackground(String... placeId) {
+            PendingResult<PlaceBuffer> result  = Places.GeoDataApi.getPlaceById(mGoogleApiClient, placeId[0]);
+            PlaceBuffer place = result.await();
+            return place;
+        }
+
+/** The system calls this to perform work in the UI thread and delivers
+ * the result from doInBackground() */
+        @Override
+        protected void onPostExecute(PlaceBuffer places) {
+            ((VelocityRaptorMain)getActivity()).drawCircle(places.get(0).getLatLng());
+            dismiss();
+            places.release();
+        }
+    }
+}
+
+
+
+
+
 
 /**
  * TODO: document your custom view class.
- */
+
+
+
+
 public class ResearchDialog extends Dialog {
 
 
@@ -88,56 +227,55 @@ public class ResearchDialog extends Dialog {
     }
 
 
-    private class GetPredictions extends AsyncTask<String,Void,AutocompletePredictionBuffer> {
+    private class GetPredictions extends AsyncTask<String,Void,AutocompletePredictionBuffer> { */
         /** The system calls this to perform work in a worker thread and
          * delivers it the parameters given to AsyncTask.execute() */
 
         // Try to understand how AsyncTask works !!!!!!!
-        @Override
+     /*   @Override
         protected AutocompletePredictionBuffer doInBackground(String... recherche) {
-
-            LatLng sudOuestLyon = new LatLng(45.708931, 4.745801);
-            LatLng nordEstLyon = new LatLng(45.805918, 4.924447);
-            LatLngBounds rectangleLyon = new LatLngBounds(sudOuestLyon, nordEstLyon);
 
             PendingResult<AutocompletePredictionBuffer> results  =
                     Places.GeoDataApi.getAutocompletePredictions(mGoogleApiClient, recherche[0],
-                            rectangleLyon, null );
+                            UsefulConstants.rectangleLyon, null );
             AutocompletePredictionBuffer autocompletePredictions = results
                     .await();
             return autocompletePredictions;
         }
-
+*/
         /** The system calls this to perform work in the UI thread and delivers
          * the result from doInBackground() */
-        @Override
+   /*     @Override
         protected void onPostExecute(AutocompletePredictionBuffer autocompletePredictions) {
             adp.clear();
             for (AutocompletePrediction prediction : autocompletePredictions) {
                 adp.add(new ResultatPartiel(prediction.getDescription(),prediction.getPlaceId()));
             }
+            autocompletePredictions.release();
         }
     }
 
-    private class GetPlace extends AsyncTask<String,Void,PlaceBuffer> {
+    private class GetPlace extends AsyncTask<String,Void,PlaceBuffer> { */
         /** The system calls this to perform work in a worker thread and
          * delivers it the parameters given to AsyncTask.execute() */
 
         // Try to understand how AsyncTask works !!!!!!!
-        @Override
+     /*   @Override
         protected PlaceBuffer doInBackground(String... placeId) {
             PendingResult<PlaceBuffer> result  = Places.GeoDataApi.getPlaceById(mGoogleApiClient, placeId[0]);
             PlaceBuffer place = result.await();
             return place;
         }
-
+*/
         /** The system calls this to perform work in the UI thread and delivers
          * the result from doInBackground() */
-        @Override
+     /*   @Override
         protected void onPostExecute(PlaceBuffer places) {
             ((VelocityRaptorMain)activite).drawCircle(places.get(0).getLatLng());
             dismiss();
+            places.release();
         }
     }
 
 }
+*/
