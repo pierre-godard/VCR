@@ -124,7 +124,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                         Log.d("RECEIVER_DYNA", "Before call to updateStationValues");
                         updateStationValues(json_string);
                     }
-                    alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + 20 * 1000, pendingIntentAlarm);
+                    alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + ALARM_DURATION * 1000, pendingIntentAlarm);
                 } else {
                     if (!serverFailureDetected) {
                         serverFailureDetected = true;

@@ -1,36 +1,46 @@
-<FrameLayout
+<com.sothree.slidinguppanel.SlidingUpPanelLayout
+    xmlns:sothree="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/sliding_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="fr.insa_lyon.vcr.vcr.GoogleMapFragment"
-    android:id="@+id/container">
+    android:gravity="bottom"
+    sothree:umanoPanelHeight="50dp"
+    sothree:umanoShadowHeight="10dp">
 
-    <fragment
-        android:id="@+id/map"
+    <FrameLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        class="com.google.android.gms.maps.SupportMapFragment" />
+        android:gravity="top"
+        tools:context="fr.insa_lyon.vcr.vcr.GoogleMapFragment"
+        android:id="@+id/container">
 
-    <Button
-        android:id="@+id/but_recherche"
-        android:layout_width="wrap_content"
-        android:layout_height="40dp"
-        android:layout_gravity="left|top"
-        android:text="@string/Recherche"
-        android:padding="10dp"
-        android:layout_marginTop="10dp"
-        android:layout_marginLeft="10dp"
-        android:background="#bbffffff"
-        android:onClick="onButtonClickedMain"
-        android:nestedScrollingEnabled="true" />
+        <fragment
+            android:id="@+id/map"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            class="com.google.android.gms.maps.SupportMapFragment" />
+
+    </FrameLayout>
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal|bottom"
+        android:gravity="bottom"
         android:orientation="vertical">
+        android:id="@+id/side_menu">
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:text="Menu"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textAlignment="center"
+            android:background="#ffebebeb" />
 
         <SeekBar
             android:layout_width="wrap_content"
@@ -46,10 +56,29 @@
             android:checked="false"
             android:textOn="Déposer un vélo"
             android:textOff="Retirer un vélo"
-         />
+            />
+
+        <!--
+        <Button
+            android:id="@+id/but_recherche"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:layout_gravity="left|top"
+            android:text="@string/Recherche"
+            android:padding="10dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginLeft="10dp"
+            android:background="#bbffffff"
+            android:onClick="onButtonClickedMain"
+            android:nestedScrollingEnabled="true" />
+            -->
+
+        <AutoCompleteTextView
+            android:layout_height="wrap_content"
+            android:layout_width="206dp"
+            android:id="@+id/autoComplete"
+            android:hint="Adresse" />
+
     </LinearLayout>
 
-
-</FrameLayout>
-
-
+</com.sothree.slidinguppanel.SlidingUpPanelLayout>
