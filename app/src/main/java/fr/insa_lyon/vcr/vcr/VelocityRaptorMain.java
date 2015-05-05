@@ -31,6 +31,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.maps.android.MarkerManager;
 import com.google.maps.android.clustering.ClusterManager;
+import com.google.maps.android.clustering.algo.GridBasedAlgorithm;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -45,7 +46,6 @@ import fr.insa_lyon.vcr.reseau.FetchStation;
 import fr.insa_lyon.vcr.reseau.UpdateStation;
 import fr.insa_lyon.vcr.utilitaires.ClusterIconRenderer;
 import fr.insa_lyon.vcr.utilitaires.CustomAnimatorUpdateListener;
-import fr.insa_lyon.vcr.utilitaires.CustomClusterManager;
 import fr.insa_lyon.vcr.utilitaires.CustomInfoWindow;
 import fr.insa_lyon.vcr.utilitaires.FinishWithDialog;
 import fr.insa_lyon.vcr.utilitaires.MathsUti;
@@ -54,14 +54,16 @@ import fr.insa_lyon.vcr.utilitaires.ServerFailureDialog;
 
 public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCallback, FinishWithDialog {
 
-    public static final String ALARM_NOTIFICATION = "fr.insa_lyon.vcr.alarm";
-    public static final int ALARM_DURATION = 20; // in seconds
-    protected final String SERVER_URL = "http://vps165245.ovh.net";
     // ----------------------------------------------------------------------------------- VARIABLES
     protected GoogleMap mMap;
     protected int circleRadius = 600; // in meters
     protected Circle currentCircle;
     protected boolean isWithdrawMode = true;
+    protected final String SERVER_URL = "http://vps165245.ovh.net";
+
+    public static final String ALARM_NOTIFICATION = "fr.insa_lyon.vcr.alarm";
+    public static final int ALARM_DURATION = 120; // in seconds
+
     HashMap<String, StationVelov> mapStations;
 
     DialogFragment exitDialogFragment;
@@ -248,24 +250,82 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
 
         // ######-------------------------------------------------------------------##### Clustering
         MarkerManager markerManager = new MarkerManager(mMap);
-        mClusterManager = new CustomClusterManager(this, mMap, this);
+        mClusterManager = new ClusterManager<StationVelov>(this, mMap, markerManager);
         // Grid based display for Clusters
-        //mClusterManager.setAlgorithm(new GridBasedAlgorithm<StationVelov>());
+        mClusterManager.setAlgorithm(new GridBasedAlgorithm<StationVelov>());
         // add custom Icon renderer.
         mClusterIconRenderer = new ClusterIconRenderer(this, mMap, mClusterManager);
         mClusterManager.setRenderer(mClusterIconRenderer);
-       // mClusterManager.getMarkerCollection().
-        // listenners sur la map
-        mMap.setOnMarkerClickListener(mClusterManager);
 
+        // listenners sur la map
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
 
             @Override
             public void onMapClick(LatLng position) {
                 drawCircle(position);
+                for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
+                    reloadMarker(entry.getValue());
+                }
+
             }
         });
-        mMap.setOnMarkerClickListener(mClusterManager);
+
+        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                boolean isMarkerSelected = false;
+
+                // retrieve station associated with marker clicked
+                for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
+
+                    // title of current station
+                    String strId = entry.getValue().getTitle();
+
+                    if (strId.equals(marker.getTitle())) {
+                        // in case of match check if station is selected
+                        if (entry.getValue().isSelected()) {
+                            // marker selected
+                            isMarkerSelected = true;
+                        }
+                        break;
+                    }
+                }
+                // draw circle around marker
+                if (!isMarkerSelected) {
+                    drawCircle(marker.getPosition());
+                }
+
+
+                // Show/Hide InfoWindow
+                if (marker.isInfoWindowShown()) {
+                    marker.hideInfoWindow();
+                } else {
+                    marker.showInfoWindow();
+                }
+
+
+                /*for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
+                    if (entry.getValue().getMarqueur().getId().equals(marker.getId())) {
+                        entry.getValue().switchInfoWindowShown();
+                        if (entry.getValue().isSelected()) {
+                            isMarkerSelected = true;
+                        }
+                        break;
+                    }
+                }
+                if (!isMarkerSelected) {
+                    drawCircle(marker.getPosition());
+                }
+
+                if (marker.isInfoWindowShown()) {
+                    marker.hideInfoWindow();
+                } else {
+                    marker.showInfoWindow();
+                }*/
+                return true;
+            }
+        });
+
     }
 
     //------------------------------------------------------------------------------ General Methods
@@ -298,7 +358,6 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
             if (MathsUti.getDistance(entry.getValue().getPosition(), position) <= circleRadius) {
                 entry.getValue().setSelected(true);
-                reloadMarker(entry.getValue());
             }
         }
         currentCircle = c;
@@ -383,8 +442,6 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         }
     }
 
-
-
     public void updateStationMode() {
         for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
             entry.getValue().setMode(isWithdrawMode);
@@ -405,38 +462,6 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         finish();
     }
 
-    public void drawAround(Marker marker){
-        boolean isMarkerSelected = false;
-        Map.Entry<String,StationVelov> entryMarker = null;
-        for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
-            // title of current station
-            Log.d("PATAPON", "DESSIN AUTOUR DU MARQUEUR");
-            String strId = entry.getValue().getTitle();
-            if (strId.equals(marker.getTitle())) {
-                entryMarker = entry;
-                if (entry.getValue().isSelected()) {
-                    // marker selected
-                    isMarkerSelected = true;
-                }
-                break;
-            }
-        }
-        // draw circle around marker
-        if (!isMarkerSelected) {
-            drawCircle(marker.getPosition());
-        }
-
-        Log.d("PATAPON", "MARKER TROUVE DANS LA MAP");
-        entryMarker.getValue().switchInfoWindowShown();
-        if(entryMarker.getValue().isInfoWindowShown()){
-            Log.d("PATAPON","ON AFFICHE");
-            marker.showInfoWindow();
-        }
-        else{
-            Log.d("PATAPON", "C'EST CA CACHE TOI");
-            marker.hideInfoWindow();
-        }
-    }
 
     /**
      * Workarround to repaint markers
