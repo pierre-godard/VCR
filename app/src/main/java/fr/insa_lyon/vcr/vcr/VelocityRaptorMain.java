@@ -161,15 +161,14 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         }
 
 
-
-        // fetch static data for all stations
+        // ####### Fetch static data for all stations #######
         intentStat = new Intent(this, FetchStation.class);
         intentStat.putExtra(FetchStation.SERVER_URL, SERVER_URL + "/station");
         intentStat.putExtra(FetchStation.URL_PARAM_N1, "limit");
         intentStat.putExtra(FetchStation.URL_PARAM_V1, "0");
         startService(intentStat);
 
-        // fetch dynamic data
+        // ####### Fetch dynamic data #######
         intentDyna = new Intent(this, UpdateStation.class);
         intentDyna.putExtra(UpdateStation.SERVER_URL, SERVER_URL + "/lastmeasure");
         intentDyna.putExtra(UpdateStation.URL_PARAM_N1, "limit");
@@ -185,8 +184,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         switchWithdrawDeposit.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 isWithdrawMode = !isWithdrawMode;
-                //majMarqueurs();
-                //Log.d("SWITCH LISTENNER", "BEFORE UPDATE MARKER MODE");
+                // Update mode : change snippet and icon.
                 updateStationMode();
             }
         });
@@ -211,6 +209,11 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
 
     //----------------------------------------------------------------------- Listenners - CallBacks
 
+    /**
+     * Click on button "Recherche" in order to display search popup.
+     *
+     * @param v
+     */
     public void onButtonClickedMain(View v) {
       /*  if (v == findViewById(R.id.but_recherche)) {
             Intent intent = new Intent(this, UserInput.class);
@@ -218,37 +221,41 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         }*/
 
         DialogFragment newFragment = new ResearchDialog();
-        newFragment.show(getFragmentManager() , "search");
+        newFragment.show(getFragmentManager(), "search");
 
         /* ResearchDialog dialog = new ResearchDialog(this);
          dialog.show();*/
     }
 
+    /**
+     * Callback from getMapAsync : set up map and clustering on map
+     * @param googleMap
+     */
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        // on récupère la map via ce callback
         mMap = googleMap;
         mMap.setInfoWindowAdapter(new CustomInfoWindow(this.getLayoutInflater()));
-        // réglages génraux
-        mMap.setMyLocationEnabled(true);
+        mMap.setMyLocationEnabled(false);
         UiSettings mUiSettings = mMap.getUiSettings();
         mUiSettings.setZoomControlsEnabled(true);
-        mUiSettings.setCompassEnabled(true);
-        mUiSettings.setMapToolbarEnabled(true);
+        mUiSettings.setCompassEnabled(false);
+        mUiSettings.setMapToolbarEnabled(false);
         mUiSettings.setScrollGesturesEnabled(true);
         mUiSettings.setZoomGesturesEnabled(true);
         mUiSettings.setTiltGesturesEnabled(true);
         mUiSettings.setRotateGesturesEnabled(true);
+        // Camera above Lyon
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(45.763478, 4.835442), 12));
 
 
-        // Clustering
+        // ######-------------------------------------------------------------------##### Clustering
         MarkerManager markerManager = new MarkerManager(mMap);
         mClusterManager = new ClusterManager<StationVelov>(this, mMap, markerManager);
+        // Grid based display for Clusters
         mClusterManager.setAlgorithm(new GridBasedAlgorithm<StationVelov>());
+        // add custom Icon renderer.
         mClusterIconRenderer = new ClusterIconRenderer(this, mMap, mClusterManager);
         mClusterManager.setRenderer(mClusterIconRenderer);
-
 
         // listenners sur la map
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
@@ -266,9 +273,38 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
-                //Log.d("PATAPON", "MARKER CLIQUE, ISINFOWINDOWSHOWN=" + marker.isInfoWindowShown());
                 boolean isMarkerSelected = false;
+
+                // retrieve station associated with marker clicked
                 for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
+
+                    // title of current station
+                    String strId = entry.getValue().getTitle();
+
+                    if (strId.equals(marker.getTitle())) {
+                        // in case of match check if station is selected
+                        if (entry.getValue().isSelected()) {
+                            // marker selected
+                            isMarkerSelected = true;
+                        }
+                        break;
+                    }
+                }
+                // draw circle around marker
+                if (!isMarkerSelected) {
+                    drawCircle(marker.getPosition());
+                }
+
+
+                // Show/Hide InfoWindow
+                if (marker.isInfoWindowShown()) {
+                    marker.hideInfoWindow();
+                } else {
+                    marker.showInfoWindow();
+                }
+
+
+                /*for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
                     if (entry.getValue().getMarqueur().getId().equals(marker.getId())) {
                         entry.getValue().switchInfoWindowShown();
                         if (entry.getValue().isSelected()) {
@@ -285,7 +321,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                     marker.hideInfoWindow();
                 } else {
                     marker.showInfoWindow();
-                }
+                }*/
                 return true;
             }
         });
@@ -408,7 +444,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
 
     public void updateStationMode() {
         for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
-            entry.getValue().setModeNoMarker(isWithdrawMode);
+            entry.getValue().setMode(isWithdrawMode);
             reloadMarker(entry.getValue());
             //Log.d("UPDATE_MARKER_MODE", "Station " + entry.getValue().getTitle() + " has mode withdraw = " + entry.getValue().getMode());
         }
