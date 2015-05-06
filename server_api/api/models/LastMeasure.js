@@ -16,7 +16,7 @@ var formatter = function (value)
     {
         value.station = value.number;
     }
-    if (value.last_update % 1000 != 0)
+    if (value.last_update < 1420066800000)
     {
         value.last_update *= 1000;
     }
@@ -39,7 +39,8 @@ var formatter = function (value)
     delete value['latitude'];
 }
 
-module.exports = {
+module.exports =
+{
 
     NB_TIME_SLICES: 12,
 
