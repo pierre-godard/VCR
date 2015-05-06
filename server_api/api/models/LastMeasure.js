@@ -16,13 +16,18 @@ var formatter = function (value)
     {
         value.station = value.number;
     }
-    value.identifier = value.station + value.last_update * 1000;
-    value.station = value.number;
-    var d = new Date(0);    // The 0 there is the key, which sets the date to the epoch
-    d.setUTCSeconds(value.last_update);
-    value.day = d.getDay();
+    if (value.last_update % 1000 != 0)
+    {
+        value.last_update *= 1000;
+    }
+    value.identifier = value.station;
+    var d = new Date(value.last_update);
+    value.specif_time = Measure.date_to_specificTime(d);
+    value.period = PredictionService.period(value.last_update);
+    /*value.day = d.getDay();
     value.hour = d.getHours(); 
-    value.time_slice = Math.floor(d.getMinutes()/Measure.NB_TIME_SLICES);
+    value.date = d.getDate();
+    value.month = d.getMonth();*/
     delete value['number'];
     delete value['name'];
     delete value['address'];
@@ -38,38 +43,57 @@ module.exports = {
 
     NB_TIME_SLICES: 12,
 
-    attributes: {
-        identifier: {
+    attributes:
+    {
+        identifier:
+        {
             type: 'integer',
-            required: true
-        },
-        last_update: {
-            type: 'integer',
-            required: true
-        },
-        day: {
-            type: 'integer',
-            required: true
-        },
-        hour: {
-            type: 'integer',
-            required: true
-        },
-        time_slice: {
-            type: 'integer',
-            required: true
-        },
-        station: {
-            model: 'Station',
             required: true,
             primaryKey: true,
             unique: true
         },
-        available_bike_stands: {
+        last_update:
+        {
             type: 'integer',
             required: true
         },
-        available_bikes: {
+        /*month: 
+        {
+            type: 'integer',
+            required: true
+        },
+        date: 
+        {
+            type: 'integer',
+            required: true
+        },
+        day: 
+        {
+            type: 'integer',
+            required: true
+        },
+        hour: 
+        {
+            type: 'integer',
+            required: true
+        },
+        time_slice: 
+        {
+            type: 'integer',
+            required: true
+        },*/
+        station:
+        {
+            model: 'Station',
+            required: true
+        },
+        available_bike_stands:
+        {
+            type: 'integer',
+            required: true
+        },
+        available_bikes:
+        {
             type: 'integer',
             required: true
         }
@@ -91,11 +115,22 @@ module.exports = {
             measures,
             function (measure)
             {
-                LastMeasure.create(measure)
+                formatter(measure);
+                LastMeasure.destroy({identifier: measure.identifier})
                 .exec(
-                    function (err, added)
+                    function (err, removed)
                     {
                         // if (err) next(err);
+                        if (!err)
+                        {
+                            LastMeasure.create(measure)
+                            .exec(
+                                function (err2, added)
+                                {
+                                    // if (err2) next(err2);
+                                }
+                            );
+                        }
                     }
                 );
             }
