@@ -24,6 +24,9 @@ var formatter = function (value)
     var d = new Date(value.last_update);
     value.specif_time = Measure.date_to_specificTime(d);
     value.period = PredictionService.period(value.last_update);
+    //value.date = ((new Date(value.last_update)).setHours(0,0,0,0)).getTime();
+    var oneDay = 1000 * 60 * 60 * 24;
+    value.date = Math.floor(value.last_update / oneDay);// we have only the date without hh/mm/ss/msms
     /*value.day = d.getDay();
     value.hour = d.getHours(); 
     value.date = d.getDate();
@@ -62,13 +65,13 @@ module.exports =
         {
             type: 'integer',
             required: true
-        },
+        },*/
         date: 
         {
             type: 'integer',
             required: true
         },
-        day: 
+        /*day: 
         {
             type: 'integer',
             required: true
@@ -116,6 +119,8 @@ module.exports =
         return /*d.getMonth()+"-"+d.getDate()+"-"+*/d.getDay()+"-"+d.getHours()+
             "-"+Math.floor(d.getMinutes()*Measure.NB_TIME_SLICES/60);
     },
+
+
     
     beforeValidate: function(value, cb)
     {

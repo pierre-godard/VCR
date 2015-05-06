@@ -61,6 +61,12 @@ module.exports.routes = {
         action: 'loadone'
     },
 
+    '/measure/today/:id':
+    {
+        controller: 'measure',
+        action: 'today'
+    },
+
     // id as station id
     // delta as time of the prediction from now, in minutes
     '/prediction/analysis/:id/:delta': 

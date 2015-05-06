@@ -81,6 +81,19 @@ module.exports = {
                     res.end();
                 }
             );
+        },
+    today:
+        function (req, res, next)
+        {
+            var oneDay = 1000 * 60 * 60 * 24;
+            //console.log(">>>>"+(Math.floor(Date.now() / oneDay)));
+            Measure.find({station: parseInt(req.param('id')),date:Math.floor(Date.now() / oneDay)},
+                function(err, found) 
+                {
+                    res.write(JSON.stringify(found));
+                    res.end();
+                }
+            );
         }
     
 };
