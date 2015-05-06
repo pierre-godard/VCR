@@ -10,6 +10,8 @@ import com.google.maps.android.clustering.ClusterItem;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.Integer;
+
 import fr.insa_lyon.vcr.vcr.R;
 
 public class StationVelov implements ClusterItem {
@@ -35,7 +37,7 @@ public class StationVelov implements ClusterItem {
         try {
             title = jsonObj.getString("name");
             //title = jsonObj.getString("name").split("-", 2)[1]; // get only second part of the name
-            id = jsonObj.getString("id");
+            id =((Integer)jsonObj.getInt("number")).toString();
             position = new LatLng(jsonObj.getDouble("latitude"), jsonObj.getDouble("longitude"));
         } catch (JSONException e) {
             Log.e("STATION_VELOV", "Problem when parsing JSONObject.");

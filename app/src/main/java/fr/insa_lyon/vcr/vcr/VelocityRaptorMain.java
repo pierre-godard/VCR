@@ -446,7 +446,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
             StationVelov currentStation;
             for (int i = 0; i < jArrayStations.length(); i++) {
                 currentJSON = jArrayStations.getJSONObject(i);
-                String id = (String) currentJSON.get("id");
+                String id =  ((Integer)currentJSON.get("number")).toString();
                 currentPosition = new LatLng(currentJSON.getDouble("latitude"), currentJSON.getDouble("longitude"));
                 //currentOpt = new MarkerOptions().position(currentPosition);
                 //currentMark = mMap.addMarker(currentOpt);
