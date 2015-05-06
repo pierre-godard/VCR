@@ -22,9 +22,12 @@ var formatter = function (value)
     }
     value.identifier = value.station + value.last_update * 1000;
     var d = new Date(value.last_update);
-    value.day = d.getDay();
+    value.specif_time = Measure.date_to_specificTime(d);
+    value.period = PredictionService.period(value.last_update);
+    /*value.day = d.getDay();
     value.hour = d.getHours(); 
-    value.time_slice = Math.floor(d.getMinutes()/Measure.NB_TIME_SLICES);
+    value.date = d.getDate();
+    value.month = d.getMonth();*/
     delete value['number'];
     delete value['name'];
     delete value['address'];
@@ -36,45 +39,82 @@ var formatter = function (value)
     delete value['latitude'];
 }
 
-module.exports = {
+module.exports = 
+{
 
     NB_TIME_SLICES: 12,
 
-    attributes: {
-        identifier: {
+    attributes: 
+    {
+        identifier: 
+        {
             type: 'integer',
             required: true,
             primaryKey: true,
             unique: true
         },
-        last_update: {
+        last_update: 
+        {
             type: 'integer',
             required: true
         },
-        day: {
+        /*month: 
+        {
             type: 'integer',
             required: true
         },
-        hour: {
+        date: 
+        {
             type: 'integer',
             required: true
         },
-        time_slice: {
+        day: 
+        {
             type: 'integer',
             required: true
         },
-        station: {
+        hour: 
+        {
+            type: 'integer',
+            required: true
+        },
+        time_slice: 
+        {
+            type: 'integer',
+            required: true
+        },*/
+        station: 
+        {
             model: 'Station',
             required: true
         },
-        available_bike_stands: {
+        available_bike_stands: 
+        {
             type: 'integer',
             required: true
         },
-        available_bikes: {
+        available_bikes: 
+        {
+            type: 'integer',
+            required: true
+        },
+        specif_time: 
+        {
+            type: 'string', // TODO as integer?
+            required: true
+        },
+        period:
+        {
             type: 'integer',
             required: true
         }
+    },
+
+    // d as date
+    date_to_specificTime: function(d)
+    {
+        return /*d.getMonth()+"-"+d.getDate()+"-"+*/d.getDay()+"-"+d.getHours()+
+            "-"+Math.floor(d.getMinutes()*Measure.NB_TIME_SLICES/60);
     },
     
     beforeValidate: function(value, cb)

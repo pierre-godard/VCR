@@ -55,10 +55,18 @@ module.exports.routes = {
         action: 'load'
     },
 
-    '/prediction/analysis':
+    // id as station id
+    // delta as time of the prediction from now, in minutes
+    '/prediction/analysis/:id/:delta': 
     {
         controller: 'prediction',
         action: 'analysis'
+    },
+
+    '/prediction/all':
+    {
+        controller: 'prediction',
+        action: 'all'
     }
 
     /***************************************************************************

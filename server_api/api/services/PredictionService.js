@@ -20,6 +20,9 @@ function mean (array)
 	return sum_val/i;
 }
 
+var DFM_DEFAULT_STEP = 1;
+var DFM_DEFAULT_FACTOR = 0.98;
+
 // Mean of the array passed as parameter
 // Each element weight is decreased using the factor after each step
 // ex 0.5 , 1 , [10,20,30]
@@ -44,6 +47,32 @@ function decreasingFactor_mean (factor,step,array)
 	return sum_val/final_denominator;
 }
 
+// Calculates the variance given the array (using the specified mode)
+function variance(array,mode)
+{
+	var avg = 0;
+	/*switch(mode) 
+	{
+	    case PredictionService.analysis_mode.MEAN:
+	    	avg = mean(array);
+	        break;	
+	    case PredictionService.analysis_mode.DFM:
+	    	avg = decreasingFactor_mean(DFM_DEFAULT_FACTOR,DFM_DEFAULT_STEP,array);
+	        break;
+	    default:
+	}*/
+	avg = mean(array);
+	var i = array.length;
+	var v = 0;
+ 
+	while( i-- )
+	{
+		v += Math.pow( (array[ i ] - avg), 2 );
+	}
+	v /= array.length;
+	return v;
+}
+
 // Analyse a set of datas using the selected mode
 // Returns the caracteristic value associated with the analysis
 function analysis (datas,mode) 
@@ -54,42 +83,93 @@ function analysis (datas,mode)
 	    case PredictionService.analysis_mode.MEAN:
 	    	return mean(datas);
 	        break;	// no use but used to keep the code clear
-	    case PredictionService.analysis_mode.FDM:
-	    	return decreasingFactor_mean(datas);
+	    case PredictionService.analysis_mode.DFM:
+	    	return decreasingFactor_mean(DFM_DEFAULT_FACTOR,DFM_DEFAULT_STEP,datas);
 	        break;
 	    default:
 	}
 	return 0;	// 0 as default return value, TODO throw ERROR ?
 }
 
-
-// returns the measures matching the specified id and withing time stamp of [time]
-function queryMeasures(id,time)
+// return the level of quality of the prediction (0 -> 1)
+// 0 -> prediction with no assurance
+// 1 -> sure (nearly)
+function quality_analysis(arr_free,arr_occup,mode)
 {
-	Measure.find({station: id, day: time.getDay(), hour: time.getHours(), 
-		time_slice: Math.floor(time.getMinutes()/Measure.NB_TIME_SLICES) },
+	// Normalized. The inside walue is the raw quality. If this quality is supp to 10000
+	// we considerate we are sure about the result (log(10000)/4 = 1)
+	return Math.min(1,Math.log(1+(arr_free.length + arr_occup.length)/(1 + variance(arr_free,mode) + variance(arr_occup,mode)))/4);
+}
+
+// [OLD version -> predict_old]
+// returns the measures matching the specified id and withing time stamp of [time]
+function queryMeasures_old(id,time,callback)
+{
+	Measure.find({station: id, specif_time: Measure.date_to_specificTime(time)
+			/*hour: time.getHours(),
+		    date: time.getDate(),
+		    month: time.getMonth(),
+		    time_slice: Math.floor(time.getMinutes()*Measure.NB_TIME_SLICES/60)*/ },
 		function(err, found) 
 		{
-      		//console.log("found: "+found);
-      		//console.log("error: "+err);
-      		return found;
+			/*console.log("-- Time:        "+time);
+      		console.log("found: "+found);
+      		console.log("error: "+err);
+      		for (var i = 0; i < found.length; i++) 
+			{
+				console.log(found[i]);
+      			console.log("available_bike_stands: "+found[i].available_bike_stands);
+				console.log("available_bikes:       "+found[i].available_bikes);
+				console.log("last_update:           "+new Date(found[i].last_update));
+			}*/
+      		callback(found);
+      	}
+    );
+}
+
+// returns all the measures associated to the id and corresponding to the date
+// for the perdiction calculation
+function queryMeasures(id,time,callback)
+{
+	/*console.log(time);
+	console.log(id);
+	console.log(PredictionService.period(time));
+	console.log(time.getDay());
+	console.log(time.getHours());
+	console.log(Math.floor(time.getMinutes()*Measure.NB_TIME_SLICES/60));*/
+	Measure.find({station: id, 
+			specif_time: Measure.date_to_specificTime(time)
+			/*period: PredictionService.period(time),
+			day: time.getDay(),
+			hour: time.getHours(),
+		    time_slice: Math.floor(time.getMinutes()*Measure.NB_TIME_SLICES/60)*/ },
+		function(err, found) 
+		{
+      		callback(found);
       	}
     );
 }
 
 // If no period is found, used to define the default period
 var DEFAULT_PERIOD = -1;
+//error period -> problem during period calculation
+var ERROR_PERIOD = -2;
 // used to loop through periods
 var NB_SPECIFIC_PERIODS = 5; // TODO add in JSON
 
-// Find the number of the period associated to the date (time)
+// Find the number of the period associated to the date (time) using the JSON file
 function find_period(json_periods,time)
 {
 	var date = new Date(time);
 	var year = String(date.getFullYear());
+	if(time == 0 || json_periods[year] == undefined)
+	{
+		return ERROR_PERIOD; // TODO better error management
+	}
+	//console.log("year ======== "+year);
 	for (var i = 0; i < NB_SPECIFIC_PERIODS; i++) 
 	{ 
-/*		console.log(Date(json_periods[year][i].begin));
+		/*console.log(Date(json_periods[year][i].begin));
 		console.log(date);
 		console.log(Date(json_periods[year][i].end));*/
 	    if(new Date(json_periods[year][i].begin) <= date 
@@ -104,8 +184,14 @@ function find_period(json_periods,time)
 // Diff between arrays
 // thx to http://stackoverflow.com/questions/1187518/javascript-array-difference
 // NOT WORKING WITH DATES (and objects?)
-Array.prototype.diff = function(a) {
-    return this.filter(function(i) {return a.indexOf(i) < 0;});
+Array.prototype.diff = function(a) 
+{
+    return this.filter(
+    	function(i) 
+	    {
+	    	return a.indexOf(i) < 0;
+	    }
+	);
 };
 
 // Diff between arrays
@@ -199,6 +285,18 @@ function generate_specificPeriod(json_periods,limit_time,year_begin,year_end,per
 	return dates;
 }
 
+// Uses the recent datas to update de prediction
+// in order to match the reality
+function prediction_adapt()
+{
+	// TODO
+	// predict = predict(futur) + (predict(now) - now)
+	// predict = (predict_quality*predict(futur)+predict)/(1+predict_quality)
+}
+
+// calendar JSON file
+var json_timePeriods 	= require('../../data/time/vacances.json');
+
 module.exports = {
 
 	// Velov station potential state
@@ -228,10 +326,124 @@ module.exports = {
 	analysis_mode: Object.freeze(
 	{
 		MEAN: 	"mean",
-		FDM: 	"decreasing factor mean",
+		DFM: 	"decreasing factor mean",
 		NONE: 	"none" 
 	}),
+
+	// returns the period associated to the time
+	period: function (time)
+	{
+		return find_period(json_timePeriods,time);
+	},
 	
+	// [OLD version]
+	// Gives a prediction of the state
+	// of a Velov station (id)
+	// at a certain point in time (time) 
+	// using the selected analysis algorithm (analysisMode) 
+	// TODO -> not useful anymore, smalled database but a lot slower
+	predict_old: function (id,time,analysisMode,callback) 
+	{
+		// ----- Data fetching
+		var t_init = new Date().getTime();
+		var WEEK_SIZE 			= 7;
+		var station_free		= [];
+		var station_occup		= [];
+		var query_result		= [];
+		var util 				= require('util');
+		var json_timePeriods 	= require('../../data/time/vacances.json');
+		var date 				= new Date(time);
+		var year 				= date.getFullYear();
+		var period 				= find_period(json_timePeriods,time);
+		var dates 				= [];
+		var callback_nb			= 0;
+		if(period == DEFAULT_PERIOD)
+		{
+			dates = generate_defaultPeriod(json_timePeriods,date,2013,year);
+			//console.log("Default period");
+		}
+		else
+		{
+			dates = generate_specificPeriod(json_timePeriods,date,2013,year,period);
+			//console.log("Specific period: " + period);
+		}
+		//console.log("Dates: "+dates);
+		var t0 = new Date().getTime();
+		//var t_query_cb_0 = 0;
+		//var t_query_cb_1 = 0;
+		for (var j = 0; j < dates.length; j++) 
+		{
+			queryMeasures(id,new Date(dates[j]),
+				function(query_result)
+				{
+					//t_query_cb_0 = new Date().getTime();
+					if(query_result == undefined || query_result.length == 0) // no data has been found corresponding to id (unlikely, or call para error) or time (possible)
+					{
+						//console.log("                Skipping query result ("+id+")");
+					}	
+					else
+					{		
+						for (i = 0; i < query_result.length; i++) 
+						{ 
+							station_free.push(query_result[i].available_bike_stands);
+							station_occup.push(query_result[i].available_bikes);
+							console.log("measure date:   "+new Date(query_result[i].last_update));
+							console.log("free - occup:   "+query_result[i].available_bike_stands+"/"+query_result[i].available_bikes);
+						}
+						//console.log("                Query result used     ("+id+")");
+					}
+					callback_nb++; // before to avoid dates.length - 1 at each loop
+					//t_query_cb_1 = new Date().getTime();
+					console.log("delta t = "+(t_query_cb_1-t_query_cb_0));
+					if(callback_nb == dates.length) // TODO via async ?
+					{		
+						// ----- Data analysis
+						
+						var t1 = new Date().getTime();
+						var free_overTime 		= analysis(station_free,analysisMode);
+						var occup_overTime 		= analysis(station_occup,analysisMode);
+						var prediction_quality  = quality_analysis(station_free,station_occup,analysisMode);
+						var t2 = new Date().getTime();
+						console.log((t_0-t_init)+"-"+(t1-t0)+"-"+(t2-t1));
+
+						//var diff_overTime 	= max_overTime - curr_overTime;
+						console.log("station_free:   "+station_free);
+						console.log("station_occup:  "+station_occup);
+						console.log("free_overTime:  "+free_overTime);
+						console.log("occup_overTime: "+occup_overTime);
+						//console.log("diff_overTime: "+diff_overTime);
+						var state;
+						// ----- State selection
+						if (isNaN(occup_overTime) || isNaN(free_overTime))
+						{
+							state = PredictionService.station_state.UNKNOWN;
+						}
+						else if (free_overTime < PredictionService.station_values.FULL_LIMIT)
+						{
+							state = PredictionService.station_state.FULL;
+						} 
+						else if (free_overTime <= PredictionService.station_values.NEAR_FULL_LIMIT)
+						{
+							state = PredictionService.station_state.NEAR_FULL;
+						}
+						else if (occup_overTime < PredictionService.station_values.EMPTY_LIMIT)
+						{
+							state = PredictionService.station_state.EMPTY;
+						}
+						else if (occup_overTime <= PredictionService.station_values.NEAR_EMPTY_LIMIT)
+						{
+							state = PredictionService.station_state.NEAR_EMPTY;
+						}
+						else
+						{
+							state = PredictionService.station_state.INTERM;
+						}
+						callback(state,free_overTime,occup_overTime,prediction_quality);
+					}
+				}
+			);
+		}
+	},
 	// Gives a prediction of the state
 	// of a Velov station (id)
 	// at a certain point in time (time) 
@@ -239,78 +451,76 @@ module.exports = {
 	predict: function (id,time,analysisMode,callback) 
 	{
 		// ----- Data fetching
+		var t_init = new Date().getTime(); 
 		var WEEK_SIZE 			= 7;
 		var station_free		= [];
 		var station_occup		= [];
 		var query_result		= [];
-		var curr_date			= new Date();
 		var util 				= require('util');
-		var json_timePeriods 	= require('../../data/time/vacances.json');
-		//console.log(util.inspect(json_timePeriods, {showHidden: false, depth: null}));
-		//console.log(json_timePeriods["2014"].Hiver.begin);
 		var date 				= new Date(time);
 		var year 				= date.getFullYear();
-		var period 				= find_period(json_timePeriods,time);
-		var dates 				= [];
-		if(period == DEFAULT_PERIOD)
-		{
-			dates = generate_defaultPeriod(json_timePeriods,date,2013,year);
-			console.log("Default period");
-		}
-		else
-		{
-			dates = generate_specificPeriod(json_timePeriods,date,2013,year,period);
-			console.log("Specific period: " + period);
-		}
-		//console.log(dates);
-		for (var j = 0; j < dates.length; j++) 
-		{
-			curr_date = new Date(dates[j]);
-			query_result = queryMeasures(id,curr_date);
-			if(query_result == undefined) // no data has been found corresponding to id (unlikely, or call para error) or time (possible)
+		var t0 = new Date().getTime();
+		queryMeasures(id,new Date(time),
+			function(query_result)
 			{
-				console.log("Skipping query result ("+id+" - "+curr_date+")");
-				continue;	
-			}			
-			console.log(query_result+'\n');
-			for (i = 0; i < query_result.length; i++) 
-			{ 
-				station_free.push(query_result[i].available_bike_stands);
-				station_occup.push(query_result[i].available_bike);
+				if(query_result == undefined || query_result.length == 0) // no data has been found corresponding to id (unlikely, or call para error) or time (possible)
+				{
+					//console.log("                Skipping query result ("+id+")");
+				}	
+				else
+				{		
+					for (i = 0; i < query_result.length; i++) 
+					{ 
+						station_free.push(query_result[i].available_bike_stands);
+						station_occup.push(query_result[i].available_bikes);
+						console.log("measure date:   "+new Date(query_result[i].last_update));
+						console.log("free - occup:   "+query_result[i].available_bike_stands+"/"+query_result[i].available_bikes);
+					}
+					//console.log("                Query result used     ("+id+")");
+				}	
+				
+				// ----- Data analysis	
+				var t1 = new Date().getTime();
+				var free_overTime 		= analysis(station_free,analysisMode);
+				var occup_overTime 		= analysis(station_occup,analysisMode);
+				var prediction_quality  = quality_analysis(station_free,station_occup,analysisMode);
+				var t2 = new Date().getTime();
+				console.log((t0-t_init)+"-"+(t1-t0)+"-"+(t2-t1));
+
+				console.log("station_free:   "+station_free);
+				console.log("station_occup:  "+station_occup);
+				console.log("free_overTime:  "+free_overTime);
+				console.log("occup_overTime: "+occup_overTime);
+
+				var state;
+				// ----- State selection
+				if (isNaN(occup_overTime) || isNaN(free_overTime))
+				{
+					state = PredictionService.station_state.UNKNOWN;
+				}
+				else if (free_overTime < PredictionService.station_values.FULL_LIMIT)
+				{
+					state = PredictionService.station_state.FULL;
+				} 
+				else if (free_overTime <= PredictionService.station_values.NEAR_FULL_LIMIT)
+				{
+					state = PredictionService.station_state.NEAR_FULL;
+				}
+				else if (occup_overTime < PredictionService.station_values.EMPTY_LIMIT)
+				{
+					state = PredictionService.station_state.EMPTY;
+				}
+				else if (occup_overTime <= PredictionService.station_values.NEAR_EMPTY_LIMIT)
+				{
+					state = PredictionService.station_state.NEAR_EMPTY;
+				}
+				else
+				{
+					state = PredictionService.station_state.INTERM;
+				}
+				callback(state,free_overTime,occup_overTime,prediction_quality);
 			}
-			console.log("Query result used ("+id+" - "+curr_date+")");
-		}
+		);
 
-		// ----- Data analysis
-		var free_overTime 	= analysis(station_free,analysisMode);
-		var occup_overTime 	= analysis(station_occup,analysisMode);
-		//var diff_overTime 	= max_overTime - curr_overTime;
-
-		console.log("free_overTime:  "+free_overTime);
-		console.log("occup_overTime: "+occup_overTime);
-		//console.log("diff_overTime: "+diff_overTime);
-
-		// ----- State selection
-		if (isNaN(occup_overTime) || isNaN(free_overTime))
-		{
-			callback(PredictionService.station_state.UNKNOWN);
-		}
-		else if (free_overTime < PredictionService.station_values.FULL_LIMIT)
-		{
-			callback(PredictionService.station_state.FULL);
-		} 
-		else if (free_overTime <= PredictionService.station_values.NEAR_FULL_LIMIT)
-		{
-			callback(PredictionService.station_state.NEAR_FULL);
-		}
-		else if (occup_overTime < PredictionService.station_values.EMPTY_LIMIT)
-		{
-			callback(PredictionService.station_state.EMPTY);
-		}
-		else if (occup_overTime <= PredictionService.station_values.NEAR_EMPTY_LIMIT)
-		{
-			callback(PredictionService.station_state.NEAR_EMPTY);
-		}
-		callback(PredictionService.station_state.INTERM);
 	}
 };

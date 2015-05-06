@@ -45,13 +45,20 @@ module.exports = {
     load:
         function (req, res, next)
         {
-            UtilService.load_measures(
-                "velov.csv",
-                function (err)
+            async.parallel([
+                UtilService.load_all_measures(
+                    './data/stations',
+                    function (err)
+                    {
+                        
+                        if (err) return next(err);
+                        
+                    }
+                )
+                ], 
+                function(err)
                 {
-                    
-                    if (err) return next(err);
-                    
+                    console.log("All files loaded");
                 }
             );
                     

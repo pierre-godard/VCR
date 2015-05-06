@@ -5,10 +5,42 @@
 * @docs        :: http://sailsjs.org/#!documentation/models
 */
 
-module.exports = {
+module.exports = 
+{
 
-  attributes: {
-      // Ne pas oublier la confidence
-  }
+  	attributes: 
+  	{
+      	// Ne pas oublier la confidence
+      	station: 
+      	{
+            model: 'Station',
+            required: true
+        },
+        predict_bike_stands: 
+        {
+            type: 'float',
+            required: true
+        },
+        predict_bikes: 
+        {
+            type: 'float',
+            required: true
+        },
+        predict_state: 
+        {
+        	type: 'string',
+            required: true
+        },
+        confidence: 
+        {
+        	type: 'float',
+            required: true
+        },
+        time: 
+        {
+        	type: 'integer',
+            required: true
+        }
+  	}
 };
 
