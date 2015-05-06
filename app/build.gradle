@@ -25,4 +25,5 @@ dependencies {
     compile 'com.google.android.gms:play-services:7.0.0'
     compile 'com.google.maps.android:android-maps-utils:0.3+'
     compile 'com.sothree.slidinguppanel:library:3.0.0'
+    compile 'com.jjoe64:graphview:4.0.1'
 }
