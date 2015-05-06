@@ -49,21 +49,38 @@ module.exports = {
                     './data/stations',
                     function (err)
                     {
-                        
                         if (err) return next(err);
-                        
+                        res.write("All files loaded");   
+                        res.status(201);
+                        res.end();              
                     }
                 )
                 ], 
                 function(err)
                 {
-                    console.log("All files loaded");
+                    //console.log("All files loaded");
                 }
             );
-                    
-            res.status(201);
-            res.end();
             
+        },
+
+    loadone:
+        function (req, res, next)
+        {
+            UtilService.load_measures('./data/stations/sta'+req.param('id')+".csv",
+                function (err)
+                {
+                    
+                    if (err) 
+                    {
+                        return next(err);
+                        console.error("error: "+err);
+                    }
+                    res.write("station "+req.param('id')+" loaded"); 
+                    res.status(201);
+                    res.end();
+                }
+            );
         }
     
 };

@@ -5,13 +5,15 @@ var parse = require('csv-parse');
 
 var walk = function (dir, list, next)
 {
-    var file = dir + "/" + list.pop();
+    console.log("[LOAD] list length: "+list.length);
     if (list.length)
     {
+        var file = dir + "/" + list.pop();
         fs.stat(
             file,
             function (err, stat)
             {
+                console.log("[LOAD] found "+file);
                 if (stat && stat.isDirectory())
                 {
                     walk(dir, list, next);
@@ -23,6 +25,7 @@ var walk = function (dir, list, next)
                         function ()
                         {
                             walk(dir, list, next);
+                            console.log("[LOAD] "+file+" loaded");
                         }
                     );
                 }
@@ -43,7 +46,12 @@ module.exports = {
             dir,
             function (err, list) 
             {
-                if (err) return next(err);
+                console.log("--- Starting to load ---");
+                if (err)
+                {
+                    console.log("[LOAD] Load init error: "+err);
+                    return next(err);
+                }
                 walk(
                     dir,
                     list,
@@ -74,28 +82,22 @@ module.exports = {
         var input = fs.createReadStream(path);
         
         var iter = 0;
+        var objects = [];
         parser.on(
             'readable',
             function()
             {
                 while(record = parser.read())
                 {
-                    var object = {
+                    objects.push({
                         last_update: record[1],
                         available_bike_stands: record[4],
                         available_bikes: record[5],
                         station: record[0]
-                    };
-                    Measure.create(
-                        object,
-                        function (err, added)
-                        {
-                            if (err) return next(err);
-                            if(iter%1000==0)
-                                console.log(iter+" items loaded from "+path);
-                            iter++;
-                        }
-                    );
+                    });
+                    if(iter%1000==0)
+                        console.log(iter+" items loaded from "+path);
+                    iter++;
                 }
             }
         );
@@ -103,7 +105,16 @@ module.exports = {
             'end',
             function()
             {
-                next();
+                console.log("Start loading to database of "+path);
+                Measure.create(
+                    objects,
+                    function (err, added)
+                    {
+                        console.log("End of loading to database of "+path);
+                        if (err) return next(err);
+                        next();
+                    }
+                );
             }
         );
         parser.on(

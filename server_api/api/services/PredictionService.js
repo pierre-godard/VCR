@@ -345,12 +345,16 @@ function getState(free_overTime,occup_overTime)
 	return state;
 }
 
+var TO_MINUTES = 60000; // to convert to minutes
+var MAX_NB_CALLS_EMPTYQ = 4;
+var nb_calls_emptyQ = 0;
+
 // Uses the recent datas to update de prediction based only on datas
 // in order to match the reality
-function prediction_adapt(id,time,analysisMode,callback)
+function prediction_adapt(id,time,ref_time,analysisMode,callback)
 {
 	// TODO predict functions needs simplification (state etc...)
-	var curr_date = Date.now();
+	var curr_date = ref_time;
 	var TIME_REDUC = 60; // in minutes
 	predict_fromDatas(id,time,analysisMode,
 		function(state,free_overTime,occup_overTime,prediction_quality)
@@ -375,27 +379,68 @@ function prediction_adapt(id,time,analysisMode,callback)
 							if(found == undefined || found.length == 0) // no data has been found corresponding to id (unlikely, or call para error) or time (possible)
 							{
 								console.error("Error while adapting prediction. Empty query.");
-								callback(state,free_overTime,occup_overTime,prediction_quality);
+								if(nb_calls_emptyQ < MAX_NB_CALLS_EMPTYQ)
+								{
+									// actually does nothing since the query will always be empty
+									nb_calls_emptyQ++;
+									var newtime = new Date(ref_time - (60/Measure.NB_TIME_SLICES)*TO_MINUTES).getTime();
+									console.log("Trying with new date (try "+nb_calls_emptyQ+"): "+new Date(newtime));
+									prediction_adapt(id,time,newtime,analysisMode,callback);
+								} 
+								else
+								{
+									nb_calls_emptyQ = 0;
+									// divide prediction quality by 10 as this is not NORMAL -> no new datas!
+									callback(state,Math.floor(free_overTime),Math.floor(occup_overTime),prediction_quality/10);
+								}
 							}	
 							else if(found.length == 1)
 							{
-								// calculates the new prediction values
-								var delta_fota = free_overTime_now - found[0].available_bike_stands;
-								var delta_oota = occup_overTime_now - found[0].available_bikes;
-								var delta_time = (time - curr_date)/60; // in minutes
-								var factor = TIME_REDUC/(TIME_REDUC+delta_time);
-								free_overTime_adapt = free_overTime - factor*delta_fota;
-								occup_overTime_adapt = occup_overTime - factor*delta_oota;
-								console.log("free: "+free_overTime+ " vs "+free_overTime_adapt+
-									" occup: "+occup_overTime+ " vs "+occup_overTime_adapt);
+								// ---- calculates the new prediction values
+
+								// 1: 	reports the difference between the actual state and the redicted state
+								// 		of [now] to the prediction. [Now] datas importance decrease as
+								//		prediction distance increases.
+								var nb_slots			= found[0].available_bike_stands+found[0].available_bikes;
+								var delta_fota 			= free_overTime_now - found[0].available_bike_stands;
+								var delta_oota 			= occup_overTime_now - found[0].available_bikes;
+								var delta_time 			= (time - curr_date)/TO_MINUTES; // in minutes
+								var factor 				= TIME_REDUC/(TIME_REDUC+delta_time);
+								free_overTime_adapt 	= free_overTime - factor*delta_fota;
+								occup_overTime_adapt 	= occup_overTime - factor*delta_oota;
+								console.log("----> delta time:"+delta_time);
+
+								// 2: 	Revalidates data to have the right range
+								free_overTime_adapt 	= (free_overTime_adapt < 0)?0:free_overTime_adapt;
+								occup_overTime_adapt 	= (occup_overTime_adapt < 0)?0:occup_overTime_adapt;
+								free_overTime_adapt 	= (free_overTime_adapt > nb_slots)?nb_slots:free_overTime_adapt;
+								occup_overTime_adapt 	= (occup_overTime_adapt > nb_slots)?nb_slots:occup_overTime_adapt;
+
+								console.log("free 1: "+free_overTime+ " vs "+free_overTime_adapt+
+									" occup 1: "+occup_overTime+ " vs "+occup_overTime_adapt);
+
+								// 3: 	Ponderates the basic prediction and the adaped prediction
+								//		using the confidence (prediction quality)
+								free_overTime_adapt 	= free_overTime*prediction_quality + (1-prediction_quality)*free_overTime_adapt;
+								occup_overTime_adapt 	= occup_overTime*prediction_quality + (1-prediction_quality)*occup_overTime_adapt;
+
+								// 4: 	Re-eval to match the actual range of slots on the station
+								//		The actual prediction is based on a range generated from datas and
+								//		not corresponding to reality
+								var resize_factor = (nb_slots)/(free_overTime_adapt+occup_overTime_adapt);
+								free_overTime_adapt*=resize_factor;
+								occup_overTime_adapt*=resize_factor;
+
+								console.log("free 2: "+free_overTime+ " vs "+free_overTime_adapt+
+									" occup 2: "+occup_overTime+ " vs "+occup_overTime_adapt);
 
 								callback(getState(free_overTime_adapt,occup_overTime_adapt),
-									free_overTime_adapt,occup_overTime_adapt,prediction_quality);
+									Math.floor(free_overTime_adapt),Math.floor(occup_overTime_adapt),prediction_quality);
 							}
 							else
 							{
 					      		console.error("Error while adapting prediction. Too many results (>1).");
-								callback(state,free_overTime,occup_overTime,prediction_quality);
+								callback(state,Math.floor(free_overTime),Math.floor(occup_overTime),prediction_quality);
 							}
 				      	}
 					);
@@ -453,7 +498,7 @@ module.exports = {
 	
 	predict: function (id,time,analysisMode,callback) 
 	{
-		prediction_adapt(id,time,analysisMode,callback);
+		prediction_adapt(id,time,Date.now(),analysisMode,callback);
 		return;
 	}
 
