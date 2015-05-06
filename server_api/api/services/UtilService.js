@@ -3,74 +3,56 @@
 var fs = require('fs');
 var parse = require('csv-parse');
 
-// Based on https://gist.github.com/adamwdraper/4212319
-// Loop through all files in a given directory
-function walk(dir, done) 
+var walk = function (dir, list, next)
 {
-    fs.readdir(dir, function (error, list) 
+    var file = dir + "/" + list.pop();
+    if (list.length)
     {
-        if (error) 
-        {
-            console.error(error);
-            return done(error);
-        }
- 
-        var i = 0;
- 
-        (function next () 
-        {
-            var file = list[i++];
- 
-            if (!file) 
+        fs.stat(
+            file,
+            function (err, stat)
             {
-                return done(null);
-            }
-            
-            file = dir + '/' + file;
-            
-            fs.stat(file, function (error, stat) 
-            {
-        
-                if (stat && stat.isDirectory()) 
+                if (stat && stat.isDirectory())
                 {
-                    walk(file, function (error) 
-                    {
-                        next();
-                    });
-                } 
-                else 
-                {
-                    // do stuff to file here
-                    console.log("found: "+file);
-                    done(file);
-                    next();
-                }
-            });
-        })();
-    });
-};
-
-module.exports = {
-
-    load_all_measures: function (path, next)
-    {
-        walk(path,
-            function(file)
-            {
-                if(file == null)
-                {
-                    //console.log("Error while reading file: file is null");
+                    walk(dir, list, next);
                 }
                 else
                 {
-                    console.log("Loading: "+file);
-                    UtilService.load_measures(file,
-                        function (err)
-                        { 
-                            if (err) return next(err);   
+                    UtilService.load_measures(
+                        file,
+                        function ()
+                        {
+                            walk(dir, list, next);
                         }
                     );
                 }
+            }
+        );
+    }
+    else
+    {
+        next();
+    }
+}
+
+module.exports = {
+
+    load_all_measures: function (dir, next)
+    {
+        fs.readdir(
+            dir,
+            function (err, list) 
+            {
+                if (err) return next(err);
+                walk(
+                    dir,
+                    list,
+                    function ()
+                    {
+                        if (err) return next(err);
+                        next();
+                    }
+                );
             }
         );
     },
@@ -101,8 +83,7 @@ module.exports = {
                         object,
                         function (err, added)
                         {
-                            if (err) console.log(err);
-                            //if (err) return next(err);
+                            if (err) return next(err);
                             if(iter%1000==0)
                                 console.log(iter+" items loaded from "+path);
                             iter++;
