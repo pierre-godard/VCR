@@ -1,7 +1,5 @@
 package fr.insa_lyon.vcr.vcr;
 
-import android.animation.IntEvaluator;
-import android.animation.ValueAnimator;
 import android.app.AlarmManager;
 import android.app.DialogFragment;
 import android.app.PendingIntent;
@@ -14,7 +12,6 @@ import android.os.SystemClock;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.View;
-import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.Toast;
@@ -48,7 +45,6 @@ import fr.insa_lyon.vcr.modele.StationVelov;
 import fr.insa_lyon.vcr.reseau.FetchStation;
 import fr.insa_lyon.vcr.reseau.UpdateStation;
 import fr.insa_lyon.vcr.utilitaires.ClusterIconRenderer;
-import fr.insa_lyon.vcr.utilitaires.CustomAnimatorUpdateListener;
 import fr.insa_lyon.vcr.utilitaires.CustomClusterManager;
 import fr.insa_lyon.vcr.utilitaires.CustomInfoWindow;
 import fr.insa_lyon.vcr.utilitaires.FinishWithDialog;
@@ -165,8 +161,12 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
             mapFragment.getMapAsync(this);
         }
 
+
         slidingUp = (SlidingUpPanelLayout) findViewById(R.id.sliding_layout);
-        //slidingUp.
+        slidingUp.setParalaxOffset(50);
+        slidingUp.setOverlayed(false);
+
+        this.getActionBar().hide();
 
 
         // ####### Fetch static data for all stations #######
@@ -297,6 +297,8 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                 }
             }
         }
+        setAlphaStations(false);
+        idStationsSelectionnees.clear();
         Circle c = mMap.addCircle(new CircleOptions()
                 .center(position)
                 .strokeWidth(0)
@@ -304,7 +306,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                 .strokeColor(0xFFFFFFFF)
                 .fillColor(0x730080f1));
 
-        ValueAnimator vAnimator = new ValueAnimator();
+        /*ValueAnimator vAnimator = new ValueAnimator();
         vAnimator.setIntValues(0, circleRadius);
         vAnimator.setDuration(100);
         vAnimator.setEvaluator(new IntEvaluator());
@@ -313,6 +315,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         caul.setCircle(c);
         vAnimator.addUpdateListener(caul);
         vAnimator.start();
+        */
         for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
             if (MathsUti.getDistance(entry.getValue().getPosition(), position) <= circleRadius) {
                 entry.getValue().setSelected(true);
@@ -444,13 +447,13 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         if (!isMarkerSelected) {
             drawCircle(marker.getPosition());
         }
-
-        entryMarker.getValue().switchInfoWindowShown();
-        if(entryMarker.getValue().isInfoWindowShown()){
-            marker.showInfoWindow();
-        }
-        else{
-            marker.hideInfoWindow();
+        if(entryMarker != null) {
+            entryMarker.getValue().switchInfoWindowShown();
+            if (entryMarker.getValue().isInfoWindowShown()) {
+                marker.showInfoWindow();
+            } else {
+                marker.hideInfoWindow();
+            }
         }
     }
 
@@ -472,5 +475,57 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
             }
         }
 
+    }
+
+    public void setAlphaStations(boolean areInNewCircle){
+        StationVelov currentStation;
+        if(!areInNewCircle){
+            for(String idStation : idStationsSelectionnees){
+                currentStation = mapStations.get(idStation);
+                for(Marker m: mClusterManager.getMarkerCollection().getMarkers()){
+                    if(currentStation.getTitle().equals(m.getTitle())){
+                        m.setAlpha(1);
+                    }
+                }
+            }
+        }
+        else {
+            //getPredictions
+            float scoreCourant;
+            float scoreMax = Integer.MIN_VALUE;
+            float scoreMin = Integer.MAX_VALUE;
+            for (String idStation : idStationsSelectionnees) {
+                currentStation = mapStations.get(idStation);
+                if (isWithdrawMode) {
+                    scoreCourant = currentStation.getNumberOfBikes_predict() * currentStation.getPredictionConfidence();
+                } else {
+                    scoreCourant = currentStation.getNumberOfFreeBikeStands_predict() * currentStation.getPredictionConfidence();
+                }
+                if (scoreCourant < scoreMin) {
+                    scoreMin = scoreCourant;
+                }
+                if (scoreCourant > scoreMax) {
+                    scoreMax = scoreCourant;
+                }
+            }
+            for (String idStation : idStationsSelectionnees) {
+                currentStation = mapStations.get(idStation);
+                if (isWithdrawMode) {
+                    scoreCourant = currentStation.getNumberOfBikes_predict() * currentStation.getPredictionConfidence();
+                } else {
+                    scoreCourant = currentStation.getNumberOfFreeBikeStands_predict() * currentStation.getPredictionConfidence();
+                }
+                for (Marker m : mClusterManager.getMarkerCollection().getMarkers()) {
+                    if (currentStation.getTitle().equals(m.getTitle())) {
+                        if(scoreMax != scoreMin){
+                            m.setAlpha(((scoreCourant-scoreMin)/(scoreMax-scoreMin)));
+                        }
+                        else{
+                            m.setAlpha(1);
+                        }
+                    }
+                }
+            }
+        }
     }
 }
