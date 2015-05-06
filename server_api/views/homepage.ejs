@@ -5,3 +5,32 @@
         <p>VCR homepage</p>
     </div>
 </div>
+<div class="panel">
+    <table class="table table-striped">
+        <tr>
+            <th>Event</th>
+            <th>Description</th>
+            <th>Last Update</th>
+            <th>Progression</th>
+        </tr>
+        <% _.each(informations, function (information) { %>
+            <tr>
+                <td>
+                    <%=information.title %>
+                </td>
+                <td>
+                    <%=information.description %>
+                </td>
+                <td>
+                    <%=information.updatedAt %>
+                </td>
+                <td>
+                    <div class="progress-bar" role="progressbar" aria-valuenow="<%= information.progression %>" aria-valuemin="0" aria-valuemax="100" style="width: <%= information.progression %>%;">
+                        <%=information.progression %>%
+                    </div>
+                </td>
+                <em>
+       </tr>
+    <% }); %>
+    </table>
+</div>
