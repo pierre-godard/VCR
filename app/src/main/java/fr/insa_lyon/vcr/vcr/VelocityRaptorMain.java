@@ -1,7 +1,5 @@
 package fr.insa_lyon.vcr.vcr;
 
-import android.animation.IntEvaluator;
-import android.animation.ValueAnimator;
 import android.app.AlarmManager;
 import android.app.DialogFragment;
 import android.app.PendingIntent;
@@ -14,7 +12,6 @@ import android.os.SystemClock;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.View;
-import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.Toast;
@@ -287,6 +284,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
     //------------------------------------------------------------------------------ General Methods
 
     public void drawCircle(LatLng position) {
+        idStationsSelectionnees.clear();
         if (currentCircle != null) {
             currentCircle.remove();
             for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
@@ -305,7 +303,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                 .strokeColor(0xFFFFFFFF)
                 .fillColor(0x730080f1));
 
-        ValueAnimator vAnimator = new ValueAnimator();
+        /*ValueAnimator vAnimator = new ValueAnimator();
         vAnimator.setIntValues(0, circleRadius);
         vAnimator.setDuration(100);
         vAnimator.setEvaluator(new IntEvaluator());
@@ -321,7 +319,6 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                 reloadMarker(entry.getValue());
             }
         }
-        setAlphaStations(true);
         currentCircle = c;
         mMap.moveCamera(CameraUpdateFactory.newLatLng(position));
     }

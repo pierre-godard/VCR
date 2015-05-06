@@ -18,8 +18,11 @@ public class StationVelov implements ClusterItem {
     String title;
     LatLng position;
     String snippet;
-    int numberOfBikes;
-    int numberOfFreeBikeStands;
+    int numberOfBikes_current;
+    int numberOfFreeBikeStands_current;
+    int numberOfBikes_predict;
+    int numberOfFreeBikeStands_predict;
+    int predict_time;
     boolean withdrawal;
     String snippetText;
     boolean selected = false;
@@ -37,16 +40,19 @@ public class StationVelov implements ClusterItem {
         }
         //setMarkerSnippet(0,0);
 
-        numberOfBikes = 0;      // waiting for VelocityRaptorMain to fetch these data...
-        numberOfFreeBikeStands = 0;
+        numberOfBikes_current = 0;      // waiting for VelocityRaptorMain to fetch these data...
+        numberOfFreeBikeStands_current = 0;
+        numberOfBikes_predict = 0;
+        numberOfFreeBikeStands_predict = 0;
+        predict_time = 5;
         withdrawal = true;  // default case assume user want to withdraw a bike from the station.
     }
 
     //------------------------------------------------------------------------- OPERATIONS ON MARKER
 
     public void setBikesAndStands(int bikes, int stands) {
-        numberOfBikes = bikes;
-        numberOfFreeBikeStands = stands;
+        numberOfBikes_current = bikes;
+        numberOfFreeBikeStands_current = stands;
         updateMarkerIcon();
         updtSnippet();
     }
@@ -60,14 +66,14 @@ public class StationVelov implements ClusterItem {
     private BitmapDescriptor updateMarkerIcon() {
         BitmapDescriptor bitmap;
 
-        if (numberOfBikes + numberOfFreeBikeStands == 0) {
+        if (numberOfBikes_current + numberOfFreeBikeStands_current == 0) {
             bitmap = BitmapDescriptorFactory.fromResource(R.drawable.marker_y7);
         } else {
             float ratio;
             if (withdrawal) { //ratio of avail bikes on the total of possible bikes in the station
-                ratio = ((float) numberOfBikes) / (numberOfBikes + numberOfFreeBikeStands);
+                ratio = ((float) numberOfBikes_current) / (numberOfBikes_current + numberOfFreeBikeStands_current);
             } else { // ration of avail stands on the total of possible bikes in the station
-                ratio = ((float) (numberOfFreeBikeStands)) / (numberOfBikes + numberOfFreeBikeStands);
+                ratio = ((float) (numberOfFreeBikeStands_current)) / (numberOfBikes_current + numberOfFreeBikeStands_current);
             }
 
             // choose icon according to ratio :
@@ -125,15 +131,28 @@ public class StationVelov implements ClusterItem {
     }
 
     public void updtSnippet() {
-        if (numberOfFreeBikeStands + numberOfBikes != 0) {
+        if (numberOfFreeBikeStands_current + numberOfBikes_current != 0) {
             if (withdrawal) {
-                snippet = "Vélos disponibles : " + numberOfBikes;
+                snippet = "Vélos disponibles : " + numberOfBikes_current;
             } else {
-                snippet = "Empacements disponibles : " + numberOfFreeBikeStands;
+                snippet = "Empacements disponibles : " + numberOfFreeBikeStands_current;
             }
         } else {
             snippet = "Pas de données";
         }
+    }
+
+    public void updtSnippetPredict() {
+        if (numberOfFreeBikeStands_predict + numberOfBikes_predict == 0) {
+            if (withdrawal) {
+                snippet = "Prédiction à "+predict_time+"min :\n"+numberOfBikes_predict+" vélos disponibles.";
+            } else {
+                snippet = "Prédiction à "+predict_time+"min :\n"+numberOfFreeBikeStands_predict+" emplacements disponibles.";
+            }
+        } else {
+            snippet = "Pas de prédiction disponible à "+predict_time+"min.";
+        }
+
     }
 
     //---------------------------------------------------------------------------- GETTERS - SETTERS
@@ -194,6 +213,33 @@ public class StationVelov implements ClusterItem {
     public BitmapDescriptor getIcon() {
         return updateMarkerIcon();
     }
+
+
+
+    public int getNumberOfBikes_predict() {
+        return numberOfBikes_predict;
+    }
+
+    public void setNumberOfBikes_predict(int numberOfBikes_predict) {
+        this.numberOfBikes_predict = numberOfBikes_predict;
+    }
+
+    public int getNumberOfFreeBikeStands_predict() {
+        return numberOfFreeBikeStands_predict;
+    }
+
+    public void setNumberOfFreeBikeStands_predict(int numberOfFreeBikeStands_predict) {
+        this.numberOfFreeBikeStands_predict = numberOfFreeBikeStands_predict;
+    }
+
+    public int getPredict_time() {
+        return predict_time;
+    }
+
+    public void setPredict_time(int predict_time) {
+        this.predict_time = predict_time;
+    }
+
 
 
 }
