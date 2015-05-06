@@ -149,6 +149,7 @@ function find_period(json_periods,time)
 	    if(new Date(json_periods[year][i].begin) <= date 
 	    	&& new Date(json_periods[year][i].end) >= date)	// If the date is within the period
 	    {
+	    	console.log(i+" - "+date);
 	    	return i;
 	    }
 	}
