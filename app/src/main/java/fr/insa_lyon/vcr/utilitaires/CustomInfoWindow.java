@@ -1,10 +1,12 @@
 package fr.insa_lyon.vcr.utilitaires;
 
 import android.annotation.TargetApi;
+import android.app.DialogFragment;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.support.v4.app.FragmentActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -13,12 +15,14 @@ import android.widget.TextView;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.Marker;
 
+import fr.insa_lyon.vcr.vcr.GraphStation;
 import fr.insa_lyon.vcr.vcr.R;
+import fr.insa_lyon.vcr.vcr.ResearchDialog;
 
 /**
  * Created by julien on 03/05/15.
  */
-public class CustomInfoWindow implements GoogleMap.InfoWindowAdapter {
+public class CustomInfoWindow extends FragmentActivity implements GoogleMap.InfoWindowAdapter {
 
 
     LayoutInflater layoutInflater;
@@ -37,6 +41,12 @@ public class CustomInfoWindow implements GoogleMap.InfoWindowAdapter {
         } else {
             ll.setBackground(d);
         }
+    }
+
+    public void onButtonClickedGraph(View v) {
+
+        DialogFragment newFragment = new GraphStation();
+        newFragment.show(getFragmentManager(), "graph");
     }
 
     @Override
@@ -61,4 +71,6 @@ public class CustomInfoWindow implements GoogleMap.InfoWindowAdapter {
 
         return customInfoView;
     }
+
+
 }
