@@ -42,6 +42,10 @@
         <service
             android:name="fr.insa_lyon.vcr.reseau.UpdateStation"
             android:exported="false"></service>
+
+        <service
+            android:name="fr.insa_lyon.vcr.reseau.UpdatePrediction"
+            android:exported="false"/>
     </application>
 
 </manifest>

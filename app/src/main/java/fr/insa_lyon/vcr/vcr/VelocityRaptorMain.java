@@ -442,6 +442,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
             for (int i = 0; i < jArrayPredictions.length(); i++) {
                 // Find the station whose id is the same as the one in the jsonArray
                 currentStation = jArrayPredictions.getJSONObject(i);
+                Log.d("UPDATE_PREDICTIONS",currentStation.toString());
                 stationId = currentStation.getString("station");
                 bikePrediction = currentStation.getInt("predict_bikes");
                 bikeStandPrediction = currentStation.getInt("predict_bike_stands");
@@ -539,6 +540,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
     }
 
     public void updatePredictions(){
+        Log.d("UPDATE_PREDICTIONS", "Tout début");
         intentPredictions = new Intent(this, UpdatePrediction.class);
         String idStations="";
         for(String idStation : idStationsSelectionnees) {
@@ -547,6 +549,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         intentPredictions.putExtra(UpdatePrediction.SERVER_URL, SERVER_URL + "/prediction/analysis");
         intentPredictions.putExtra(UpdatePrediction.ID_STATIONS, idStations);
         intentPredictions.putExtra(UpdatePrediction.PREDICTION_TIME, "5"); //TODO: Remplacer par temps indiqué
+        Log.d("UPDATE_PREDICTIONS", "On lance le service...");
         startService(intentPredictions);
 
     }
