@@ -13,11 +13,8 @@ module.exports.bootstrap = function (cb)
 {
 
     JCDecauxService.requestStations(
-        function (stations, err)
+        function (stations)
         {
-
-            if (err) return next(err);
-
             Station.createOrUpdate(
                 stations,
                 function (err2)
