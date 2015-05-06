@@ -1,7 +1,5 @@
 package fr.insa_lyon.vcr.vcr;
 
-import android.animation.IntEvaluator;
-import android.animation.ValueAnimator;
 import android.app.AlarmManager;
 import android.app.DialogFragment;
 import android.app.PendingIntent;
@@ -14,7 +12,6 @@ import android.os.SystemClock;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.View;
-import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.Toast;
@@ -48,7 +45,6 @@ import fr.insa_lyon.vcr.modele.StationVelov;
 import fr.insa_lyon.vcr.reseau.FetchStation;
 import fr.insa_lyon.vcr.reseau.UpdateStation;
 import fr.insa_lyon.vcr.utilitaires.ClusterIconRenderer;
-import fr.insa_lyon.vcr.utilitaires.CustomAnimatorUpdateListener;
 import fr.insa_lyon.vcr.utilitaires.CustomClusterManager;
 import fr.insa_lyon.vcr.utilitaires.CustomInfoWindow;
 import fr.insa_lyon.vcr.utilitaires.FinishWithDialog;
@@ -304,7 +300,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                 .strokeColor(0xFFFFFFFF)
                 .fillColor(0x730080f1));
 
-        ValueAnimator vAnimator = new ValueAnimator();
+        /*ValueAnimator vAnimator = new ValueAnimator();
         vAnimator.setIntValues(0, circleRadius);
         vAnimator.setDuration(100);
         vAnimator.setEvaluator(new IntEvaluator());
@@ -319,7 +315,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                 idStationsSelectionnees.add(entry.getValue().getId());
                 reloadMarker(entry.getValue());
             }
-        }
+        }*/
         currentCircle = c;
         mMap.moveCamera(CameraUpdateFactory.newLatLng(position));
     }
@@ -393,6 +389,43 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         }
 
     }
+
+
+
+    /**
+     * Method uses a json String received from UpdateStations via receiverDyna to update the number
+     * of bikes in all stations.
+     *
+     * @param jsonString Json String that can be parsed to a json array
+     */
+    protected void updatePrediction(String jsonString) {
+        try {
+            JSONArray jArrayMeasures = new JSONArray(jsonString);
+            JSONObject currentStation;
+            JSONObject currentMeasure;
+            String stationId;
+            StationVelov updatedStation;
+            for (int i = 0; i < jArrayMeasures.length(); i++) {
+                // Find the station whose id is the same as the one in the jsonArray
+                currentMeasure = jArrayMeasures.getJSONObject(i);
+                currentStation = currentMeasure.getJSONObject("station");
+                stationId = currentStation.getString("id");
+                updatedStation = mapStations.get(stationId);            // will need to catch exception in case id is not found in hashmap
+
+                // TODO : adapt this to the received data format
+
+                Log.d("UPDATE STATION =>", "Station " + updatedStation.getTitle() + " being updated");
+                mapStations.put(stationId, updatedStation);
+            }
+        } catch (JSONException j) {
+            Log.e("updateStationValues", "Problem when parsing JSON : " + j);
+        }
+        for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
+            reloadMarker(entry.getValue());
+        }
+
+    }
+
 
 
     public void updateMarkerMode() {
