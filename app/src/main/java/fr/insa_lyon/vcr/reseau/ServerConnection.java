@@ -11,12 +11,14 @@ import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -33,6 +35,7 @@ public class ServerConnection {
 
 
     public ServerConnection() {
+        mParams = new ArrayList<>();
     }
 
     public ServerConnection(String url, List<NameValuePair> params) {
@@ -47,9 +50,11 @@ public class ServerConnection {
             // client http default
             DefaultHttpClient httpClient = new DefaultHttpClient();
             // Format the parameters correctly for HTTP transmission
-            String paramString = URLEncodedUtils.format(mParams, "utf-8");
-            // Add parameters to url in GET format
-            mUrl += "?" + paramString;
+            if(!mParams.isEmpty()) {
+                String paramString = URLEncodedUtils.format(mParams, "utf-8");
+                // Add parameters to url in GET format
+                mUrl += "?" + paramString;
+            }
             // Execute the request
             HttpGet httpGet = new HttpGet(mUrl);
             // Execute the request and fetch Http response
@@ -92,6 +97,65 @@ public class ServerConnection {
             Log.e("JSON Parser", "Une erreur est survenue en parsant les données : " + e.toString());
             return null;
         }
+    }
+
+    // Method to issue HTTP request, parse JSON result and return JSON Object
+    public JSONObject makeHttpGetObject() {
+        try {
+            // client http default
+            DefaultHttpClient httpClient = new DefaultHttpClient();
+            // Format the parameters correctly for HTTP transmission
+            if(!mParams.isEmpty()) {
+                String paramString = URLEncodedUtils.format(mParams, "utf-8");
+                // Add parameters to url in GET format
+                mUrl += "?" + paramString;
+            }
+            // Execute the request
+            HttpGet httpGet = new HttpGet(mUrl);
+            // Execute the request and fetch Http response
+            HttpResponse httpResponse = httpClient.execute(httpGet);
+            // Extract the result from the response
+            HttpEntity httpEntity = httpResponse.getEntity();
+            // Open the result as an input stream for parsing
+            httpResponseStream = httpEntity.getContent();
+            // Catch Possible Exceptions
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (ClientProtocolException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            // buffered reader httpResponseStream
+            BufferedReader httpResponseReader = new BufferedReader(new InputStreamReader(httpResponseStream, "UTF-8"), 8); //former was iso-8859-1 / no accent :/
+            // String to hold current line from httpResponseReader
+            String line = null;
+            // Clear jsonString
+            jsonString = "";
+            // While there is still more response to read
+            while ((line = httpResponseReader.readLine()) != null) {
+                // Add line to jsonString
+                jsonString += (line + "\n");
+            }
+            // Close Response Stream
+            httpResponseStream.close();
+        } catch (Exception e) {
+            Log.e("Buffer Error", "Une erreur est survenue à la lecture des données. : " + e.toString());
+        }
+
+        try {
+            // Create jsonObject from the jsonString and return it
+            return new JSONObject(jsonString);
+        } catch (JSONException e) {
+            Log.e("JSON Parser", "Une erreur est survenue en parsant les données : " + e.toString());
+            return null;
+        }
+    }
+
+    public void setUrl(String url){
+        mUrl = url;
     }
 
 }

@@ -43,6 +43,7 @@ import java.util.Map;
 
 import fr.insa_lyon.vcr.modele.StationVelov;
 import fr.insa_lyon.vcr.reseau.FetchStation;
+import fr.insa_lyon.vcr.reseau.UpdatePrediction;
 import fr.insa_lyon.vcr.reseau.UpdateStation;
 import fr.insa_lyon.vcr.utilitaires.ClusterIconRenderer;
 import fr.insa_lyon.vcr.utilitaires.CustomClusterManager;
@@ -64,6 +65,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
     protected boolean isWithdrawMode = true;
     HashMap<String, StationVelov> mapStations;
     List<String> idStationsSelectionnees;
+    private int numberPredictionsArrived = 0;
 
     DialogFragment exitDialogFragment;
     boolean serverFailureDetected = false;
@@ -74,6 +76,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
     Intent intentDyna;
     Intent intentStat;
     Intent intentAlarm;
+    Intent intentPredictions;
     PendingIntent pendingIntentAlarm;
     AlarmManager alarmManager;
 
@@ -144,6 +147,33 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         }
     };
 
+    private BroadcastReceiver receiverUpdatePrediction = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.d("UPDATE_PREDICTIONS", "Ici PapaTango, bien reçu DeltaCharlie");
+            Bundle bundle = intent.getExtras();
+            if (bundle != null) {
+                int resultCode = bundle.getInt(UpdateStation.RESULT);
+                if (resultCode == RESULT_OK) {
+                    String json_string = bundle.getString(UpdatePrediction.JSON_ARR);
+                    if (json_string.length() >= 3) {  // Json is not empty or "[]"
+                        Log.d("UPDATE_PREDICTIONS", "Before call to updatePredictionsValues");
+                        updateStationPredictions(json_string);
+                    }
+                } else {
+                    if (!serverFailureDetected) {
+                        Log.e("UPDATE_PREDICTIONS","Et galère...");
+                        serverFailureDetected = true;
+                        stopService(intentStat);
+                        stopService(intentDyna);
+                        stopService(intentPredictions);
+                        exitDialogFragment.show(getFragmentManager(), "exitdialogDyna");
+                    }
+                }
+            }
+        }
+    };
+
     //-------------------------------------------------------------------- Activity LifeCyle Methods
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -200,6 +230,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         registerReceiver(receiverStat, new IntentFilter(FetchStation.NOTIFICATION));
         registerReceiver(receiverDyna, new IntentFilter(UpdateStation.NOTIFICATION));
         registerReceiver(receiverAlarm, new IntentFilter(ALARM_NOTIFICATION));
+        registerReceiver(receiverUpdatePrediction, new IntentFilter(UpdatePrediction.NOTIFICATION));
     }
 
     @Override
@@ -282,7 +313,6 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
     //------------------------------------------------------------------------------ General Methods
 
     public void drawCircle(LatLng position) {
-        idStationsSelectionnees.clear();
         if (currentCircle != null) {
             currentCircle.remove();
             for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
@@ -293,6 +323,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
             }
         }
         setAlphaStations(false);
+        numberPredictionsArrived = 0;
         idStationsSelectionnees.clear();
         Circle c = mMap.addCircle(new CircleOptions()
                 .center(position)
@@ -320,6 +351,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         }
         currentCircle = c;
         mMap.moveCamera(CameraUpdateFactory.newLatLng(position));
+        updatePredictions();
     }
 
     /**
@@ -392,6 +424,35 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
 
     }
 
+    protected void updateStationPredictions(String jsonString) {
+        try {
+            Log.d("UPDATE_PREDICTIONS","Allez on y va on update les prédictions !");
+            JSONArray jArrayPredictions = new JSONArray(jsonString);
+            JSONObject currentStation;
+            String stationId;
+            int bikePrediction;
+            int bikeStandPrediction;
+            float predictionConfidence;
+            StationVelov updatedStation;
+            for (int i = 0; i < jArrayPredictions.length(); i++) {
+                // Find the station whose id is the same as the one in the jsonArray
+                currentStation = jArrayPredictions.getJSONObject(i);
+                stationId = currentStation.getString("station");
+                bikePrediction = currentStation.getInt("predict_bikes");
+                bikeStandPrediction = currentStation.getInt("predict_bike_stands");
+                predictionConfidence = (float)currentStation.getDouble("confidence");
+                updatedStation = mapStations.get(stationId);
+                updatedStation.setNumberOfBikes_predict(bikePrediction);
+                updatedStation.setNumberOfFreeBikeStands_predict(bikeStandPrediction);
+                updatedStation.setPredictionConfidence(predictionConfidence);
+                Log.d("UPDATE_PREDICTIONS", "Station " + updatedStation.getTitle() + " being updated");
+                mapStations.put(stationId, updatedStation);
+            }
+        } catch (JSONException j) {
+            Log.e("UPDATE_PREDICTIONS", "Problem when parsing JSON : " + j);
+        }
+        setAlphaStations(true);
+    }
 
     public void updateMarkerMode() {
         for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
@@ -469,6 +530,19 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                 break;
             }
         }
+
+    }
+
+    public void updatePredictions(){
+        intentPredictions = new Intent(this, UpdatePrediction.class);
+        String idStations="";
+        for(String idStation : idStationsSelectionnees) {
+            idStations+=idStation+";";
+        }
+        intentPredictions.putExtra(UpdatePrediction.SERVER_URL, SERVER_URL + "/prediction/analysis");
+        intentPredictions.putExtra(UpdatePrediction.ID_STATIONS, idStations);
+        intentPredictions.putExtra(UpdatePrediction.PREDICTION_TIME, "5"); //TODO: Remplacer par temps indiqué
+        startService(intentPredictions);
 
     }
 
