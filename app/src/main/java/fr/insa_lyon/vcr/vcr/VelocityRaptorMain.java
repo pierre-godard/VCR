@@ -309,13 +309,14 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         caul.setCircle(c);
         vAnimator.addUpdateListener(caul);
         vAnimator.start();
+        */
         for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
             if (MathsUti.getDistance(entry.getValue().getPosition(), position) <= circleRadius) {
                 entry.getValue().setSelected(true);
                 idStationsSelectionnees.add(entry.getValue().getId());
                 reloadMarker(entry.getValue());
             }
-        }*/
+        }
         currentCircle = c;
         mMap.moveCamera(CameraUpdateFactory.newLatLng(position));
     }

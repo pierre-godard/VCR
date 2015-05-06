@@ -5,7 +5,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="bottom"
-    sothree:umanoPanelHeight="50dp"
     sothree:umanoShadowHeight="10dp">
 
     <FrameLayout
@@ -25,6 +24,7 @@
 
     </FrameLayout>
 
+
     <LinearLayout
         android:id="@+id/side_menu"
         android:layout_width="match_parent"
@@ -42,6 +42,13 @@
             android:textAlignment="center"
             android:textSize="20sp"
             android:textStyle="bold"/>
+
+        <AutoCompleteTextView
+            android:id="@+id/autoComplete"
+            android:layout_width="206dp"
+            android:layout_height="wrap_content"
+            android:dropDownVerticalOffset="-50dp"
+            android:hint="Adresse"/>
 
         <SeekBar
             android:id="@+id/seekBar"
@@ -73,11 +80,7 @@
             android:nestedScrollingEnabled="true" />
             -->
 
-        <AutoCompleteTextView
-            android:id="@+id/autoComplete"
-            android:layout_width="206dp"
-            android:layout_height="wrap_content"
-            android:hint="Adresse" />
+
 
     </LinearLayout>
 
