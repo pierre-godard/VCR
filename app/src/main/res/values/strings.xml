@@ -18,4 +18,5 @@
     <string name="dialog_message">L\'application va s\'arrêter</string>
     <string name="dialog_title">Serveur Indisponible</string>
     <string name="ok">Ok</string>
+    <string name="Options">OPTIONS</string>
 </resources>

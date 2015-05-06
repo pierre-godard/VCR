@@ -5,9 +5,9 @@
     style="@style/AppTheme"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#76FFFFFF"
     android:gravity="bottom"
-    sothree:umanoPanelHeight="25sp"
-    sothree:umanoShadowHeight="10dp">
+    sothree:umanoPanelHeight="25sp">
 
     <FrameLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
@@ -24,7 +24,28 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
+        <Button
+            android:id="@+id/but_recherche"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:layout_gravity="left|top"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="10dp"
+            android:background="#bbffffff"
+            android:nestedScrollingEnabled="true"
+            android:onClick="onButtonClickedMain"
+            android:padding="10dp"
+            android:text="@string/Recherche" />
+
+
+ <!--       <AutoCompleteTextView
+            android:id="@+id/autoComplete"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Adresse"/>-->
+
     </FrameLayout>
+
 
 
     <LinearLayout
@@ -32,56 +53,47 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal|bottom"
-        android:background="#76FFFFFF"
         android:gravity="bottom"
         android:orientation="vertical">
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="25sp"
-            android:background="#ffebebeb"
-            android:text="Menu"
-            android:textAlignment="center"
-            android:textSize="20sp"
-            android:textStyle="bold"/>
 
-        <AutoCompleteTextView
-            android:id="@+id/autoComplete"
+        <LinearLayout
+            android:id="@+id/text_option_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:dropDownVerticalOffset="-50dp"
-            android:hint="Adresse"/>
+            android:background="#FFB1FFAD"
+            android:orientation="horizontal">
 
-        <SeekBar
-            android:id="@+id/seekBar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:max="100"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="25sp"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:text="@string/Options"
+                android:textSize="20sp"
+                android:textStyle="bold"/>
+
+        </LinearLayout>
 
         <Switch
             android:id="@+id/switchDeposerRetirer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:checked="false"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:paddingTop="5dp"
             android:textOff="Retirer un vélo"
-            android:textOn="Déposer un vélo"
-            />
+            android:textOn="Déposer un vélo"/>
 
-        <!--
-        <Button
-            android:id="@+id/but_recherche"
-            android:layout_width="wrap_content"
-            android:layout_height="40dp"
-            android:layout_gravity="left|top"
-            android:text="@string/Recherche"
-            android:padding="10dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginLeft="10dp"
-            android:background="#bbffffff"
-            android:onClick="onButtonClickedMain"
-            android:nestedScrollingEnabled="true" />
-            -->
-
+        <SeekBar
+            android:id="@+id/seekBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="100"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:paddingTop="5dp"/>
 
 
     </LinearLayout>

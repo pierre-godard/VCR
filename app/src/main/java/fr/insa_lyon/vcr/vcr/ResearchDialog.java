@@ -1,6 +1,5 @@
 package fr.insa_lyon.vcr.vcr;
 
-
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.DialogFragment;
@@ -16,6 +15,17 @@ import android.widget.AutoCompleteTextView;
 import android.app.AlertDialog;
 import android.view.LayoutInflater;
 
+import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.series.DataPoint;
+import com.jjoe64.graphview.series.LineGraphSeries;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.params.BasicHttpParams;
+import org.json.*;
+
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.location.places.AutocompletePrediction;
@@ -26,6 +36,10 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,6 +53,9 @@ public class ResearchDialog extends DialogFragment {
     private GoogleApiClient mGoogleApiClient;
     private ArrayAdapter<ResultatPartiel> adp;
     private AutoCompleteTextView t1;
+    private GraphView graph;
+    private  LineGraphSeries<DataPoint> seriesBikes;
+    private  LineGraphSeries<DataPoint> seriesStands;
     //private Activity activite;
 
     @Override
@@ -87,13 +104,66 @@ public class ResearchDialog extends DialogFragment {
         t1.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                new GetPlace().execute(((ResultatPartiel)parent.getAdapter().getItem(position)).getIdentifiantPlace());
+                new GetPlace().execute(((ResultatPartiel) parent.getAdapter().getItem(position)).getIdentifiantPlace());
             }
         });
+
+
+        DefaultHttpClient httpclient = new DefaultHttpClient(new BasicHttpParams());
+        HttpPost httppost = new HttpPost("vps165245.ovh.net/prediction/analysis/10002/0");
+        httppost.setHeader("Content-type", "application/json");
+
+        InputStream inputStream = null;
+        String result = null;
+        try {
+            HttpResponse response = httpclient.execute(httppost);
+            HttpEntity entity = response.getEntity();
+
+            inputStream = entity.getContent();
+            // json is UTF-8 by default
+            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"), 8);
+            StringBuilder sb = new StringBuilder();
+
+            String line = null;
+            while ((line = reader.readLine()) != null)
+            {
+                sb.append(line + "\n");
+            }
+            result = sb.toString();
+        } catch (Exception e) {
+            // Oops
+        }
+        finally {
+            try{if(inputStream != null)inputStream.close();}catch(Exception squish){}
+        }
+
+        graph = (GraphView) v.findViewById(R.id.graph);
+        seriesBikes = new LineGraphSeries<DataPoint>(generateData(result, "predict_bikes"));
+        seriesStands = new LineGraphSeries<DataPoint>(generateData(result, "predict_bikes_stands"));
+
+        graph.addSeries(seriesBikes);
+        graph.addSeries(seriesStands);
+
         builder.setView(v);
         return builder.create();
     }
 
+    private DataPoint[] generateData(String jsonString, String result) {
+        int count = 288;
+        DataPoint[] values = new DataPoint[count];
+
+        for (int i=0; i<count; i++) {
+            try {
+                JSONObject jObject = new JSONObject(jsonString);
+                String S1 = jObject.getString(result);
+                DataPoint DP1 = new DataPoint(i, Double.parseDouble(S1));
+                values[i] = DP1;
+            }catch(Exception e){
+                // TODO : banane
+            }
+        }
+        return values;
+    }
 
     private class GetPredictions extends AsyncTask<String,Void,AutocompletePredictionBuffer> {
 /** The system calls this to perform work in a worker thread and
