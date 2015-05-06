@@ -22,6 +22,7 @@ public class StationVelov implements ClusterItem {
     int numberOfFreeBikeStands_current;
     int numberOfBikes_predict;
     int numberOfFreeBikeStands_predict;
+    float predictionConfidence;
     int predict_time;
     boolean withdrawal;
     String snippetText;
@@ -44,6 +45,7 @@ public class StationVelov implements ClusterItem {
         numberOfFreeBikeStands_current = 0;
         numberOfBikes_predict = 0;
         numberOfFreeBikeStands_predict = 0;
+        predictionConfidence = 0;
         predict_time = 5;
         withdrawal = true;  // default case assume user want to withdraw a bike from the station.
     }
@@ -226,6 +228,14 @@ public class StationVelov implements ClusterItem {
 
     public int getNumberOfFreeBikeStands_predict() {
         return numberOfFreeBikeStands_predict;
+    }
+
+    public float getPredictionConfidence(){
+        return predictionConfidence;
+    }
+
+    public void setPredictionConfidence(float predictionConfidence){
+        this.predictionConfidence = predictionConfidence;
     }
 
     public void setNumberOfFreeBikeStands_predict(int numberOfFreeBikeStands_predict) {

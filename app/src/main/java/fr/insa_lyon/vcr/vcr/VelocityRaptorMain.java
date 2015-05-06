@@ -444,13 +444,13 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         if (!isMarkerSelected) {
             drawCircle(marker.getPosition());
         }
-
-        entryMarker.getValue().switchInfoWindowShown();
-        if(entryMarker.getValue().isInfoWindowShown()){
-            marker.showInfoWindow();
-        }
-        else{
-            marker.hideInfoWindow();
+        if(entryMarker != null) {
+            entryMarker.getValue().switchInfoWindowShown();
+            if (entryMarker.getValue().isInfoWindowShown()) {
+                marker.showInfoWindow();
+            } else {
+                marker.hideInfoWindow();
+            }
         }
     }
 
@@ -486,12 +486,40 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                 }
             }
         }
-        else{
-            for(String idStation : idStationsSelectionnees){
+        else {
+            //getPredictions
+            float scoreCourant;
+            float scoreMax = Integer.MIN_VALUE;
+            float scoreMin = Integer.MAX_VALUE;
+            for (String idStation : idStationsSelectionnees) {
                 currentStation = mapStations.get(idStation);
-                for(Marker m: mClusterManager.getMarkerCollection().getMarkers()){
-                    if(currentStation.getTitle().equals(m.getTitle())){
-                        m.setAlpha(0);
+                if (isWithdrawMode) {
+                    scoreCourant = currentStation.getNumberOfBikes_predict() * currentStation.getPredictionConfidence();
+                } else {
+                    scoreCourant = currentStation.getNumberOfFreeBikeStands_predict() * currentStation.getPredictionConfidence();
+                }
+                if (scoreCourant < scoreMin) {
+                    scoreMin = scoreCourant;
+                }
+                if (scoreCourant > scoreMax) {
+                    scoreMax = scoreCourant;
+                }
+            }
+            for (String idStation : idStationsSelectionnees) {
+                currentStation = mapStations.get(idStation);
+                if (isWithdrawMode) {
+                    scoreCourant = currentStation.getNumberOfBikes_predict() * currentStation.getPredictionConfidence();
+                } else {
+                    scoreCourant = currentStation.getNumberOfFreeBikeStands_predict() * currentStation.getPredictionConfidence();
+                }
+                for (Marker m : mClusterManager.getMarkerCollection().getMarkers()) {
+                    if (currentStation.getTitle().equals(m.getTitle())) {
+                        if(scoreMax != scoreMin){
+                            m.setAlpha(((scoreCourant-scoreMin)/(scoreMax-scoreMin)));
+                        }
+                        else{
+                            m.setAlpha(1);
+                        }
                     }
                 }
             }
