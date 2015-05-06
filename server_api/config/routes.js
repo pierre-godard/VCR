@@ -34,7 +34,8 @@ module.exports.routes = {
 
     '/':
     {
-        view: 'homepage'
+        controller: 'default',
+        action: 'view'
     },
 
     '/station/pull':

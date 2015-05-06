@@ -16,16 +16,32 @@ module.exports.bootstrap = function (cb)
         function (stations, err)
         {
 
-            if (err) return next(err);
+            if (err) return cb(err);
+
+            UtilService.post_information({
+                identifier: 'station_request',
+                title: 'Stations update',
+                description: 'Updating static data on stations',
+                progression: 0
+            });
+
+            if (err) return cb(err);
 
             Station.createOrUpdate(
                 stations,
                 function (err2)
                 {
-                    if (err2) return next(err2);
+                    if (err2) return cb(err);
                 }
             );
-
+            
+            UtilService.post_information({
+                identifier: 'station_request',
+                title: 'Stations update',
+                description: 'Updating static data on stations',
+                progression: 100
+            });
+            
             console.log("       Setting up the stations");
 
         }
@@ -37,13 +53,33 @@ module.exports.bootstrap = function (cb)
             function (measures, err)
             {
 
-                if (err) return next(err);
+                if (err) return console.log(err);
+                
+                var timestamp = new Date().getTime();
+                
+                UtilService.post_information({
+                    identifier: 'measure_request_' + timestamp,
+                    title: 'Measures update',
+                    description: 'Updating dynamic data on stations',
+                    progression: 0
+                });
 
                 Measure.createOrUpdate(
                     measures,
                     function (err2)
                     {
-                        if (err2) return next(err2);
+                        if (err2) return console.log(err2);
+                    }
+                );
+            
+                Information.update({
+                    identifier: 'measure_request'
+                },{
+                    progression: 50
+                }).exec(
+                    function (err2, added)
+                    {
+                        if (err2) return console.log(err2);
                     }
                 );
 
@@ -51,9 +87,17 @@ module.exports.bootstrap = function (cb)
                     measures,
                     function (err2)
                     {
-                        if (err2) return next(err2);
+                        if (err2) return console.log(err2);
                     }
                 );
+            
+                UtilService.post_information({
+                    identifier: 'measure_request_' + timestamp,
+                    title: 'Measures update',
+                    description: 'Updating dynamic data on stations',
+                    progression: 100
+                });
+                
                 console.log("       Fetching new measures");
 
             }

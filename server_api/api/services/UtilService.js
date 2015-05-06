@@ -59,6 +59,13 @@ module.exports = {
 
     load_measures: function (path, next)
     {
+        UtilService.post_information({
+            identifier: 'load_measures' + path,
+            title: 'Load measures',
+            description: 'Updating dynamic data on stations',
+            progression: 100
+        });
+        
         var i = 0;
         var parser = parse({delimiter: ';'});
         
@@ -107,6 +114,23 @@ module.exports = {
             }
         );
         input.pipe(parser);
+    },
+    
+    post_information: function (information)
+    {
+        Information.destroy({identifier: information.identifier})
+        .exec(
+            function (err)
+            {
+                Information.create(
+                    information,
+                    function (err2, added)
+                    {
+                        if (err2) return console.log(err2);
+                    }
+                );
+            }
+        );
     }
     
     
