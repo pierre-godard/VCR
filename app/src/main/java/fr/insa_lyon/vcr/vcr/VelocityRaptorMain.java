@@ -45,7 +45,6 @@ import fr.insa_lyon.vcr.modele.StationVelov;
 import fr.insa_lyon.vcr.reseau.FetchStation;
 import fr.insa_lyon.vcr.reseau.UpdateStation;
 import fr.insa_lyon.vcr.utilitaires.ClusterIconRenderer;
-import fr.insa_lyon.vcr.utilitaires.CustomAnimatorUpdateListener;
 import fr.insa_lyon.vcr.utilitaires.CustomClusterManager;
 import fr.insa_lyon.vcr.utilitaires.CustomInfoWindow;
 import fr.insa_lyon.vcr.utilitaires.FinishWithDialog;
@@ -162,8 +161,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
             mapFragment.getMapAsync(this);
         }
 
-        slidingUp = (SlidingUpPanelLayout) findViewById(R.id.sliding_layout);
-        //slidingUp.
+        this.getActionBar().hide();
 
 
         // ####### Fetch static data for all stations #######
