@@ -20,9 +20,8 @@ var formatter = function (value)
     {
         value.last_update *= 1000;
     }
-    value.identifier = value.station + value.last_update * 100;
-    var d = new Date(0);    // The 0 there is the key, which sets the date to the epoch
-    d.setUTCSeconds(value.last_update);
+    value.identifier = value.station + value.last_update * 1000;
+    var d = new Date(value.last_update);
     value.day = d.getDay();
     value.hour = d.getHours(); 
     value.time_slice = Math.floor(d.getMinutes()/Measure.NB_TIME_SLICES);
@@ -94,11 +93,22 @@ module.exports = {
             measures,
             function (measure)
             {
-                Measure.create(measure)
+                formatter(measure);
+                Measure.destroy({identifier: measure.identifier})
                 .exec(
-                    function (err, added)
+                    function (err, removed)
                     {
                         // if (err) next(err);
+                        if (!err)
+                        {
+                            Measure.create(measure)
+                            .exec(
+                                function (err2, added)
+                                {
+                                    // if (err2) next(err2);
+                                }
+                            );
+                        }
                     }
                 );
             }
