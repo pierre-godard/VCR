@@ -13,9 +13,7 @@ import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.CompoundButton;
-import android.widget.SeekBar;
 import android.widget.Switch;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -62,19 +60,18 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
     protected final String SERVER_URL = "http://vps165245.ovh.net";
     // ----------------------------------------------------------------------------------- VARIABLES
     protected GoogleMap mMap;
-    protected int circleRadius = 500; // in meters
+    protected int circleRadius = 600; // in meters
     protected Circle currentCircle;
     protected boolean isWithdrawMode = true;
     HashMap<String, StationVelov> mapStations;
     List<String> idStationsSelectionnees;
-    LatLng lastCirclePosition;
+    private int numberPredictionsArrived = 0;
+
     DialogFragment exitDialogFragment;
     boolean serverFailureDetected = false;
+
     SlidingUpPanelLayout slidingUp;
-    TextView txt_Predict;
-    SeekBar seekbarPredict;
-    TextView txt_Radius;
-    SeekBar seekbarRadius;
+
     // Download services intent
     Intent intentDyna;
     Intent intentStat;
@@ -82,7 +79,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
     Intent intentPredictions;
     PendingIntent pendingIntentAlarm;
     AlarmManager alarmManager;
-    private int numberPredictionsArrived = 0;
+
     private ClusterManager<StationVelov> mClusterManager;
     private ClusterIconRenderer mClusterIconRenderer;
 
@@ -187,6 +184,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         // alert dialog in case of server failure
         exitDialogFragment = new ServerFailureDialog();
 
+
         if (savedInstanceState == null) {
             SupportMapFragment mapFragment =
                     (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
@@ -198,11 +196,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         slidingUp.setParalaxOffset(50);
         slidingUp.setOverlayed(false);
 
-        try {
-            this.getActionBar().hide();
-        } catch (NullPointerException e){
-            Log.e("ACTION_BAR", "ActionBar hiding failed");
-        }
+        this.getActionBar().hide();
 
 
         // ####### Fetch static data for all stations #######
@@ -232,72 +226,6 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                 updateStationMode();
             }
         });
-
-
-        txt_Predict = (TextView) findViewById(R.id.predictValue);
-        seekbarPredict = (SeekBar) findViewById(R.id.seekBar);
-        seekbarPredict.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if (progress == 0){
-                    txt_Predict.setText("Temps réel");
-                } else {
-                    if (progress > 60){
-                        int progressH = (int) Math.floor(((double) progress) / 60);
-                        int progressM = progress - (progressH*60);
-                        if (progressM < 10) {
-                            txt_Predict.setText("Prédiction à "+progressH+"h et 0"+progressM+" min");
-                        } else {
-                            txt_Predict.setText("Prédiction à "+progressH+"h et "+progressM+" min");
-                        }
-                    } else {
-                        if (progress < 10) {
-                            txt_Predict.setText("Prédiction à 0"+progress+" min");
-                        } else {
-                            txt_Predict.setText("Prédiction à "+progress+" min");
-                        }
-                    }
-                }
-                // TODO fetch predictions for the right time if there are stations in the circle
-            }
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {}
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {}
-        });
-
-
-
-        txt_Radius = (TextView) findViewById(R.id.radiusValue);
-        seekbarRadius = (SeekBar) findViewById(R.id.seekBarRadius);
-        seekbarRadius.setProgress(500);
-        seekbarRadius.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                int MIN = 100;
-                if (progress < MIN) {
-                    progress += MIN;
-                    txt_Radius.setText("Rayon de recherche de "+progress+"m");
-                } else{
-                    txt_Radius.setText("Rayon de recherche de " + progress + "m");
-                }
-                circleRadius = progress;
-
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                if (lastCirclePosition != null) {
-                    drawCircle(lastCirclePosition);
-                }
-            }
-        });
-
     }
 
 
@@ -395,6 +323,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
             for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
                 if (MathsUti.getDistance(entry.getValue().getPosition(), currentCircle.getCenter()) <= circleRadius) {
                     entry.getValue().setSelected(false);
+                    entry.getValue().updtSnippet();
                     reloadMarker(entry.getValue());
                 }
             }
@@ -408,8 +337,6 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                 .radius(circleRadius)
                 .strokeColor(0xFFFFFFFF)
                 .fillColor(0x730080f1));
-
-        lastCirclePosition = position;
 
         /*ValueAnimator vAnimator = new ValueAnimator();
         vAnimator.setIntValues(0, circleRadius);
@@ -430,7 +357,6 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         }
         currentCircle = c;
         mMap.moveCamera(CameraUpdateFactory.newLatLng(position));
-        Log.d("DRAW CIRCLE", "Before updatePredictions");
         updatePredictions();
     }
 
@@ -517,6 +443,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
             for (int i = 0; i < jArrayPredictions.length(); i++) {
                 // Find the station whose id is the same as the one in the jsonArray
                 currentStation = jArrayPredictions.getJSONObject(i);
+                Log.d("UPDATE_PREDICTIONS",currentStation.toString());
                 stationId = currentStation.getString("station");
                 bikePrediction = currentStation.getInt("predict_bikes");
                 bikeStandPrediction = currentStation.getInt("predict_bike_stands");
@@ -526,6 +453,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                 updatedStation.setNumberOfFreeBikeStands_predict(bikeStandPrediction);
                 updatedStation.setPredictionConfidence(predictionConfidence);
                 Log.d("UPDATE_PREDICTIONS", "Station " + updatedStation.getTitle() + " being updated");
+                updatedStation.updtSnippetPredict();
                 mapStations.put(stationId, updatedStation);
             }
         } catch (JSONException j) {
@@ -561,15 +489,10 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
     @Override
     public void onChoose() {
         // Quite a lot of things to add here on order to finsh the activity in a "cleaner"  way
-        stopService(intentAlarm);
-        stopService(intentDyna);
-        stopService(intentStat);
-        stopService(intentPredictions);
         finish();
     }
 
     public void drawAround(Marker marker){
-        Log.d("DRAW AROUND", "MethodStarts");
         boolean isMarkerSelected = false;
         Map.Entry<String,StationVelov> entryMarker = null;
         for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
@@ -596,7 +519,6 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                 marker.hideInfoWindow();
             }
         }
-        Log.d("DRAW AROUND", "MethodEnds");
     }
 
     /**
@@ -616,10 +538,11 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                 break;
             }
         }
+
     }
 
     public void updatePredictions(){
-        Log.d("UPDATE PREDICTION", "In update prediction");
+        Log.d("UPDATE_PREDICTIONS", "Tout début");
         intentPredictions = new Intent(this, UpdatePrediction.class);
         String idStations="";
         for(String idStation : idStationsSelectionnees) {
@@ -628,7 +551,9 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         intentPredictions.putExtra(UpdatePrediction.SERVER_URL, SERVER_URL + "/prediction/analysis");
         intentPredictions.putExtra(UpdatePrediction.ID_STATIONS, idStations);
         intentPredictions.putExtra(UpdatePrediction.PREDICTION_TIME, "5"); //TODO: Remplacer par temps indiqué
+        Log.d("UPDATE_PREDICTIONS", "On lance le service...");
         startService(intentPredictions);
+
     }
 
     public void setAlphaStations(boolean areInNewCircle){
