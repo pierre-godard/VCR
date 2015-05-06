@@ -45,6 +45,7 @@ import fr.insa_lyon.vcr.modele.StationVelov;
 import fr.insa_lyon.vcr.reseau.FetchStation;
 import fr.insa_lyon.vcr.reseau.UpdateStation;
 import fr.insa_lyon.vcr.utilitaires.ClusterIconRenderer;
+import fr.insa_lyon.vcr.utilitaires.CustomAnimatorUpdateListener;
 import fr.insa_lyon.vcr.utilitaires.CustomClusterManager;
 import fr.insa_lyon.vcr.utilitaires.CustomInfoWindow;
 import fr.insa_lyon.vcr.utilitaires.FinishWithDialog;
@@ -293,6 +294,8 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                 }
             }
         }
+        setAlphaStations(false);
+        idStationsSelectionnees.clear();
         Circle c = mMap.addCircle(new CircleOptions()
                 .center(position)
                 .strokeWidth(0)
@@ -392,43 +395,6 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
     }
 
 
-
-    /**
-     * Method uses a json String received from UpdateStations via receiverDyna to update the number
-     * of bikes in all stations.
-     *
-     * @param jsonString Json String that can be parsed to a json array
-     */
-    protected void updatePrediction(String jsonString) {
-        try {
-            JSONArray jArrayMeasures = new JSONArray(jsonString);
-            JSONObject currentStation;
-            JSONObject currentMeasure;
-            String stationId;
-            StationVelov updatedStation;
-            for (int i = 0; i < jArrayMeasures.length(); i++) {
-                // Find the station whose id is the same as the one in the jsonArray
-                currentMeasure = jArrayMeasures.getJSONObject(i);
-                currentStation = currentMeasure.getJSONObject("station");
-                stationId = currentStation.getString("id");
-                updatedStation = mapStations.get(stationId);            // will need to catch exception in case id is not found in hashmap
-
-                // TODO : adapt this to the received data format
-
-                Log.d("UPDATE STATION =>", "Station " + updatedStation.getTitle() + " being updated");
-                mapStations.put(stationId, updatedStation);
-            }
-        } catch (JSONException j) {
-            Log.e("updateStationValues", "Problem when parsing JSON : " + j);
-        }
-        for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
-            reloadMarker(entry.getValue());
-        }
-
-    }
-
-
-
     public void updateMarkerMode() {
         for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
             entry.getValue().setMode(isWithdrawMode);
@@ -506,5 +472,29 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
             }
         }
 
+    }
+
+    public void setAlphaStations(boolean areInNewCircle){
+        StationVelov currentStation;
+        if(!areInNewCircle){
+            for(String idStation : idStationsSelectionnees){
+                currentStation = mapStations.get(idStation);
+                for(Marker m: mClusterManager.getMarkerCollection().getMarkers()){
+                    if(currentStation.getTitle().equals(m.getTitle())){
+                        m.setAlpha(1);
+                    }
+                }
+            }
+        }
+        else{
+            for(String idStation : idStationsSelectionnees){
+                currentStation = mapStations.get(idStation);
+                for(Marker m: mClusterManager.getMarkerCollection().getMarkers()){
+                    if(currentStation.getTitle().equals(m.getTitle())){
+                        m.setAlpha(0);
+                    }
+                }
+            }
+        }
     }
 }
