@@ -31,7 +31,6 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.maps.android.MarkerManager;
 import com.google.maps.android.clustering.Cluster;
 import com.google.maps.android.clustering.ClusterManager;
-import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -71,7 +70,6 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
     DialogFragment exitDialogFragment;
     boolean serverFailureDetected = false;
 
-    SlidingUpPanelLayout slidingUp;
     TextView txt_Predict;
     SeekBar seekbarPredict;
     TextView txt_Radius;
@@ -195,10 +193,6 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
             mapFragment.getMapAsync(this);
         }
 
-
-        slidingUp = (SlidingUpPanelLayout) findViewById(R.id.sliding_layout);
-        slidingUp.setParalaxOffset(50);
-        slidingUp.setOverlayed(false);
 
         try {
             this.getActionBar().hide();
