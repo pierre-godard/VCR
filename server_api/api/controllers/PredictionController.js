@@ -18,6 +18,7 @@ module.exports = {
             /*console.log(new Date(date));
             console.log(station_id);
             console.log(typeof station_id);*/
+            //console.log("------- : : : "+req.url);
 			var analysisMode 	= PredictionService.analysis_mode.DFM;
         	PredictionService.predict(station_id,date,analysisMode,
         		function (state,free,occup,prediction_quality)
@@ -35,16 +36,21 @@ module.exports = {
                         object,
                         function (err, added)
                         {
-                            if (err) console.log(err);
+                            if (err) 
+                            {
+                                console.log(err);
+                                //return next(err);
+                            }
+                            //next();
                         }
                     );
                     res.write(JSON.stringify(object));
+                    res.end('\n'); 
         			/*res.write("Prediction using "+analysisMode+" (date: "+new Date(date)+" - station: "+station_id+"):\n");
         			res.write("State:              "+state+"\n");
                     res.write("Free:               "+free+"\n");
                     res.write("Occup:              "+occup+"\n");
                     res.write("Prediction quality: "+prediction_quality+"\n");*/
-                    res.end('\n'); 
     			}
         	);
             /*prediction_quality = PredictionService.analysis_mode.MEAN;

@@ -37,8 +37,7 @@ module.exports = {
                     res.end();
                     
                 }
-            );
-            
+            );         
         },
     
     // Populate the database from the csv velov.csv
