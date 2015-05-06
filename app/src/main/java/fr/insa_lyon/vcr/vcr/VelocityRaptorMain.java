@@ -161,6 +161,11 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
             mapFragment.getMapAsync(this);
         }
 
+
+        slidingUp = (SlidingUpPanelLayout) findViewById(R.id.sliding_layout);
+        slidingUp.setParalaxOffset(50);
+        slidingUp.setOverlayed(false);
+
         this.getActionBar().hide();
 
 

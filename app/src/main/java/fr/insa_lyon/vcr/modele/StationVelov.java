@@ -33,7 +33,8 @@ public class StationVelov implements ClusterItem {
     public StationVelov(JSONObject jsonObj) {
         // Static Data
         try {
-            title = jsonObj.getString("name").split("-", 2)[1]; // get only second part of the name
+            title = jsonObj.getString("name");
+            //title = jsonObj.getString("name").split("-", 2)[1]; // get only second part of the name
             id = jsonObj.getString("id");
             position = new LatLng(jsonObj.getDouble("latitude"), jsonObj.getDouble("longitude"));
         } catch (JSONException e) {
@@ -230,16 +231,16 @@ public class StationVelov implements ClusterItem {
         return numberOfFreeBikeStands_predict;
     }
 
+    public void setNumberOfFreeBikeStands_predict(int numberOfFreeBikeStands_predict) {
+        this.numberOfFreeBikeStands_predict = numberOfFreeBikeStands_predict;
+    }
+
     public float getPredictionConfidence(){
         return predictionConfidence;
     }
 
     public void setPredictionConfidence(float predictionConfidence){
         this.predictionConfidence = predictionConfidence;
-    }
-
-    public void setNumberOfFreeBikeStands_predict(int numberOfFreeBikeStands_predict) {
-        this.numberOfFreeBikeStands_predict = numberOfFreeBikeStands_predict;
     }
 
     public int getPredict_time() {
