@@ -101,32 +101,6 @@ function quality_analysis(arr_free,arr_occup,mode)
 	return Math.min(1,Math.log(1+(arr_free.length + arr_occup.length)/(1 + variance(arr_free,mode) + variance(arr_occup,mode)))/4);
 }
 
-// [OLD version -> predict_old]
-// returns the measures matching the specified id and withing time stamp of [time]
-function queryMeasures_old(id,time,callback)
-{
-	Measure.find({station: id, specif_time: Measure.date_to_specificTime(time)
-			/*hour: time.getHours(),
-		    date: time.getDate(),
-		    month: time.getMonth(),
-		    time_slice: Math.floor(time.getMinutes()*Measure.NB_TIME_SLICES/60)*/ },
-		function(err, found) 
-		{
-			/*console.log("-- Time:        "+time);
-      		console.log("found: "+found);
-      		console.log("error: "+err);
-      		for (var i = 0; i < found.length; i++) 
-			{
-				console.log(found[i]);
-      			console.log("available_bike_stands: "+found[i].available_bike_stands);
-				console.log("available_bikes:       "+found[i].available_bikes);
-				console.log("last_update:           "+new Date(found[i].last_update));
-			}*/
-      		callback(found);
-      	}
-    );
-}
-
 // returns all the measures associated to the id and corresponding to the date
 // for the perdiction calculation
 function queryMeasures(id,time,callback)
@@ -334,44 +308,94 @@ function predict_fromDatas(id,time,analysisMode,callback)
 			console.log("free_overTime:  "+free_overTime);
 			console.log("occup_overTime: "+occup_overTime);
 
-			var state;
-			// ----- State selection
-			if (isNaN(occup_overTime) || isNaN(free_overTime))
-			{
-				state = PredictionService.station_state.UNKNOWN;
-			}
-			else if (free_overTime < PredictionService.station_values.FULL_LIMIT)
-			{
-				state = PredictionService.station_state.FULL;
-			} 
-			else if (free_overTime <= PredictionService.station_values.NEAR_FULL_LIMIT)
-			{
-				state = PredictionService.station_state.NEAR_FULL;
-			}
-			else if (occup_overTime < PredictionService.station_values.EMPTY_LIMIT)
-			{
-				state = PredictionService.station_state.EMPTY;
-			}
-			else if (occup_overTime <= PredictionService.station_values.NEAR_EMPTY_LIMIT)
-			{
-				state = PredictionService.station_state.NEAR_EMPTY;
-			}
-			else
-			{
-				state = PredictionService.station_state.INTERM;
-			}
-			callback(state,free_overTime,occup_overTime,prediction_quality);
+			callback(getState(free_overTime,occup_overTime),free_overTime,occup_overTime,prediction_quality);
 		}
 	);
+}
+
+// get station state from free / occup
+function getState(free_overTime,occup_overTime)
+{
+	var state;
+	// ----- State selection
+	if (isNaN(occup_overTime) || isNaN(free_overTime))
+	{
+		state = PredictionService.station_state.UNKNOWN;
+	}
+	else if (free_overTime < PredictionService.station_values.FULL_LIMIT)
+	{
+		state = PredictionService.station_state.FULL;
+	} 
+	else if (free_overTime <= PredictionService.station_values.NEAR_FULL_LIMIT)
+	{
+		state = PredictionService.station_state.NEAR_FULL;
+	}
+	else if (occup_overTime < PredictionService.station_values.EMPTY_LIMIT)
+	{
+		state = PredictionService.station_state.EMPTY;
+	}
+	else if (occup_overTime <= PredictionService.station_values.NEAR_EMPTY_LIMIT)
+	{
+		state = PredictionService.station_state.NEAR_EMPTY;
+	}
+	else
+	{
+		state = PredictionService.station_state.INTERM;
+	}
+	return state;
 }
 
 // Uses the recent datas to update de prediction based only on datas
 // in order to match the reality
 function prediction_adapt(id,time,analysisMode,callback)
 {
-	predict_fromDatas(id,time,analysisMode,callback);
+	// TODO predict functions needs simplification (state etc...)
+	predict_fromDatas(id,time,analysisMode,
+		function(state,free_overTime,occup_overTime,prediction_quality)
+		{
+			console.log("L1: "+state+" "+free_overTime+" "+occup_overTime+" "+prediction_quality);
+			predict_fromDatas(id,Date.now(),analysisMode,
+				function(state_now,free_overTime_now,occup_overTime_now,prediction_quality_now/*,
+					state,free_overTime,occup_overTime,prediction_quality*/)
+				{
+					console.log("L2: "+state+" "+free_overTime+" "+occup_overTime+" "+prediction_quality);
+					console.log("L2: "+state_now+" "+free_overTime_now+" "+occup_overTime_now+" "+prediction_quality_now);
+					LastMeasure.find({station: id},
+						function(err, found/*,
+							state_now,free_overTime_now,occup_overTime_now,prediction_quality_now,
+							state,free_overTime,occup_overTime,prediction_quality*/) 
+						{
+							console.log("L3 a: "+state+" "+free_overTime+" "+occup_overTime+" "+prediction_quality);
+							console.log("L3 b: "+state_now+" "+free_overTime_now+" "+occup_overTime_now+" "+prediction_quality_now);
+							var free_overTime_adapt; 	// fota
+							var occup_overTime_adapt; 	// oota
+							// calculates the difference between predicted datas for now and actual datas 
+							if(found == undefined || found.length == 0) // no data has been found corresponding to id (unlikely, or call para error) or time (possible)
+							{
+								console.error("Error while adapting prediction. Empty query.");
+								callback(state,free_overTime,occup_overTime,prediction_quality);
+							}	
+							else if(found.length == 1)
+							{
+								var delta_fota = free_overTime_now - found[0].available_bike_stands;
+								var delta_oota = occup_overTime_now - found[0].available_bikes;
+								free_overTime_adapt = free_overTime - delta_fota;
+								occup_overTime_adapt = occup_overTime - delta_oota;
+
+								callback(getState(free_overTime_adapt,occup_overTime_adapt),
+									free_overTime_adapt,occup_overTime_adapt,prediction_quality);
+							}
+				      		console.error("Error while adapting prediction. Too many results (>1).");
+							callback(state,free_overTime,occup_overTime,prediction_quality);
+				      	}
+					);
+				} 
+			);
+		}
+	);
 	// TODO
 	// predict = predict(futur) + (predict(now) - now)
+	// decrease also depending on when the prediction is: 5 mins -> now is important, 1000 mins less.
 	// predict = (predict_quality*predict(futur)+predict)/(1+predict_quality)
 }
 
