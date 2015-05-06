@@ -350,23 +350,25 @@ function getState(free_overTime,occup_overTime)
 function prediction_adapt(id,time,analysisMode,callback)
 {
 	// TODO predict functions needs simplification (state etc...)
+	var curr_date = Date.now();
+	var TIME_REDUC = 60; // in minutes
 	predict_fromDatas(id,time,analysisMode,
 		function(state,free_overTime,occup_overTime,prediction_quality)
 		{
-			console.log("L1: "+state+" "+free_overTime+" "+occup_overTime+" "+prediction_quality);
-			predict_fromDatas(id,Date.now(),analysisMode,
+			//console.log("L1: "+state+" "+free_overTime+" "+occup_overTime+" "+prediction_quality);
+			predict_fromDatas(id,curr_date,analysisMode,
 				function(state_now,free_overTime_now,occup_overTime_now,prediction_quality_now/*,
 					state,free_overTime,occup_overTime,prediction_quality*/)
 				{
-					console.log("L2: "+state+" "+free_overTime+" "+occup_overTime+" "+prediction_quality);
-					console.log("L2: "+state_now+" "+free_overTime_now+" "+occup_overTime_now+" "+prediction_quality_now);
+					/*console.log("L2: "+state+" "+free_overTime+" "+occup_overTime+" "+prediction_quality);
+					console.log("L2: "+state_now+" "+free_overTime_now+" "+occup_overTime_now+" "+prediction_quality_now);*/
 					LastMeasure.find({station: id},
 						function(err, found/*,
 							state_now,free_overTime_now,occup_overTime_now,prediction_quality_now,
 							state,free_overTime,occup_overTime,prediction_quality*/) 
 						{
-							console.log("L3 a: "+state+" "+free_overTime+" "+occup_overTime+" "+prediction_quality);
-							console.log("L3 b: "+state_now+" "+free_overTime_now+" "+occup_overTime_now+" "+prediction_quality_now);
+							/*console.log("L3 a: "+state+" "+free_overTime+" "+occup_overTime+" "+prediction_quality);
+							console.log("L3 b: "+state_now+" "+free_overTime_now+" "+occup_overTime_now+" "+prediction_quality_now);*/
 							var free_overTime_adapt; 	// fota
 							var occup_overTime_adapt; 	// oota
 							// calculates the difference between predicted datas for now and actual datas 
@@ -377,16 +379,24 @@ function prediction_adapt(id,time,analysisMode,callback)
 							}	
 							else if(found.length == 1)
 							{
+								// calculates the new prediction values
 								var delta_fota = free_overTime_now - found[0].available_bike_stands;
 								var delta_oota = occup_overTime_now - found[0].available_bikes;
-								free_overTime_adapt = free_overTime - delta_fota;
-								occup_overTime_adapt = occup_overTime - delta_oota;
+								var delta_time = (time - curr_date)/60; // in minutes
+								var factor = TIME_REDUC/(TIME_REDUC+delta_time);
+								free_overTime_adapt = free_overTime - factor*delta_fota;
+								occup_overTime_adapt = occup_overTime - factor*delta_oota;
+								console.log("free: "+free_overTime+ " vs "+free_overTime_adapt+
+									" occup: "+occup_overTime+ " vs "+occup_overTime_adapt);
 
 								callback(getState(free_overTime_adapt,occup_overTime_adapt),
 									free_overTime_adapt,occup_overTime_adapt,prediction_quality);
 							}
-				      		console.error("Error while adapting prediction. Too many results (>1).");
-							callback(state,free_overTime,occup_overTime,prediction_quality);
+							else
+							{
+					      		console.error("Error while adapting prediction. Too many results (>1).");
+								callback(state,free_overTime,occup_overTime,prediction_quality);
+							}
 				      	}
 					);
 				} 
@@ -444,6 +454,7 @@ module.exports = {
 	predict: function (id,time,analysisMode,callback) 
 	{
 		prediction_adapt(id,time,analysisMode,callback);
+		return;
 	}
 
 };
