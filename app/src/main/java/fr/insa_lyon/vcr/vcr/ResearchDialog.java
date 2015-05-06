@@ -109,65 +109,8 @@ public class ResearchDialog extends DialogFragment {
             }
         });
 
-
-     /*   DefaultHttpClient httpclient = new DefaultHttpClient(new BasicHttpParams());
-        HttpPost httppost = new HttpPost("vps165245.ovh.net/prediction/analysis/10002/0");
-        httppost.setHeader("Content-type", "application/json");
-
-        InputStream inputStream = null;
-        String result = null;
-        try {
-            HttpResponse response = httpclient.execute(httppost);
-            HttpEntity entity = response.getEntity();
-
-            inputStream = entity.getContent();
-            // json is UTF-8 by default
-            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"), 8);
-            StringBuilder sb = new StringBuilder();
-
-            String line = null;
-            while ((line = reader.readLine()) != null)
-            {
-                sb.append(line + "\n");
-            }
-            result = sb.toString();
-        } catch (Exception e) {
-            // Oops
-        }
-        finally {
-            try{if(inputStream != null)inputStream.close();}catch(Exception squish){}
-        }
-*/
-        String result = new String("{\"station\":2040,\"predict_bike_stands\":9.03060393776574,\"predict_bikes\":4.454347597583672,\"predict_state\":\"places available\",\"confidence\":0.06763644755219839,\"time\":1430908836042}");
-        graph = (GraphView) v.findViewById(R.id.graph);
-        seriesBikes = new LineGraphSeries<DataPoint>(generateData(result, "predict_bikes"));
-        seriesStands = new LineGraphSeries<DataPoint>(generateData(result, "predict_bike_stands"));
-        seriesStands.setColor(Color.RED);
-
-        graph.addSeries(seriesBikes);
-        graph.addSeries(seriesStands);
-
         builder.setView(v);
         return builder.create();
-    }
-
-    private DataPoint[] generateData(String jsonString, String result) {
-        int count = 288;
-        DataPoint[] values = new DataPoint[2];
-
-      //  for (int i=1; i<count; i++) {
-            try {
-                JSONObject jObject = new JSONObject(jsonString);
-                String S1 = jObject.getString(result);
-                DataPoint DP1 = new DataPoint(1, Math.round(Double.parseDouble(S1)));
-                DataPoint DP2 = new DataPoint(2, 5);
-                values[0] = DP1;
-                values[1] = DP2;
-            }catch(Exception e){
-                // TODO : banane
-            }
-      //  }
-        return values;
     }
 
     private class GetPredictions extends AsyncTask<String,Void,AutocompletePredictionBuffer> {
