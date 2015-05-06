@@ -5,13 +5,15 @@ var parse = require('csv-parse');
 
 var walk = function (dir, list, next)
 {
-    var file = dir + "/" + list.pop();
+    //console.log("[LOAD] list length: "+list.length);
     if (list.length)
     {
+        var file = dir + "/" + list.pop();
         fs.stat(
             file,
             function (err, stat)
             {
+                console.log("[LOAD] found "+file);
                 if (stat && stat.isDirectory())
                 {
                     walk(dir, list, next);
@@ -23,6 +25,7 @@ var walk = function (dir, list, next)
                         function ()
                         {
                             walk(dir, list, next);
+                            console.log("[LOAD] "+file+" loaded");
                         }
                     );
                 }
@@ -43,7 +46,12 @@ module.exports = {
             dir,
             function (err, list) 
             {
-                if (err) return next(err);
+                console.log("--- Starting to load ---");
+                if (err)
+                {
+                    console.log("[LOAD] Load init error: "+err);
+                    return next(err);
+                }
                 walk(
                     dir,
                     list,

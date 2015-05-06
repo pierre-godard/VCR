@@ -379,13 +379,32 @@ function prediction_adapt(id,time,analysisMode,callback)
 							}	
 							else if(found.length == 1)
 							{
-								// calculates the new prediction values
-								var delta_fota = free_overTime_now - found[0].available_bike_stands;
-								var delta_oota = occup_overTime_now - found[0].available_bikes;
-								var delta_time = (time - curr_date)/60; // in minutes
-								var factor = TIME_REDUC/(TIME_REDUC+delta_time);
-								free_overTime_adapt = free_overTime - factor*delta_fota;
-								occup_overTime_adapt = occup_overTime - factor*delta_oota;
+								// ---- calculates the new prediction values
+
+								// 1: 	reports the difference between the actual state and the redicted state
+								// 		of [now] to the prediction. [Now] datas importance decrease as
+								//		prediction distance increases.
+								var delta_fota 			= free_overTime_now - found[0].available_bike_stands;
+								var delta_oota 			= occup_overTime_now - found[0].available_bikes;
+								var delta_time 			= (time - curr_date)/60; // in minutes
+								var factor 				= TIME_REDUC/(TIME_REDUC+delta_time);
+								free_overTime_adapt 	= free_overTime - factor*delta_fota;
+								occup_overTime_adapt 	= occup_overTime - factor*delta_oota;
+								(free_overTime_adapt < 0)
+
+								// 2: 	Ponderates the basic prediction and the adaped prediction
+								//		using the confidence (prediction quality)
+								free_overTime_adapt 	= free_overTime*prediction_quality + (1-prediction_quality)*free_overTime_adapt;
+								occup_overTime_adapt 	= occup_overTime*prediction_quality + (1-prediction_quality)*occup_overTime_adapt;
+
+								// 3: 	Re-eval to match the actual range of slots on the station
+								//		The actual prediction is based on a range generated from datas and
+								//		not corresponding to reality
+								var resize_factor = (found[0].available_bike_stands+found[0].available_bikes)/
+									(free_overTime_adapt+occup_overTime_adapt);
+								free_overTime_adapt*=resize_factor;
+								occup_overTime_adapt*=resize_factor;
+
 								console.log("free: "+free_overTime+ " vs "+free_overTime_adapt+
 									" occup: "+occup_overTime+ " vs "+occup_overTime_adapt);
 
