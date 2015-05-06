@@ -287,7 +287,6 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
     //------------------------------------------------------------------------------ General Methods
 
     public void drawCircle(LatLng position) {
-        idStationsSelectionnees.clear();
         if (currentCircle != null) {
             currentCircle.remove();
             for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
@@ -297,6 +296,8 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                 }
             }
         }
+        setAlphaStations(false);
+        idStationsSelectionnees.clear();
         Circle c = mMap.addCircle(new CircleOptions()
                 .center(position)
                 .strokeWidth(0)
@@ -320,6 +321,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                 reloadMarker(entry.getValue());
             }
         }
+        setAlphaStations(true);
         currentCircle = c;
         mMap.moveCamera(CameraUpdateFactory.newLatLng(position));
     }
@@ -472,5 +474,29 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
             }
         }
 
+    }
+
+    public void setAlphaStations(boolean areInNewCircle){
+        StationVelov currentStation;
+        if(!areInNewCircle){
+            for(String idStation : idStationsSelectionnees){
+                currentStation = mapStations.get(idStation);
+                for(Marker m: mClusterManager.getMarkerCollection().getMarkers()){
+                    if(currentStation.getTitle().equals(m.getTitle())){
+                        m.setAlpha(1);
+                    }
+                }
+            }
+        }
+        else{
+            for(String idStation : idStationsSelectionnees){
+                currentStation = mapStations.get(idStation);
+                for(Marker m: mClusterManager.getMarkerCollection().getMarkers()){
+                    if(currentStation.getTitle().equals(m.getTitle())){
+                        m.setAlpha(0);
+                    }
+                }
+            }
+        }
     }
 }

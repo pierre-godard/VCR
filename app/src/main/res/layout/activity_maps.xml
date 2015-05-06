@@ -53,7 +53,6 @@
             android:id="@+id/switchDeposerRetirer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:
             android:checked="false"
             android:textOff="Retirer un vélo"
             android:textOn="Déposer un vélo"
