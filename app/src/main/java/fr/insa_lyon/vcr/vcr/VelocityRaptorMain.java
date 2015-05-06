@@ -323,6 +323,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
             for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
                 if (MathsUti.getDistance(entry.getValue().getPosition(), currentCircle.getCenter()) <= circleRadius) {
                     entry.getValue().setSelected(false);
+                    entry.getValue().updtSnippet();
                     reloadMarker(entry.getValue());
                 }
             }
@@ -452,6 +453,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                 updatedStation.setNumberOfFreeBikeStands_predict(bikeStandPrediction);
                 updatedStation.setPredictionConfidence(predictionConfidence);
                 Log.d("UPDATE_PREDICTIONS", "Station " + updatedStation.getTitle() + " being updated");
+                updatedStation.updtSnippetPredict();
                 mapStations.put(stationId, updatedStation);
             }
         } catch (JSONException j) {
