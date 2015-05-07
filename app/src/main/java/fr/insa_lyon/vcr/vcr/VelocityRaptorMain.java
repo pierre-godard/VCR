@@ -705,7 +705,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                 for (Marker m : mClusterManager.getMarkerCollection().getMarkers()) {
                     if (currentStation.getTitle().equals(m.getTitle())) {
                         if(scoreMax != scoreMin){
-                            m.setAlpha(((scoreCourant-scoreMin)/(scoreMax-scoreMin)));
+                            m.setAlpha(((((scoreCourant-scoreMin)/(scoreMax-scoreMin)))*0.5f)+0.5f);
                         }
                         else{
                             m.setAlpha(1);
