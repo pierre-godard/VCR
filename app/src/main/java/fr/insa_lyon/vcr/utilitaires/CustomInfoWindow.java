@@ -17,7 +17,6 @@ import com.google.android.gms.maps.model.Marker;
 
 import fr.insa_lyon.vcr.vcr.GraphStation;
 import fr.insa_lyon.vcr.vcr.R;
-import fr.insa_lyon.vcr.vcr.ResearchDialog;
 
 /**
  * Created by julien on 03/05/15.
@@ -44,20 +43,12 @@ public class CustomInfoWindow extends FragmentActivity implements GoogleMap.Info
     }
 
     public void onButtonClickedGraph(View v) {
-
         DialogFragment newFragment = new GraphStation();
         newFragment.show(getFragmentManager(), "graph");
     }
 
     @Override
     public View getInfoContents(Marker marker) {
-/*
-        TextView textView_title = ((TextView) customInfoView.findViewById(R.id.title));
-        textView_title.setText(marker.getTitle());
-        TextView textView_BikeAvail = ((TextView) customInfoView.findViewById(R.id.snippet));
-        textView_BikeAvail.setText(marker.getSnippet());
-
-        return customInfoView;*/
         return null;
     }
 

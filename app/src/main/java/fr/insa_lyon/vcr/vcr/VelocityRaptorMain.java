@@ -7,7 +7,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.v4.app.FragmentActivity;
@@ -283,7 +282,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                 } else{
                     txt_Radius.setText("Rayon de recherche de " + progress + "m");
                 }
-                circleRadius = progress;
+                //circleRadius = progress;
 
             }
 
@@ -294,9 +293,9 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                if (lastCirclePosition != null) {
+                /*if (lastCirclePosition != null) {
                     drawCircle(lastCirclePosition);
-                }
+                }*/
             }
         });
 
