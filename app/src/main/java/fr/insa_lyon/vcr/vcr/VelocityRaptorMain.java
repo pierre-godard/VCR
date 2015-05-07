@@ -517,20 +517,25 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
             if(jArrayPredictions.get(0)!=null) {
                 for (int i = 0; i < jArrayPredictions.length(); i++) {
                     // Find the station whose id is the same as the one in the jsonArray
-                    currentStation = jArrayPredictions.getJSONObject(i);
-                    Log.d("UPDATE_PREDICTIONS", currentStation.toString());
-                    stationId = currentStation.getString("station");
-                    bikePrediction = currentStation.getInt("predict_bikes");
-                    bikeStandPrediction = currentStation.getInt("predict_bike_stands");
-                    predictionConfidence = (float) currentStation.getDouble("confidence");
-                    updatedStation = mapStations.get(stationId);
-                    updatedStation.setNumberOfBikes_predict(bikePrediction);
-                    updatedStation.setNumberOfFreeBikeStands_predict(bikeStandPrediction);
-                    updatedStation.setPredictionConfidence(predictionConfidence);
-                    Log.d("UPDATE_PREDICTIONS", "Station " + updatedStation.getTitle() + " being updated");
-                    updatedStation.updtSnippetPredict();
-                    Log.d("UPDATE_PREDICTIONS",updatedStation.getSnippet());
-                    mapStations.put(stationId, updatedStation);
+                    try{
+                        currentStation = jArrayPredictions.getJSONObject(i);
+                        Log.d("UPDATE_PREDICTIONS", currentStation.toString());
+                        stationId = currentStation.getString("station");
+                        bikePrediction = currentStation.getInt("predict_bikes");
+                        bikeStandPrediction = currentStation.getInt("predict_bike_stands");
+                        predictionConfidence = (float) currentStation.getDouble("confidence");
+                        updatedStation = mapStations.get(stationId);
+                        updatedStation.setNumberOfBikes_predict(bikePrediction);
+                        updatedStation.setNumberOfFreeBikeStands_predict(bikeStandPrediction);
+                        updatedStation.setPredictionConfidence(predictionConfidence);
+                        Log.d("UPDATE_PREDICTIONS", "Station " + updatedStation.getTitle() + " being updated");
+                        updatedStation.updtSnippetPredict();
+                        Log.d("UPDATE_PREDICTIONS", updatedStation.getSnippet());
+                        mapStations.put(stationId, updatedStation);
+                    }
+                    catch(JSONException j){
+
+                    }
                 }
             }
         } catch (JSONException j) {
