@@ -39,12 +39,7 @@ module.exports =
 		{
             type: 'boolean',
             defaultsTo: 'false'
-        }/*,
-        measures: 
-		{
-            collection: 'Measure',
-            via: 'station'
-        }*/
+        }
     },
     
     createOrUpdate: function(stations, next)

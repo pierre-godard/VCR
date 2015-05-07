@@ -76,6 +76,9 @@ module.exports = {
         
         var i = 0;
         var parser = parse({delimiter: ';'});
+        
+        // var input = fs.createReadStream('./assets/extrait.csv');
+        // var input = fs.createReadStream('./data/velov.csv');
         var input = fs.createReadStream(path);
         
         var iter = 0;
