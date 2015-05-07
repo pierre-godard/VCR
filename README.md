@@ -1,8 +1,5 @@
 # VCR
 
-##Prediction
-
-| Folder  | Content |
-| ------------- | ------------- |
-| VeloCityRaptor1  | Knime testing workflow  |
-| Algorithm  | Basic algorithm implementation  |
+2 branches :
+- android_app : client side android application
+- server_api : server and database
