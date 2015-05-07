@@ -9,29 +9,20 @@
  * http://sailsjs.org/#/documentation/reference/sails.config/sails.config.bootstrap.html
  */
 
-module.exports.bootstrap = function (cb)
+var onStartFunction = function(next)
 {
-
     JCDecauxService.requestStations(
-        function (stations)
+        function (stations, err)
         {
-
-            if (err) return cb(err);
-
-            UtilService.post_information({
-                identifier: 'station_request',
-                title: 'Stations update',
-                description: 'Updating static data on stations',
-                progression: 0
-            });
-
-            if (err) return cb(err);
+            if (err) return next(err);
+            
+            console.log("       Setting up the stations");
 
             Station.createOrUpdate(
                 stations,
                 function (err2)
                 {
-                    if (err2) return cb(err);
+                    if (err2) return next(err2);
                 }
             );
             
@@ -42,67 +33,61 @@ module.exports.bootstrap = function (cb)
                 progression: 100
             });
             
-            console.log("       Setting up the stations");
+        }
+    );
+}
+
+var onTickFunction = function ()
+{
+    JCDecauxService.requestMeasures(
+        function (measures, err)
+        {
+
+            if (err) return console.error(err);
+
+            console.log("       Fetching new measures");
+
+            Measure.createOrUpdate(
+                measures,
+                function (err2)
+                {
+                    if (err2) return console.error(err2);
+                }
+            );
+
+            LastMeasure.createOrUpdate(
+                measures,
+                function (err2)
+                {
+                    if (err2) return console.error(err2);
+                }
+            );
+
+            var timestamp = new Date().getTime();
+            UtilService.post_information({
+                identifier: 'measure_request_' + timestamp,
+                title: 'Measures update',
+                description: 'Updating dynamic data on stations',
+                progression: 100
+            });
+
 
         }
     );
-    
-    var onTickFunction = function ()
-    {
-        JCDecauxService.requestMeasures(
-            function (measures, err)
+}
+
+module.exports.bootstrap = function (cb)
+{
+    onStartFunction(
+        function (err)
+        {
+            if (err) 
             {
-
-                if (err) return console.log(err);
-                
-                var timestamp = new Date().getTime();
-                
-                UtilService.post_information({
-                    identifier: 'measure_request_' + timestamp,
-                    title: 'Measures update',
-                    description: 'Updating dynamic data on stations',
-                    progression: 0
-                });
-
-                Measure.createOrUpdate(
-                    measures,
-                    function (err2)
-                    {
-                        if (err2) return console.log(err2);
-                    }
-                );
-            
-                Information.update({
-                    identifier: 'measure_request'
-                },{
-                    progression: 50
-                }).exec(
-                    function (err2, added)
-                    {
-                        if (err2) return console.log(err2);
-                    }
-                );
-
-                LastMeasure.createOrUpdate(
-                    measures,
-                    function (err2)
-                    {
-                        if (err2) return console.log(err2);
-                    }
-                );
-            
-                UtilService.post_information({
-                    identifier: 'measure_request_' + timestamp,
-                    title: 'Measures update',
-                    description: 'Updating dynamic data on stations',
-                    progression: 100
-                });
-                
-                console.log("       Fetching new measures");
-
+                console.error("Error: Bootstrap.onStartFunction");
+                return cb(err);
             }
-        );
-    }
+        }
+    );
     
     onTickFunction();
     
