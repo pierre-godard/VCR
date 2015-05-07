@@ -24,10 +24,6 @@ var formatter = function (value)
     var d = new Date(value.last_update);
     value.specif_time = Measure.date_to_specificTime(d);
     value.period = PredictionService.period(value.last_update);
-    /*value.day = d.getDay();
-    value.hour = d.getHours(); 
-    value.date = d.getDate();
-    value.month = d.getMonth();*/
     delete value['number'];
     delete value['name'];
     delete value['address'];
@@ -58,31 +54,6 @@ module.exports =
             type: 'integer',
             required: true
         },
-        /*month: 
-        {
-            type: 'integer',
-            required: true
-        },
-        date: 
-        {
-            type: 'integer',
-            required: true
-        },
-        day: 
-        {
-            type: 'integer',
-            required: true
-        },
-        hour: 
-        {
-            type: 'integer',
-            required: true
-        },
-        time_slice: 
-        {
-            type: 'integer',
-            required: true
-        },*/
         station:
         {
             model: 'Station',
@@ -121,14 +92,12 @@ module.exports =
                 .exec(
                     function (err, removed)
                     {
-                        // if (err) next(err);
                         if (!err)
                         {
                             LastMeasure.create(measure)
                             .exec(
                                 function (err2, added)
                                 {
-                                    // if (err2) next(err2);
                                 }
                             );
                         }

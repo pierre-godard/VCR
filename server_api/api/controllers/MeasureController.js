@@ -58,7 +58,6 @@ module.exports = {
                 ], 
                 function(err)
                 {
-                    //console.log("All files loaded");
                 }
             );
             
@@ -86,8 +85,6 @@ module.exports = {
         function (req, res, next)
         {
             var oneDay = 1000 * 60 * 60 * 24;
-            //console.log(">>>>"+(Math.floor(Date.now() / oneDay)));
-            //console.log(PredictionService.period(new Date(2014,9,25)));
             Measure.find({station: parseInt(req.param('id')),date:Math.floor(Date.now() / oneDay)},
                 function(err, found) 
                 {

@@ -24,13 +24,8 @@ var formatter = function (value)
     var d = new Date(value.last_update);
     value.specif_time = Measure.date_to_specificTime(d);
     value.period = PredictionService.period(value.last_update);
-    //value.date = ((new Date(value.last_update)).setHours(0,0,0,0)).getTime();
     var oneDay = 1000 * 60 * 60 * 24;
     value.date = Math.floor(value.last_update / oneDay);// we have only the date without hh/mm/ss/msms
-    /*value.day = d.getDay();
-    value.hour = d.getHours(); 
-    value.date = d.getDate();
-    value.month = d.getMonth();*/
     delete value['number'];
     delete value['name'];
     delete value['address'];
@@ -61,31 +56,11 @@ module.exports =
             type: 'integer',
             required: true
         },
-        /*month: 
-        {
-            type: 'integer',
-            required: true
-        },*/
         date: 
         {
             type: 'integer',
             required: true
         },
-        /*day: 
-        {
-            type: 'integer',
-            required: true
-        },
-        hour: 
-        {
-            type: 'integer',
-            required: true
-        },
-        time_slice: 
-        {
-            type: 'integer',
-            required: true
-        },*/
         station: 
         {
             model: 'Station',
@@ -103,7 +78,7 @@ module.exports =
         },
         specif_time: 
         {
-            type: 'string', // TODO as integer?
+            type: 'string',
             required: true
         },
         period:
@@ -116,8 +91,7 @@ module.exports =
     // d as date
     date_to_specificTime: function(d)
     {
-        return /*d.getMonth()+"-"+d.getDate()+"-"+*/d.getDay()+"-"+d.getHours()+
-            "-"+Math.floor(d.getMinutes()*Measure.NB_TIME_SLICES/60);
+        return d.getDay()+"-"+d.getHours()+"-"+Math.floor(d.getMinutes()*Measure.NB_TIME_SLICES/60);
     },
 
 
@@ -143,14 +117,12 @@ module.exports =
                 .exec(
                     function (err, removed)
                     {
-                        // if (err) next(err);
                         if (!err)
                         {
                             Measure.create(measure)
                             .exec(
                                 function (err2, added)
                                 {
-                                    // if (err2) next(err2);
                                 }
                             );
                         }

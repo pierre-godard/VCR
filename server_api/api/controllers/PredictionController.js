@@ -15,10 +15,6 @@ module.exports = {
 			var date 			= Date.now();
             var delta_date      = parseInt(req.param('delta'));
             var date            = new Date(date + delta_date*60000).getTime(); // increm date by delta_date minutes
-            /*console.log(new Date(date));
-            console.log(station_id);
-            console.log(typeof station_id);*/
-            //console.log("------- : : : "+req.url);
 			var analysisMode 	= PredictionService.analysis_mode.DFM;
         	PredictionService.predict(station_id,date,analysisMode,
         		function (state,free,occup,prediction_quality)
@@ -39,38 +35,18 @@ module.exports = {
                             if (err) 
                             {
                                 console.log(err);
-                                //return next(err);
                             }
-                            //next();
                         }
                     );
                     res.write(JSON.stringify(object));
                     res.end('\n'); 
-        			/*res.write("Prediction using "+analysisMode+" (date: "+new Date(date)+" - station: "+station_id+"):\n");
-        			res.write("State:              "+state+"\n");
-                    res.write("Free:               "+free+"\n");
-                    res.write("Occup:              "+occup+"\n");
-                    res.write("Prediction quality: "+prediction_quality+"\n");*/
     			}
         	);
-            /*prediction_quality = PredictionService.analysis_mode.MEAN;
-            PredictionService.predict(station_id,date,analysisMode,
-                function (state,free,occup,prediction_quality)
-                {
-                    res.write("Prediction using "+analysisMode+" (date: "+new Date(date)+" - station: "+station_id+"):\n");
-                    res.write("State:              "+state+"\n");
-                    res.write("Free:               "+free+"\n");
-                    res.write("Occup:              "+occup+"\n");
-                    res.write("Prediction quality: "+prediction_quality+"\n");
-                }
-            );
-            res.end('\n'); */
         },
 
     all:
         function (req, res, next)
         {
-            //PredictionController.analysis(req, res, next);    
         }
 
 };
