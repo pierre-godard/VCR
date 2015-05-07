@@ -257,7 +257,9 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                     }
                 }
                 predictionTime = progress;
-                updatePredictions();
+                if(predictionTime !=0) {
+                    updatePredictions();
+                }
                 // TODO fetch predictions for the right time if there are stations in the circle
             }
             @Override
@@ -430,7 +432,9 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         }
         currentCircle = c;
         mMap.moveCamera(CameraUpdateFactory.newLatLng(position));
-        updatePredictions();
+        if(predictionTime !=0) {
+            updatePredictions();
+        }
     }
 
     /**
