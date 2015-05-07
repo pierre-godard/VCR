@@ -7,6 +7,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.v4.app.FragmentActivity;
@@ -484,8 +485,12 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                 // Find the station whose id is the same as the one in the jsonArray
                 currentMeasure = jArrayMeasures.getJSONObject(i);
                 currentStation = currentMeasure.getJSONObject("station");
-                stationId = currentStation.getString("id");
+                stationId = currentStation.getString("number");
                 updatedStation = mapStations.get(stationId);            // will need to catch exception in case id is not found in hashmap
+                /*if (updatedStation == null) {
+                    Log.e("updateStationValues", "Problem when getting station by id. (id:" + stationId + ")");
+                    continue;
+                }*/
                 updatedStation.setBikesAndStands(currentMeasure.getInt("available_bikes"), currentMeasure.getInt("available_bike_stands"));
                 Log.d("UPDATE STATION =>", "Station " + updatedStation.getTitle() + " being updated");
                 mapStations.put(stationId, updatedStation);
