@@ -24,7 +24,6 @@ public class CustomAnimatorUpdateListener implements ValueAnimator.AnimatorUpdat
     @Override
     public void onAnimationUpdate(ValueAnimator animation) {
         float animatedFraction = animation.getAnimatedFraction();
-        // Log.e("", "" + animatedFraction);
 
         c.setRadius(animatedFraction * center);
     }

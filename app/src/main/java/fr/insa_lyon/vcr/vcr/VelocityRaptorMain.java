@@ -127,7 +127,6 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                     String json_string = bundle.getString(UpdateStation.JSON_ARR);
                     Toast.makeText(VelocityRaptorMain.this, "Update complete", Toast.LENGTH_LONG).show();
                     if (json_string.length() >= 3) {  // Json is not empty or "[]"
-                        Log.d("RECEIVER_DYNA", "Before call to updateStationValues");
                         updateStationValues(json_string);
                     }
                     alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + ALARM_DURATION * 1000, pendingIntentAlarm);
@@ -154,19 +153,17 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
     private BroadcastReceiver receiverUpdatePrediction = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.d("UPDATE_PREDICTIONS", "Ici PapaTango, bien reçu DeltaCharlie");
             Bundle bundle = intent.getExtras();
             if (bundle != null) {
                 int resultCode = bundle.getInt(UpdateStation.RESULT);
                 if (resultCode == RESULT_OK) {
                     String json_string = bundle.getString(UpdatePrediction.JSON_ARR);
                     if (json_string.length() >= 3) {  // Json is not empty or "[]"
-                        Log.d("UPDATE_PREDICTIONS", "Before call to updatePredictionsValues");
                         updateStationPredictions(json_string);
                     }
                 } else {
                     if (!serverFailureDetected) {
-                        Log.e("UPDATE_PREDICTIONS","Et galère...");
+                        Log.e("UPDATE_PREDICTIONS","An error occured when updating predictions");
                         serverFailureDetected = true;
                         stopService(intentStat);
                         stopService(intentDyna);
@@ -494,12 +491,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                 currentStation = currentMeasure.getJSONObject("station");
                 stationId = currentStation.getString("number");
                 updatedStation = mapStations.get(stationId);            // will need to catch exception in case id is not found in hashmap
-                /*if (updatedStation == null) {
-                    Log.e("updateStationValues", "Problem when getting station by id. (id:" + stationId + ")");
-                    continue;
-                }*/
                 updatedStation.setBikesAndStands(currentMeasure.getInt("available_bikes"), currentMeasure.getInt("available_bike_stands"));
-                Log.d("UPDATE STATION =>", "Station " + updatedStation.getTitle() + " being updated");
                 mapStations.put(stationId, updatedStation);
             }
         } catch (JSONException j) {
@@ -513,7 +505,6 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
 
     protected void updateStationPredictions(String jsonString) {
         try {
-            Log.d("UPDATE_PREDICTIONS","Allez on y va on update les prédictions !");
             JSONArray jArrayPredictions = new JSONArray(jsonString);
             JSONObject currentStation;
             String stationId;
@@ -535,8 +526,6 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                         updatedStation.setNumberOfBikes_predict(bikePrediction);
                         updatedStation.setNumberOfFreeBikeStands_predict(bikeStandPrediction);
                         updatedStation.setPredictionConfidence(predictionConfidence);
-                        Log.d("UPDATE_PREDICTIONS", "Station " + updatedStation.getTitle() + " being updated");
-                        //Log.d("UPDATE_PREDICTIONS", updatedStation.getSnippet());
                         mapStations.put(stationId, updatedStation);
                         reloadMarkerPredict(mapStations.get(stationId));
                     }
@@ -555,7 +544,6 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
             entry.getValue().setMode(isWithdrawMode);
             reloadMarker(entry.getValue());
-            //Log.d("UPDATE_MARKER_MODE", "Station " + entry.getValue().getTitle() + " has mode withdraw = " + entry.getValue().getMode());
         }
     }
 
@@ -565,7 +553,6 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         for (Map.Entry<String, StationVelov> entry : mapStations.entrySet()) {
             entry.getValue().setMode(isWithdrawMode);
             reloadMarker(entry.getValue());
-            //Log.d("UPDATE_MARKER_MODE", "Station " + entry.getValue().getTitle() + " has mode withdraw = " + entry.getValue().getMode());
         }
     }
 
@@ -625,7 +612,6 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         String strId = item.getTitle();
         for (Marker m : markers) {
             if (strId.equals(m.getTitle())) {
-                Log.d("RELOAD MARKER =>", "Station "+m.getTitle()+" being updated");
                 m.setIcon(item.getIcon());
                 m.setSnippet(item.getSnippet());
                 break;
@@ -640,7 +626,6 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         String strId = item.getTitle();
         for (Marker m : markers) {
             if (strId.equals(m.getTitle())) {
-                Log.d("RELOAD MARKER =>", "Station "+m.getTitle()+" being updated");
                 m.setIcon(item.getIcon());
                 m.setSnippet(item.getSnippetPrediction());
                 break;
@@ -650,7 +635,6 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
     }
 
     public void updatePredictions(){
-        Log.d("UPDATE_PREDICTIONS", "Tout début");
         intentPredictions = new Intent(this, UpdatePrediction.class);
         String idStations="";
         for(String idStation : idStationsSelectionnees) {
@@ -658,8 +642,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         }
         intentPredictions.putExtra(UpdatePrediction.SERVER_URL, SERVER_URL + "/prediction/analysis");
         intentPredictions.putExtra(UpdatePrediction.ID_STATIONS, idStations);
-        intentPredictions.putExtra(UpdatePrediction.PREDICTION_TIME, ((Integer)predictionTime).toString()); //TODO: Remplacer par temps indiqué
-        Log.d("UPDATE_PREDICTIONS", "On lance le service...");
+        intentPredictions.putExtra(UpdatePrediction.PREDICTION_TIME, ((Integer)predictionTime).toString());
         startService(intentPredictions);
 
     }
@@ -705,7 +688,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                 for (Marker m : mClusterManager.getMarkerCollection().getMarkers()) {
                     if (currentStation.getTitle().equals(m.getTitle())) {
                         if(scoreMax != scoreMin){
-                            m.setAlpha(((((scoreCourant-scoreMin)/(scoreMax-scoreMin)))*0.5f)+0.5f);
+                            m.setAlpha(((((scoreCourant-scoreMin)/(scoreMax-scoreMin)))*0.75f)+0.25f);
                         }
                         else{
                             m.setAlpha(1);

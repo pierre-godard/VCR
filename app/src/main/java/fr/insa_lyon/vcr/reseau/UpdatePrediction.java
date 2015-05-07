@@ -40,7 +40,6 @@ public class UpdatePrediction extends IntentService{
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.d("UPDATE_PREDICTIONS", "C'est partiiiiiiiii");
         url_Param = new ArrayList<NameValuePair>();
         idStations = intent.getStringExtra(ID_STATIONS);
         predictionTime = intent.getStringExtra(PREDICTION_TIME);
@@ -52,26 +51,20 @@ public class UpdatePrediction extends IntentService{
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        Log.d("UPDATE_PREDICTIONS", "Encore du travail ?");
         work();
     }
 
     private void publishResults(JSONArray jsonArr, int result) {
-        Log.d("UPDATE_PREDICTIONS","On publie...");
         Intent intent = new Intent(NOTIFICATION);
         intent.putExtra(RESULT, result);
         if (result == Activity.RESULT_OK)
             intent.putExtra(JSON_ARR, jsonArr.toString());
-        else
-            Log.d("UPDATE_PREDICTIONS","Whoops...");
-        Log.d("UPDATE_PREDICTIONS", "Zou !");
         sendBroadcast(intent);
     }
 
     public void work() {
         new Thread(new Runnable() {
             public void run() {
-                Log.d("UPDATE_PREDICTIONS", "Oui mon seigneuuuuuuur ?");
                 if (serverConnection != null) {
                     for(String idStation: idStations.split(";")){
                         serverConnection.setUrl(url + "/"+idStation+"/"+predictionTime);
