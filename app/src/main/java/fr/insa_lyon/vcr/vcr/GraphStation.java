@@ -6,6 +6,7 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 
@@ -37,34 +38,6 @@ public class GraphStation extends DialogFragment {
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View v = inflater.inflate(R.layout.graph_dialog,null);
 
-     /*   DefaultHttpClient httpclient = new DefaultHttpClient(new BasicHttpParams());
-        HttpPost httppost = new HttpPost("vps165245.ovh.net/prediction/analysis/10002/0");
-        httppost.setHeader("Content-type", "application/json");
-
-        InputStream inputStream = null;
-        String result = null;
-        try {
-            HttpResponse response = httpclient.execute(httppost);
-            HttpEntity entity = response.getEntity();
-
-            inputStream = entity.getContent();
-            // json is UTF-8 by default
-            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"), 8);
-            StringBuilder sb = new StringBuilder();
-
-            String line = null;
-            while ((line = reader.readLine()) != null)
-            {
-                sb.append(line + "\n");
-            }
-            result = sb.toString();
-        } catch (Exception e) {
-            // Oops
-        }
-        finally {
-            try{if(inputStream != null)inputStream.close();}catch(Exception squish){}
-        }
-*/
         String result = new String("{\"station\":2040,\"predict_bike_stands\":9.03060393776574,\"predict_bikes\":4.454347597583672,\"predict_state\":\"places available\",\"confidence\":0.06763644755219839,\"time\":1430908836042}");
         graph = (GraphView) v.findViewById(R.id.graph);
         seriesBikes = new LineGraphSeries<DataPoint>(generateData(result, "predict_bikes"));
@@ -91,9 +64,8 @@ public class GraphStation extends DialogFragment {
             values[0] = DP1;
             values[1] = DP2;
         }catch(Exception e){
-            // TODO : banane
+            Log.e("generateData() error :", e.toString());
         }
-        //  }
         return values;
     }
 
