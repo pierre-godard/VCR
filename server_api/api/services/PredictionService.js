@@ -51,16 +51,6 @@ function decreasingFactor_mean (factor,step,array)
 function variance(array,mode)
 {
 	var avg = 0;
-	/*switch(mode) 
-	{
-	    case PredictionService.analysis_mode.MEAN:
-	    	avg = mean(array);
-	        break;	
-	    case PredictionService.analysis_mode.DFM:
-	    	avg = decreasingFactor_mean(DFM_DEFAULT_FACTOR,DFM_DEFAULT_STEP,array);
-	        break;
-	    default:
-	}*/
 	avg = mean(array);
 	var i = array.length;
 	var v = 0;
@@ -105,18 +95,9 @@ function quality_analysis(arr_free,arr_occup,mode)
 // for the perdiction calculation
 function queryMeasures(id,time,callback)
 {
-	/*console.log(time);
-	console.log(id);
-	console.log(PredictionService.period(time));
-	console.log(time.getDay());
-	console.log(time.getHours());
-	console.log(Math.floor(time.getMinutes()*Measure.NB_TIME_SLICES/60));*/
 	Measure.find({station: id, 
 			specif_time: Measure.date_to_specificTime(time)
-			/*period: PredictionService.period(time),
-			day: time.getDay(),
-			hour: time.getHours(),
-		    time_slice: Math.floor(time.getMinutes()*Measure.NB_TIME_SLICES/60)*/ },
+	},
 		function(err, found) 
 		{
       		callback(found);
@@ -125,9 +106,9 @@ function queryMeasures(id,time,callback)
 }
 
 // If no period is found, used to define the default period
-var DEFAULT_PERIOD = -1;
+var DEFAULT_PERIOD 		= -1;
 //error period -> problem during period calculation
-var ERROR_PERIOD = -2;
+var ERROR_PERIOD 		= -2;
 // used to loop through periods
 var NB_SPECIFIC_PERIODS = 5; // TODO add in JSON
 
@@ -138,18 +119,13 @@ function find_period(json_periods,time)
 	var year = String(date.getFullYear());
 	if(time == 0 || json_periods[year] == undefined)
 	{
-		return ERROR_PERIOD; // TODO better error management
+		return ERROR_PERIOD;
 	}
-	//console.log("year ======== "+year);
 	for (var i = 0; i < NB_SPECIFIC_PERIODS; i++) 
 	{ 
-		/*console.log(Date(json_periods[year][i].begin));
-		console.log(date);
-		console.log(Date(json_periods[year][i].end));*/
 	    if(new Date(json_periods[year][i].begin) <= date 
 	    	&& new Date(json_periods[year][i].end) >= date)	// If the date is within the period
 	    {
-	    	//console.log(i+" - "+date);
 	    	return i;
 	    }
 	}
@@ -158,20 +134,7 @@ function find_period(json_periods,time)
 
 // Diff between arrays
 // thx to http://stackoverflow.com/questions/1187518/javascript-array-difference
-// NOT WORKING WITH DATES (and objects?)
-Array.prototype.diff = function(a) 
-{
-    return this.filter(
-    	function(i) 
-	    {
-	    	return a.indexOf(i) < 0;
-	    }
-	);
-};
-
-// Diff between arrays
-// thx to http://stackoverflow.com/questions/1187518/javascript-array-difference
-// WORKING WITH DATES!
+// WORKING WITH DATES/OBJECTS
 function arr_diff(a1, a2)
 {
 	var a 		=[];
@@ -209,29 +172,15 @@ function generate_defaultPeriod(json_periods,limit_time,year_begin,year_end)
 	{
 		specific_dates = specific_dates.concat(generate_specificPeriod(json_periods,limit_time,year_begin,year_end,i)); 
 	}
-/*	console.log(new Date(limit_time));
-	console.log(new Date(limit_time).getFullYear());
-	console.log(year_begin);*/
 	for (var d = new Date(limit_time); d.getFullYear() >= year_begin; d.setDate(d.getDate() - WEEK_SIZE)) 
 	{
-		//console.log("date: "+d);
 		if(limit_time.getDay()==d.getDay()) // Only if same day of the week, algo choice XXX
 		{
 			all_dates.push(new Date(d));				
 		}
 	}
-/*	console.log("All dates:");
-	console.log(all_dates);
-	console.log("Specific dates:");
-	console.log(specific_dates);
-	console.log("diff 1");
-	console.log(all_dates.diff(specific_dates)); // not working
-	console.log("diff 2");
-	console.log(_.difference(all_dates,specific_dates)); // not working
-	console.log("diff 3");
-	console.log(arr_diff(all_dates,specific_dates)); // working!*/
 	var defPeriod_dates = arr_diff(all_dates,specific_dates);
-	defPeriod_dates.pop(); // We remove last element which is strangly not a date but 'diff'
+	defPeriod_dates.pop(); // We remove the last element which is not a date but 'diff'
 	return defPeriod_dates;
 }
 
@@ -240,12 +189,8 @@ function generate_specificPeriod(json_periods,limit_time,year_begin,year_end,per
 {
 	var dates = [];
 	var limit_date = new Date(limit_time);
-/*	console.log(year_begin);
-	console.log(year_end);*/
 	for (var y = year_begin; y <= year_end;y++)
 	{
-/*		console.log(json_periods[String(y)][period].end);
-		console.log(json_periods[String(y)][period].begin);*/
 		for (var d = new Date(json_periods[String(y)][period].end); d > new Date(json_periods[String(y)][period].begin); d.setDate(d.getDate() - 1)) 
 		{
 			if(limit_time.getDay()==d.getDay()) // Only if same day of the week, algo choice XXX
@@ -354,26 +299,17 @@ var nb_calls_emptyQ = 0;
 // in order to match the reality
 function prediction_adapt(id,time,ref_time,analysisMode,callback)
 {
-	// TODO predict functions needs simplification (state etc...)
 	var curr_date = ref_time;
-	var TIME_REDUC = 60; // in minutes
+	var TIME_REDUC = 60; 		// in minutes
 	predict_fromDatas(id,time,analysisMode,
 		function(state,free_overTime,occup_overTime,prediction_quality)
 		{
-			//console.log("L1: "+state+" "+free_overTime+" "+occup_overTime+" "+prediction_quality);
 			predict_fromDatas(id,curr_date,analysisMode,
-				function(state_now,free_overTime_now,occup_overTime_now,prediction_quality_now/*,
-					state,free_overTime,occup_overTime,prediction_quality*/)
+				function(state_now,free_overTime_now,occup_overTime_now,prediction_quality_now)
 				{
-					/*console.log("L2: "+state+" "+free_overTime+" "+occup_overTime+" "+prediction_quality);
-					console.log("L2: "+state_now+" "+free_overTime_now+" "+occup_overTime_now+" "+prediction_quality_now);*/
 					LastMeasure.find({station: id},
-						function(err, found/*,
-							state_now,free_overTime_now,occup_overTime_now,prediction_quality_now,
-							state,free_overTime,occup_overTime,prediction_quality*/) 
+						function(err, found) 
 						{
-							/*console.log("L3 a: "+state+" "+free_overTime+" "+occup_overTime+" "+prediction_quality);
-							console.log("L3 b: "+state_now+" "+free_overTime_now+" "+occup_overTime_now+" "+prediction_quality_now);*/
 							var free_overTime_adapt; 	// fota
 							var occup_overTime_adapt; 	// oota
 							// calculates the difference between predicted datas for now and actual datas 
@@ -382,7 +318,6 @@ function prediction_adapt(id,time,ref_time,analysisMode,callback)
 								console.error("Error while adapting prediction. Empty query.");
 								if(nb_calls_emptyQ < MAX_NB_CALLS_EMPTYQ)
 								{
-									// actually does nothing since the query will always be empty
 									nb_calls_emptyQ++;
 									var newtime = new Date(ref_time - (60/Measure.NB_TIME_SLICES)*TO_MINUTES).getTime();
 									console.log("Trying with new date (try "+nb_calls_emptyQ+"): "+new Date(newtime));
@@ -449,10 +384,6 @@ function prediction_adapt(id,time,ref_time,analysisMode,callback)
 			);
 		}
 	);
-	// TODO
-	// predict = predict(futur) + (predict(now) - now)
-	// decrease also depending on when the prediction is: 5 mins -> now is important, 1000 mins less.
-	// predict = (predict_quality*predict(futur)+predict)/(1+predict_quality)
 }
 
 // calendar JSON file
