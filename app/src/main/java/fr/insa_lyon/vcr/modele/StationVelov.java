@@ -148,7 +148,7 @@ public class StationVelov implements ClusterItem {
     }
 
     public void updtSnippetPredict() {
-        if (numberOfFreeBikeStands_predict + numberOfBikes_predict == 0) {
+        if (numberOfFreeBikeStands_predict + numberOfBikes_predict != 0) {
             if (withdrawal) {
                 snippet = "Prédiction à "+predict_time+"min :\n"+numberOfBikes_predict+" vélos disponibles.";
             } else {
@@ -164,6 +164,11 @@ public class StationVelov implements ClusterItem {
     public String getSnippet() {
         updtSnippet();
         return snippet;
+    }
+
+    public String getSnippetPrediction(){
+        updtSnippetPredict();
+        return  snippet;
     }
 
     public String getId() {

@@ -427,7 +427,6 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
             if (MathsUti.getDistance(entry.getValue().getPosition(), position) <= circleRadius) {
                 entry.getValue().setSelected(true);
                 idStationsSelectionnees.add(entry.getValue().getId());
-                reloadMarker(entry.getValue());
             }
         }
         currentCircle = c;
@@ -435,6 +434,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         if(predictionTime !=0) {
             updatePredictions();
         }
+
     }
 
     /**
@@ -536,9 +536,9 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                         updatedStation.setNumberOfFreeBikeStands_predict(bikeStandPrediction);
                         updatedStation.setPredictionConfidence(predictionConfidence);
                         Log.d("UPDATE_PREDICTIONS", "Station " + updatedStation.getTitle() + " being updated");
-                        updatedStation.updtSnippetPredict();
-                        Log.d("UPDATE_PREDICTIONS", updatedStation.getSnippet());
+                        //Log.d("UPDATE_PREDICTIONS", updatedStation.getSnippet());
                         mapStations.put(stationId, updatedStation);
+                        reloadMarkerPredict(mapStations.get(stationId));
                     }
                     catch(JSONException j){
 
@@ -628,6 +628,21 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                 Log.d("RELOAD MARKER =>", "Station "+m.getTitle()+" being updated");
                 m.setIcon(item.getIcon());
                 m.setSnippet(item.getSnippet());
+                break;
+            }
+        }
+
+    }
+
+    public void reloadMarkerPredict(StationVelov item) {
+        MarkerManager.Collection markerCollection = mClusterManager.getMarkerCollection();
+        Collection<Marker> markers = markerCollection.getMarkers();
+        String strId = item.getTitle();
+        for (Marker m : markers) {
+            if (strId.equals(m.getTitle())) {
+                Log.d("RELOAD MARKER =>", "Station "+m.getTitle()+" being updated");
+                m.setIcon(item.getIcon());
+                m.setSnippet(item.getSnippetPrediction());
                 break;
             }
         }
