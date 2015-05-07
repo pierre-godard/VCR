@@ -63,6 +63,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
     // ----------------------------------------------------------------------------------- VARIABLES
     protected GoogleMap mMap;
     protected int circleRadius = 500; // in meters
+    protected int predictionTime = 5;
     protected Circle currentCircle;
     protected boolean isWithdrawMode = true;
     HashMap<String, StationVelov> mapStations;
@@ -255,6 +256,8 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
                         }
                     }
                 }
+                predictionTime = progress;
+                updatePredictions();
                 // TODO fetch predictions for the right time if there are stations in the circle
             }
             @Override
@@ -636,7 +639,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         }
         intentPredictions.putExtra(UpdatePrediction.SERVER_URL, SERVER_URL + "/prediction/analysis");
         intentPredictions.putExtra(UpdatePrediction.ID_STATIONS, idStations);
-        intentPredictions.putExtra(UpdatePrediction.PREDICTION_TIME, "5"); //TODO: Remplacer par temps indiqué
+        intentPredictions.putExtra(UpdatePrediction.PREDICTION_TIME, ((Integer)predictionTime).toString()); //TODO: Remplacer par temps indiqué
         Log.d("UPDATE_PREDICTIONS", "On lance le service...");
         startService(intentPredictions);
 
