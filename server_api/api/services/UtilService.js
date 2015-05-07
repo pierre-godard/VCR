@@ -70,7 +70,7 @@ module.exports = {
         UtilService.post_information({
             identifier: 'load_measures' + path,
             title: 'Load measures',
-            description: 'Updating dynamic data on stations',
+            description: 'Updating dynamic data on stations (from: ' + path + ')',
             progression: 100
         });
         
@@ -137,6 +137,7 @@ module.exports = {
                     information,
                     function (err2, added)
                     {
+                        if (err2) console.log(information);
                         if (err2) return console.log(err2);
                     }
                 );
