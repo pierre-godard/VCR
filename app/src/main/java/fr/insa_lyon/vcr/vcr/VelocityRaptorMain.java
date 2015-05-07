@@ -626,7 +626,7 @@ public class VelocityRaptorMain extends FragmentActivity implements OnMapReadyCa
         for (Marker m : markers) {
             if (strId.equals(m.getTitle())) {
                 m.setIcon(item.getIcon());
-                m.setSnippet(item.getSnippetPrediction());
+                m.setSnippet(item.getSnippetPrediction(predictionTime));
                 break;
             }
         }

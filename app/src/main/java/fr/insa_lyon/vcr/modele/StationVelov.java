@@ -25,9 +25,7 @@ public class StationVelov implements ClusterItem {
     int numberOfBikes_predict;
     int numberOfFreeBikeStands_predict;
     float predictionConfidence;
-    int predict_time;
     boolean withdrawal;
-    String snippetText;
     boolean selected = false;
     boolean infoWindowShown = false;
 
@@ -49,7 +47,6 @@ public class StationVelov implements ClusterItem {
         numberOfBikes_predict = 0;
         numberOfFreeBikeStands_predict = 0;
         predictionConfidence = 0;
-        predict_time = 5;
         withdrawal = true;  // default case assume user want to withdraw a bike from the station.
     }
 
@@ -147,15 +144,15 @@ public class StationVelov implements ClusterItem {
         }
     }
 
-    public void updtSnippetPredict() {
+    public void updtSnippetPredict(int predictTime) {
         if (numberOfFreeBikeStands_predict + numberOfBikes_predict != 0) {
             if (withdrawal) {
-                snippet = "Prédiction à "+predict_time+"min :\n"+numberOfBikes_predict+" vélos disponibles.";
+                snippet = "Prédiction à "+predictTime+"min :\n"+numberOfBikes_predict+" vélos disponibles.";
             } else {
-                snippet = "Prédiction à "+predict_time+"min :\n"+numberOfFreeBikeStands_predict+" emplacements disponibles.";
+                snippet = "Prédiction à "+predictTime+"min :\n"+numberOfFreeBikeStands_predict+" emplacements disponibles.";
             }
         } else {
-            snippet = "Pas de prédiction disponible à "+predict_time+"min.";
+            snippet = "Pas de prédiction disponible à "+predictTime+"min.";
         }
 
     }
@@ -166,8 +163,8 @@ public class StationVelov implements ClusterItem {
         return snippet;
     }
 
-    public String getSnippetPrediction(){
-        updtSnippetPredict();
+    public String getSnippetPrediction(int predictTime){
+        updtSnippetPredict(predictTime);
         return  snippet;
     }
 
@@ -249,15 +246,6 @@ public class StationVelov implements ClusterItem {
     public void setPredictionConfidence(float predictionConfidence){
         this.predictionConfidence = predictionConfidence;
     }
-
-    public int getPredict_time() {
-        return predict_time;
-    }
-
-    public void setPredict_time(int predict_time) {
-        this.predict_time = predict_time;
-    }
-
 
 
 }
